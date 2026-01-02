@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadratic Expressions & Equations</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        input, button { margin: 5px; padding: 8px; }
+        button { cursor: pointer; }
+        .result { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h2>Quadratic Expressions & Equations Tool</h2>
+
+    <h3>Expand a Quadratic Expression</h3>
+    <p>Enter the expression: <b>(ax + b)(cx + d) or (ax + b)(cy + d)</b></p>
+    <input type="number" id="expA" placeholder="a">
+    <input type="text" id="var1" placeholder="Variable 1 (e.g., x)">
+    <input type="number" id="expB" placeholder="b">
+    <br>
+    <input type="number" id="expC" placeholder="c">
+    <input type="text" id="var2" placeholder="Variable 2 (e.g., x or y)">
+    <input type="number" id="expD" placeholder="d">
+    <button onclick="expandExpression()">Expand</button>
+    <div class="result" id="expandOutput"></div>
+    <div class="steps" id="expandSteps"></div>
+
+    
+	<h3>Quadratic Equation Solver</h3>
+     <p>Enter equation coefficients for <b>ax² + bx + c = 0</b></p>
+    <input type="number" id="a" placeholder="a">
+    <input type="number" id="b" placeholder="b">
+    <input type="number" id="c" placeholder="c">
+    <button onclick="solveQuadratic()">Solve</button>
+    <div class="result" id="output"></div>
+    <div class="steps" id="solutionSteps"></div>
+	
+	
+
+    <h3>Solve by Complete the Square</h3>
+    <p>Enter equation coefficients for <b>ax² + bx + c = 0</b></p>
+    <input type="number" id="sqA" placeholder="a">
+    <input type="number" id="sqB" placeholder="b">
+    <input type="number" id="sqC" placeholder="c">
+    <button onclick="completeSquare()">Solve</button>
+    <div class="result" id="squareOutput"></div>
+    <div class="steps" id="squareSteps"></div>
+
+
+    <script>
+
+		
+    function expandExpression() {
+        let a = parseFloat(document.getElementById("expA").value);
+        let b = parseFloat(document.getElementById("expB").value);
+        let c = parseFloat(document.getElementById("expC").value);
+        let d = parseFloat(document.getElementById("expD").value);
+        let var1 = document.getElementById("var1").value || 'x';
+        let var2 = document.getElementById("var2").value || 'x';
+
+        if (isNaN(a) || isNaN(b) || isNaN(c) || isNaN(d)) {
+            document.getElementById("expandOutput").innerHTML = "Enter valid numbers.";
+            return;
+        }
+
+        let steps = `<b>Step-by-Step Expansion:</b><br>`;
+        steps += `1. Apply distributive property: (${a}${var1} + ${b})(${c}${var2} + ${d})<br>`;
+        steps += `2. Expand each term:<br>`;
+        steps += `${a}${var1} * ${c}${var2} = ${a * c}${var1}${var2}<br>`;
+        steps += `${a}${var1} * ${d} = ${a * d}${var1}<br>`;
+        steps += `${b} * ${c}${var2} = ${b * c}${var2}<br>`;
+        steps += `${b} * ${d} = ${b * d}<br>`;
+        
+        let terms = {};
+        function addTerm(coefficient, variable) {
+            if (coefficient === 0) return;
+            let key = variable || 'constant';
+            terms[key] = (terms[key] || 0) + coefficient;
+        }
+
+        addTerm(a * c, var1 === var2 ? `${var1}²` : `${var1}${var2}`);
+        addTerm(a * d, var1);
+        addTerm(b * c, var2);
+        addTerm(b * d, "");
+
+        let expanded = Object.entries(terms)
+            .filter(([_, coeff]) => coeff !== 0)
+            .map(([variable, coeff]) => formatTerm(coeff, variable === 'constant' ? '' : variable))
+            .join(" + ");
+
+        expanded = formatExpression(expanded);
+        steps += `3. Combine terms:<br>${expanded}`;
+
+        document.getElementById("expandOutput").innerHTML = `Expanded: ${expanded}`;
+        document.getElementById("expandSteps").innerHTML = steps;
+    }
+
+    function formatTerm(coefficient, variable) {
+        if (coefficient === 0) return "";
+        if (variable === "") return coefficient.toString(); 
+        if (coefficient === 1) return variable;
+        if (coefficient === -1) return `-${variable}`;
+        return `${coefficient}${variable}`;
+    }
+
+    function formatExpression(expression) {
+        return expression.replace(/\+\s*-/, "- ") 
+                         .replace(/-\s*-/, "+ ") 
+                         .replace(/\+\s*\+/, "+ ") 
+                         .replace(/\s\+/, " + ") 
+                         .replace(/^\+\s*/, "");
+						 
+						 						 						 									 
+    }
+	
+	
+	
+	function solveQuadratic() {
+        let a = parseFloat(document.getElementById("a").value);
+        let b = parseFloat(document.getElementById("b").value);
+        let c = parseFloat(document.getElementById("c").value);
+
+        if (isNaN(a) || isNaN(b) || isNaN(c)) {
+            document.getElementById("output").innerHTML = "Enter valid numbers.";
+            return;
+        }
+
+        let steps = `<b>Step-by-Step Solution:</b><br>`;
+        steps += `1. Identify coefficients: a = ${a}, b = ${b}, c = ${c}<br>`;
+        steps += `2. Write the quadratic equation: ${a}x² + ${b}x + ${c} = 0<br>`;
+        
+        let discriminant = b * b - 4 * a * c;
+        steps += `3. Compute discriminant: D = b² - 4ac = ${b}² - 4(${a})(${c}) = ${discriminant}<br>`;
+
+        if (discriminant < 0) {
+            steps += `4. Since D < 0, no real solutions.<br>`;
+            document.getElementById("output").innerHTML = "No real solutions.";
+            document.getElementById("solutionSteps").innerHTML = steps;
+            return;
+        }
+
+        let sqrtD = Math.sqrt(discriminant);
+        steps += `4. Compute square root of D: √D = √${discriminant} = ${sqrtD.toFixed(2)}<br>`;
+        
+        let x1 = (-b + sqrtD) / (2 * a);
+        let x2 = (-b - sqrtD) / (2 * a);
+        steps += `5. Apply quadratic formula: x = (-b ± √D) / 2a<br>`;
+        steps += `   x₁ = (-${b} + ${sqrtD.toFixed(2)}) / (2 * ${a}) = ${x1.toFixed(2)}<br>`;
+        steps += `   x₂ = (-${b} - ${sqrtD.toFixed(2)}) / (2 * ${a}) = ${x2.toFixed(2)}<br>`;
+
+        document.getElementById("output").innerHTML = `Solutions: x = ${x1.toFixed(2)}, ${x2.toFixed(2)}`;
+        document.getElementById("solutionSteps").innerHTML = steps;
+	
+	 
+    }
+	
+	function completeSquare() {
+    let a = parseFloat(document.getElementById("sqA").value);
+    let b = parseFloat(document.getElementById("sqB").value);
+    let c = parseFloat(document.getElementById("sqC").value);
+
+    if (isNaN(a) || isNaN(b) || isNaN(c)) {
+        document.getElementById("squareOutput").innerHTML = "Enter valid numbers.";
+        return;
+    }
+
+    let steps = `<b>Step-by-Step Completing the Square:</b><br>`;
+    steps += `1. Identify coefficients: a = ${a}, b = ${b}, c = ${c}<br>`;
+
+    // Step 2: Make coefficient of x² = 1
+    let newC = c / a;
+    let newB = b / a;
+    steps += `2. Divide everything by ${a}: x² + ${newB.toFixed(2)}x + ${newC.toFixed(2)} = 0<br>`;
+
+    // Step 3: Compute (b/2a)² and rewrite
+    let halfB = (newB / 2).toFixed(2);
+    let squareTerm = ((newB / 2) ** 2).toFixed(2);
+    steps += `3. Add and subtract (${halfB})²: (x + ${halfB})² = ${squareTerm} - ${newC.toFixed(2)}<br>`;
+
+    // Step 4: Compute right-hand side
+    let rightSide = (parseFloat(squareTerm) - newC).toFixed(2);
+    if (rightSide < 0) {
+        steps += `4. Since the right-hand side is negative (${rightSide}), no real solutions exist.<br>`;
+        document.getElementById("squareOutput").innerHTML = "No real solutions.";
+        document.getElementById("squareSteps").innerHTML = steps;
+        return;
+    }
+
+    // Step 5: Solve for x
+    let sqrtTerm = Math.sqrt(rightSide).toFixed(2);
+    let x1 = (-parseFloat(halfB) + parseFloat(sqrtTerm)).toFixed(2);
+    let x2 = (-parseFloat(halfB) - parseFloat(sqrtTerm)).toFixed(2);
+    steps += `4. Solve for x: x + ${halfB} = ±${sqrtTerm}<br>`;
+    steps += `   x₁ = -${halfB} + ${sqrtTerm} = ${x1}<br>`;
+    steps += `   x₂ = -${halfB} - ${sqrtTerm} = ${x2}<br>`;
+
+    document.getElementById("squareOutput").innerHTML = `Solutions: x = ${x1}, ${x2}`;
+    document.getElementById("squareSteps").innerHTML = steps;
+	}
+	
+	
+	
+	
+	
+    </script>
+</body>
+</html>
+	
+	
+	
+	
+	
+	
+	
+	
+

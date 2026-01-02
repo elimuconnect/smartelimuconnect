@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectors Tool (Kenyan Syllabus)</title>
+    <style>
+        .vector {
+    display: inline-block;
+    border-left: 6px solid black;
+    border-right: 6px solid black;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 100px; /* Increased size */
+    line-height: 2.5; /* Adjust spacing */
+        }
+    </style>
+</head>
+<body>
+    <h1>Vectors Tool (2D & 3D)</h1>
+    
+    <h2>Enter Vectors</h2>
+    <label>Vector A (x, y, z optional):</label>
+    <input type="text" id="vectorA" placeholder="e.g. 3,4 or 3,4,5">
+    
+    <label>Vector B (x, y, z optional):</label>
+    <input type="text" id="vectorB" placeholder="e.g. 1,-2 or 1,-2,3">
+    
+    <label>Scalar:</label>
+    <input type="number" id="scalar" placeholder="e.g. 2">
+<br><br>
+    <button onclick="addVectors()">Translate (A + B)</button><br><br>
+    <button onclick="subtractVectors()">Subtract (A - B)</button><br><br>
+    <button onclick="scalarMultiply()">Multiply by Scalar</button><br><br>
+    <button onclick="findMagnitude()">Magnitude of A</button><br><br>
+    <button onclick="checkCollinear()">Check Collinearity</button><br><br>
+    <button onclick="findMidpoint()">Find Midpoint</button>
+    
+    <h2>Step-by-Step Calculations</h2>
+    <p id="result"></p>
+
+    <script>
+
+        // Parse vector input from text fields
+        function getVector(inputId) {
+            const input = document.getElementById(inputId).value.split(",");
+            return input.map(Number);
+        }
+
+        // Display vector in column format
+        function formatColumnVector(vector) {
+            return `<div class="vector">
+                ${vector.map(num => `<div>${num}</div>`).join('')}
+            </div>`;
+        }
+
+        // Display result
+        function displayResult(text) {
+            document.getElementById("result").innerHTML = text;
+        }
+
+        // Vector Addition (Translation)
+        function addVectors() {
+            const A = getVector("vectorA");
+            const B = getVector("vectorB");
+            if (A.length === B.length && (A.length === 2 || A.length === 3)) {
+                const result = A.map((val, i) => val + B[i]);
+                let steps = `Step 1: Arrange vectors in column form:<br>`;
+                steps += `${formatColumnVector(A)} + ${formatColumnVector(B)}<br>`;
+                steps += `Step 2: Add corresponding elements:<br>`;
+                steps += `${formatColumnVector(result)}`;
+                displayResult(steps);
+            } else {
+                displayResult("Enter valid 2D or 3D vectors.");
+            }
+        }
+
+        // Vector Subtraction
+        function subtractVectors() {
+            const A = getVector("vectorA");
+            const B = getVector("vectorB");
+            if (A.length === B.length && (A.length === 2 || A.length === 3)) {
+                const result = A.map((val, i) => val - B[i]);
+                let steps = `Step 1: Arrange vectors in column form:<br>`;
+                steps += `${formatColumnVector(A)} - ${formatColumnVector(B)}<br>`;
+                steps += `Step 2: Subtract corresponding elements:<br>`;
+                steps += `${formatColumnVector(result)}`;
+                displayResult(steps);
+            } else {
+                displayResult("Enter valid 2D or 3D vectors.");
+            }
+        }
+
+        // Scalar Multiplication
+        function scalarMultiply() {
+            const A = getVector("vectorA");
+            const scalar = parseFloat(document.getElementById("scalar").value);
+            if ((A.length === 2 || A.length === 3) && !isNaN(scalar)) {
+                const result = A.map(val => val * scalar);
+                let steps = `Step 1: Multiply each component by ${scalar}:<br>`;
+                steps += `${scalar} × ${formatColumnVector(A)}<br>`;
+                steps += `Step 2: Simplify:<br>`;
+                steps += `${formatColumnVector(result)}`;
+                displayResult(steps);
+            } else {
+                displayResult("Enter a valid vector and scalar.");
+            }
+        }
+
+        // Magnitude of a Vector
+        function findMagnitude() {
+            const A = getVector("vectorA");
+            if (A.length === 2 || A.length === 3) {
+                const squaredSum = A.reduce((sum, val) => sum + val ** 2, 0);
+                const magnitude = Math.sqrt(squaredSum).toFixed(2);
+                let steps = `Step 1: Arrange vector:<br>`;
+                steps += `${formatColumnVector(A)}<br>`;
+                steps += `Step 2: Apply formula |A| = √(x² + y²`;
+                if (A.length === 3) steps += ` + z²`;
+                steps += `)<br>Step 3: Compute:<br>`;
+                steps += `|A| = √(${squaredSum}) = ${magnitude}`;
+                displayResult(steps);
+            } else {
+                displayResult("Enter a valid 2D or 3D vector.");
+            }
+        }
+
+        // Check Collinearity
+        function checkCollinear() {
+            const A = getVector("vectorA");
+            const B = getVector("vectorB");
+            if (A.length !== B.length || (A.length !== 2 && A.length !== 3)) {
+                displayResult("Enter valid 2D or 3D vectors.");
+                return;
+            }
+
+            const ratios = A.map((val, i) => B[i] !== 0 ? val / B[i] : null);
+            const firstRatio = ratios[0];
+            const collinear = ratios.every(ratio => ratio === firstRatio);
+            
+            let steps = `Step 1: Arrange vectors:<br>`;
+            steps += `${formatColumnVector(A)} & ${formatColumnVector(B)}<br>`;
+            steps += `Step 2: Compute ratios:<br>`;
+            steps += `(${A}) ÷ (${B}) = (${ratios.join(", ")})<br>`;
+            steps += `Step 3: Check if all ratios are equal:<br>`;
+            steps += collinear ? "Vectors are Collinear ✅" : "Vectors are NOT Collinear ❌";
+            displayResult(steps);
+        }
+
+        // Find Midpoint
+        function findMidpoint() {
+            const A = getVector("vectorA");
+            const B = getVector("vectorB");
+            if (A.length === B.length && (A.length === 2 || A.length === 3)) {
+                const midpoint = A.map((val, i) => ((val + B[i]) / 2).toFixed(2));
+                let steps = `Step 1: Arrange vectors:<br>`;
+                steps += `${formatColumnVector(A)} & ${formatColumnVector(B)}<br>`;
+                steps += `Step 2: Use midpoint formula:<br>`;
+                steps += `M = [(x₁ + x₂)/2, (y₁ + y₂)/2`;
+                if (A.length === 3) steps += `, (z₁ + z₂)/2`;
+                steps += `]<br>Step 3: Compute:<br>`;
+                steps += `${formatColumnVector(midpoint)}`;
+                displayResult(steps);
+            } else {
+                displayResult("Enter valid 2D or 3D vectors.");
+            }
+        }
+    </script>
+</body>
+</html>
+

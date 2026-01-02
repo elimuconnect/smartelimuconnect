@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Plant Anatomy Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .dropdown-container {
+            margin: 20px;
+        }
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 10px;
+        }
+        img {
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+        }
+        #info-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: left;
+        }
+        #info-box h2 {
+            margin: 0 0 10px;
+            color: #4CAF50;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Interactive Plant Anatomy Explorer</h1>
+        <p>Select a plant structure to explore its parts and functions!</p>
+    </header>
+
+    <main>
+        <!-- Dropdowns -->
+        <div class="dropdown-container">
+            <label for="structure-select">Choose a structure:</label>
+            <select id="structure-select" onchange="displayStructure()">
+                <option value="" selected disabled>Select a structure</option>
+                <option value="root">Root</option>
+                <option value="stem">Stem</option>
+                <option value="leaf">Leaf</option>
+                <option value="flower">Flower</option>
+                <option value="seed">Seed</option>
+				 <option value="others">others</option>
+            </select>
+        </div>
+
+        <div id="structure-image-container" style="display: none;">
+            <!-- Image will be displayed here -->
+            <img id="structure-image" alt="Plant Structure Image" onclick="displayParts()">
+        </div>
+
+        <div id="parts-dropdown-container" style="display: none;">
+            <label for="part-select">Choose a part:</label>
+            <select id="part-select" onchange="displayPartFunction()">
+                <option value="" selected disabled>Select a part</option>
+            </select>
+        </div>
+
+        <div id="info-box" style="display: none;">
+            <!-- Information about the structure/part will appear here -->
+            <h2>Structure/Part Information</h2>
+            <p id="info-text">Select a structure to begin.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2024 Interactive Plant Anatomy Explorer | Public Domain Resources Used</p>
+    </footer>
+
+    <script>
+
+		
+        // Data for plant structures and their parts
+        const plantData = {
+            root: {
+                image: "https://cdn.pixabay.com/photo/2020/04/03/20/04/tree-5000038_640.jpg",
+                parts: [
+                    { part: "Taproot", function: "Anchors the plant and stores nutrients." },
+                    { part: "Fibrous Root", function: "Absorbs water and nutrients from the soil." },
+					{ part: "Root Cap", function: "Protects the tip of the root as it grows through the soil." },
+    { part: "Root Hairs", function: "Increase the surface area for water and nutrient absorption." },
+    { part: "Epidermis", function: "Outer layer of the root that absorbs water and nutrients." },
+    { part: "Cortex", function: "Stores food and transports nutrients to the vascular tissue." },
+    { part: "Endodermis", function: "Regulates water and nutrient flow into the vascular tissue." },
+    { part: "Pericycle", function: "Initiates lateral root growth and provides structural support." },
+    { part: "Xylem", function: "Transports water and dissolved minerals from the root to the rest of the plant." },
+    { part: "Phloem", function: "Transports sugars and nutrients to other parts of the plant." },
+    { part: "Taproot", function: "Anchors the plant deeply in the soil and stores nutrients." },
+    { part: "Fibrous Root", function: "Provides a large surface area for water and nutrient absorption." }
+                ]
+            },
+            stem: {
+                image: "https://cdn.pixabay.com/photo/2022/01/12/08/10/rose-stem-6932241_640.jpg",
+                parts: [
+                    { part: "Node", function: "Where leaves and branches grow." },
+                    { part: "Internode", function: "Supports the plant and transports nutrients." },
+					{ part: "Node", function: "The points on the stem where leaves, flowers, or branches are attached." },
+    { part: "Internode", function: "The section of the stem between two nodes; provides support and elongation." },
+    { part: "Epidermis", function: "The outer protective layer of the stem that prevents water loss." },
+    { part: "Cortex", function: "Stores food and provides support to the stem." },
+    { part: "Vascular Bundle", function: "Contains xylem and phloem for transporting water, nutrients, and food." },
+    { part: "Xylem", function: "Transports water and dissolved minerals from roots to other plant parts." },
+    { part: "Phloem", function: "Transports sugars and nutrients from leaves to other plant parts." },
+    { part: "Cambium", function: "A layer of tissue that produces new xylem and phloem cells, enabling growth." },
+    { part: "Pith", function: "Stores nutrients and helps in the transport of substances throughout the stem." }
+                ]
+            },
+            leaf: {
+                image: "https://cdn.pixabay.com/photo/2018/05/21/23/54/leaves-3420078_640.jpg",
+                parts: [
+                    { part: "Blade", function: "Conducts photosynthesis to produce food." },
+                    { part: "Petiole", function: "Attaches the leaf blade to the stem." },
+					{ part: "Blade (Lamina)", function: "The broad, flat part of the leaf where photosynthesis occurs." },
+    { part: "Petiole", function: "The stalk that attaches the leaf blade to the stem." },
+    { part: "Midrib", function: "The central vein that provides support and transports nutrients and water." },
+    { part: "Veins", function: "A network of vascular tissues (xylem and phloem) that transport water, nutrients, and sugars." },
+    { part: "Epidermis", function: "The outer protective layer of the leaf that prevents water loss." },
+    { part: "Cuticle", function: "A waxy layer that reduces water loss and protects against environmental damage." },
+    { part: "Stomata", function: "Small openings that regulate gas exchange and water evaporation." },
+    { part: "Guard Cells", function: "Specialized cells that open and close the stomata." },
+    { part: "Mesophyll", function: "The inner tissue where most photosynthesis occurs, consisting of palisade and spongy layers." },
+    { part: "Palisade Layer", function: "A layer of tightly packed cells rich in chloroplasts for maximum photosynthesis." },
+    { part: "Spongy Layer", function: "Loosely packed cells with air spaces to facilitate gas exchange." }
+
+                ]
+            },
+            flower: {
+                image: "https://cdn.pixabay.com/photo/2022/09/01/04/40/anemone-7424709_640.jpg",
+                parts: [
+                    { part: "Petal", function: "Attracts pollinators with color and scent." },
+                    { part: "Stamen", function: "Produces pollen for reproduction." },
+					{ part: "Petal", function: "The colorful parts of the flower that attract pollinators." },
+    { part: "Sepal", function: "The outer green structures that protect the flower bud before it opens." },
+    { part: "Stamen", function: "The male reproductive part of the flower, consisting of anther and filament." },
+    { part: "Anther", function: "The part of the stamen that produces and releases pollen." },
+    { part: "Filament", function: "The stalk that supports the anther." },
+    { part: "Carpel (Pistil)", function: "The female reproductive part of the flower, consisting of stigma, style, and ovary." },
+    { part: "Stigma", function: "The sticky tip of the carpel that captures pollen grains." },
+    { part: "Style", function: "The tube-like structure that connects the stigma to the ovary." },
+    { part: "Ovary", function: "The base of the carpel that contains ovules and develops into fruit after fertilization." },
+    { part: "Ovule", function: "The structure within the ovary that develops into a seed after fertilization." },
+    { part: "Receptacle", function: "The part of the stem that supports the flower structure." },
+    { part: "Peduncle", function: "The stalk that attaches the flower to the plant." },
+    { part: "Nectary", function: "A gland that produces nectar to attract pollinators." }
+                ]
+            },
+            seed: {
+                image: "https://cdn.pixabay.com/photo/2021/12/07/03/33/snack-6852174_640.jpg",
+                parts: [
+                    { part: "Seed Coat", function: "Protects the seed from damage." },
+                    { part: "Embryo", function: "Develops into a new plant." },
+					{ part: "Seed Coat", function: "The outer protective covering that shields the seed from physical damage and desiccation." },
+    { part: "Embryo", function: "The young plant inside the seed that will develop into the seedling." },
+    { part: "Cotyledon", function: "The seed leaf that stores and provides nutrients to the embryo during germination." },
+    { part: "Endosperm", function: "The tissue that provides stored food, primarily starch, for the developing seedling." },
+    { part: "Radicle", function: "The embryonic root that grows downward and develops into the primary root." },
+    { part: "Plumule", function: "The embryonic shoot that grows upward and develops into the plant's stem and leaves." },
+    { part: "Micropyle", function: "A small pore in the seed coat that allows water to enter during germination." },
+    { part: "Hilum", function: "The scar on the seed coat that marks where the seed was attached to the parent plant." }
+
+                ]
+            },
+			others: {
+                image: "https://cdn.pixabay.com/photo/2022/08/27/00/11/plant-7413415_640.png", 
+                parts: [
+				 {"part": "Aleurone Layer", "function": "A protein-rich layer surrounding the endosperm, involved in the breakdown of stored starch during germination." },
+    { "part": "Funiculus", "function": "The stalk that connects the seed to the ovary wall, leaving a scar known as the hilum." },
+    { "part": "Perisperm", "function": "A tissue derived from the nucellus that stores nutrients in some seeds, such as black pepper." },
+    { "part": "Scutellum", "function": "A specialized cotyledon in monocot seeds (e.g., wheat, maize) that transfers nutrients from the endosperm to the embryo." }
+				]
+			}	
+        };
+
+        function displayStructure() {
+            const structure = document.getElementById("structure-select").value;
+            const data = plantData[structure];
+
+            if (data) {
+                document.getElementById("structure-image").src = data.image;
+                document.getElementById("structure-image-container").style.display = "block";
+
+                const partSelect = document.getElementById("part-select");
+                partSelect.innerHTML = '<option value="" selected disabled>Select a part</option>';
+                data.parts.forEach(part => {
+                    const option = document.createElement("option");
+                    option.value = part.part;
+                    option.textContent = part.part;
+                    partSelect.appendChild(option);
+                });
+                document.getElementById("parts-dropdown-container").style.display = "block";
+            }
+        }
+
+        function displayPartFunction() {
+            const structure = document.getElementById("structure-select").value;
+            const part = document.getElementById("part-select").value;
+            const data = plantData[structure];
+
+            if (data) {
+                const selectedPart = data.parts.find(p => p.part === part);
+                if (selectedPart) {
+                    document.getElementById("info-text").textContent = selectedPart.function;
+                    document.getElementById("info-box").style.display = "block";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

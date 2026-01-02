@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Inverse & Simultaneous Equations</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 20px; /* Increased font size */
+            padding: 20px;
+        }
+        .matrix-container { 
+            display: flex; 
+            gap: 40px; 
+            margin-top: 20px; 
+        }
+        .matrix { display: inline-block; }
+        input { 
+            width: 70px; /* Larger input boxes */
+            height: 40px;
+            font-size: 20px; /* Larger font size */
+            text-align: center; 
+            margin: 5px;
+        }
+        .result-container { 
+            margin-top: 30px; 
+            white-space: pre-line; 
+            font-size: 22px; /* Bigger result text */
+        }
+        button {
+            font-size: 22px; 
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        h2, h3 { font-size: 24px; } /* Larger headings */
+    </style>
+</head>
+<body>
+
+    <h2>Matrix Inverse & Simultaneous Equations</h2>
+
+    <label>Matrix Size:</label>
+    <select id="matrixSize" onchange="updateInputs()">
+        <option value="2">2×2</option>
+        <option value="3">3×3</option>
+    </select>
+
+    <label>Operation:</label>
+    <select id="operation" onchange="updateInputs()">
+        <option value="inverse">Inverse</option>
+        <option value="solve">Solve Equations</option>
+    </select>
+
+    <div class="matrix-container">
+        <div>
+            <h3>Matrix A (Coefficients)</h3>
+            <div id="matrixA"></div>
+        </div>
+        <div id="matrixB-container">
+            <h3>Matrix B (Constants)</h3>
+            <div id="matrixB"></div>
+        </div>
+    </div>
+<br><br>
+    <button onclick="calculate()">Calculate</button>
+
+    <div class="result-container">
+        <h3>Result</h3>
+        <div id="result"></div>
+        <h3>Steps</h3>
+        <div id="steps"></div>
+    </div>
+
+    <script>
+
+
+        
+        function updateInputs() {
+            let size = parseInt(document.getElementById("matrixSize").value);
+            let operation = document.getElementById("operation").value;
+
+            document.getElementById("matrixA").innerHTML = generateMatrixHTML("A", size);
+            document.getElementById("matrixB-container").style.display = (operation === "solve") ? "block" : "none";
+
+            if (operation === "solve") {
+                document.getElementById("matrixB").innerHTML = generateMatrixHTML("B", size, true);
+            }
+        }
+
+        function generateMatrixHTML(matrixName, size, isColumn = false) {
+            let html = "";
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < (isColumn ? 1 : size); j++) {
+                    html += `<input type="number" id="${matrixName}${i}${j}" value="0">`;
+                }
+                html += "<br>";
+            }
+            return html;
+        }
+
+        function getMatrix(matrixName, size, isColumn = false) {
+            let matrix = [];
+            for (let i = 0; i < size; i++) {
+                let row = [];
+                for (let j = 0; j < (isColumn ? 1 : size); j++) {
+                    row.push(parseInt(document.getElementById(`${matrixName}${i}${j}`).value));
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function fraction(numerator, denominator) {
+            if (denominator === 0) return "undefined";
+            let commonDivisor = gcd(numerator, denominator);
+            numerator /= commonDivisor;
+            denominator /= commonDivisor;
+            return denominator === 1 ? `${numerator}` : `${numerator}/${denominator}`;
+        }
+
+        function inverseMatrix(A, size) {
+            let det, steps = [];
+
+            if (size === 2) {
+                det = (A[0][0] * A[1][1]) - (A[0][1] * A[1][0]);
+                steps.push(`Determinant = (${A[0][0]} × ${A[1][1]}) - (${A[0][1]} × ${A[1][0]}) = ${det}`);
+
+                if (det === 0) return { error: "No inverse (det = 0)", steps };
+
+                let adj = [[A[1][1], -A[0][1]], [-A[1][0], A[0][0]]];
+                steps.push("Adjugate Matrix:\n" + formatMatrix(adj));
+
+                let inv = adj.map(row => row.map(value => fraction(value, det)));
+                let columnForm = inv[0].map((_, i) => inv.map(row => row[i]));
+                steps.push(`Inverse Matrix (column form):\n` + formatMatrix(columnForm));
+
+                return { inverse: inv, steps };
+            }
+
+            return { error: "3×3 inverse not yet implemented.", steps };
+        }
+
+        function multiplyMatrixFraction(A, B) {
+            let result = [];
+            for (let i = 0; i < A.length; i++) {
+                let num = 0, den = 1;
+                for (let j = 0; j < A[i].length; j++) {
+                    let [aNum, aDen] = A[i][j].split('/').map(Number);
+                    let [bNum, bDen] = [B[j][0], 1]; // B is integer matrix
+
+                    let tempNum = aNum * bNum;
+                    let tempDen = aDen * bDen;
+                    
+                    num = num * tempDen + tempNum * den;
+                    den *= tempDen;
+
+                    let commonDivisor = gcd(num, den);
+                    num /= commonDivisor;
+                    den /= commonDivisor;
+                }
+                result.push([den === 1 ? `${num}` : `${num}/${den}`]);
+            }
+            return result;
+        }
+
+        function formatMatrix(matrix) {
+            return matrix.map(row => row.join("\t")).join("<br>");
+        }
+
+        function calculate() {
+            let size = parseInt(document.getElementById("matrixSize").value);
+            let operation = document.getElementById("operation").value;
+            let A = getMatrix("A", size);
+            let { inverse, steps, error } = inverseMatrix(A, size) || {};
+
+            if (error) {
+                document.getElementById("result").innerHTML = error;
+            } else if (operation === "solve") {
+                let B = getMatrix("B", size, true);
+                let solution = multiplyMatrixFraction(inverse, B);
+                steps.push("Solution X = A⁻¹ × B:\n" + formatMatrix(solution));
+                document.getElementById("result").innerHTML = formatMatrix(solution);
+            } else {
+                document.getElementById("result").innerHTML = formatMatrix(inverse);
+            }
+
+            document.getElementById("steps").innerHTML = steps.join("<br>");
+        }
+    </script>
+
+</body>
+</html>
+

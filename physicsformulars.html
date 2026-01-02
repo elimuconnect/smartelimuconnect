@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High School Physics Formula Generator</title>
+    <style>
+        label, input, select { margin: 10px; }
+        #result { font-size: 1.2em; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>High School Physics Formula Generator</h2>
+    
+    <!-- Dropdown for selecting formula -->
+    <label for="formula">Select a Formula:</label>
+    <select id="formula" onchange="generateFormula()">
+        <option value="kineticEnergy">Kinetic Energy: KE = ½mv²</option>
+        <option value="potentialEnergy">Gravitational Potential Energy: PE = mgh</option>
+        <option value="workDone">Work Done: W = Fd</option>
+        <option value="power">Power: P = W/t</option>
+        <option value="ohmsLaw">Ohm's Law: V = IR</option>
+        <option value="coulombsLaw">Coulomb's Law: F = k * (q₁q₂)/r²</option>
+        <option value="newtonsSecondLaw">Newton's Second Law: F = ma</option>
+        <option value="gravitationalForce">Gravitational Force: F = G * (m₁m₂)/r²</option>
+        <option value="acceleration">Acceleration: a = Δv/t</option>
+        <option value="momentum">Momentum: p = mv</option>
+        <option value="impulse">Impulse: J = FΔt</option>
+        <option value="density">Density: ρ = m/V</option>
+        <option value="speed">Speed: v = d/t</option>
+        <option value="waveSpeed">Wave Speed: v = fλ</option>
+        <option value="electricForce">Electric Force: F = k * (q₁q₂)/r²</option>
+        <option value="heatCapacity">Specific Heat Capacity: Q = mcΔT</option>
+        <option value="idealGasLaw">Ideal Gas Law: PV = nRT</option>
+        <option value="lawOfReflection">Law of Reflection: θ₁ = θ₂</option>
+        <option value="snellsLaw">Snell's Law: n₁sin(θ₁) = n₂sin(θ₂)</option>
+        <option value="workEnergyTheorem">Work-Energy Theorem: W = ΔKE</option>
+        <option value="powerMechanical">Mechanical Power: P = Fv</option>
+    </select>
+
+    <div id="inputs">
+        <!-- Inputs will change based on the selected formula -->
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+
+
+
+        
+        function generateFormula() {
+            let formula = document.getElementById("formula").value;
+            let inputsDiv = document.getElementById("inputs");
+            let resultDiv = document.getElementById("result");
+
+            // Clear previous inputs
+            inputsDiv.innerHTML = "";
+
+            // Generate formula and explanation based on selected formula
+            if (formula === "kineticEnergy") {
+                resultDiv.innerText = "Formula: KE = ½mv²";
+                resultDiv.innerHTML += "<br>Explanation: Kinetic energy is the energy of motion. It is calculated as half the mass of an object multiplied by the square of its velocity.";
+            } else if (formula === "potentialEnergy") {
+                resultDiv.innerText = "Formula: PE = mgh";
+                resultDiv.innerHTML += "<br>Explanation: Gravitational potential energy is the energy an object possesses due to its position in a gravitational field. It is the product of an object's mass, the gravitational acceleration, and height above the ground.";
+            } else if (formula === "workDone") {
+                resultDiv.innerText = "Formula: W = Fd";
+                resultDiv.innerHTML += "<br>Explanation: Work is done when a force is applied over a distance. The work done is equal to the force multiplied by the distance over which it is applied.";
+            } else if (formula === "power") {
+                resultDiv.innerText = "Formula: P = W/t";
+                resultDiv.innerHTML += "<br>Explanation: Power is the rate at which work is done. It is the work done divided by the time taken.";
+            } else if (formula === "ohmsLaw") {
+                resultDiv.innerText = "Formula: V = IR";
+                resultDiv.innerHTML += "<br>Explanation: Ohm's law describes the relationship between voltage (V), current (I), and resistance (R) in a circuit. Voltage is equal to the current multiplied by the resistance.";
+            } else if (formula === "coulombsLaw") {
+                resultDiv.innerText = "Formula: F = k * (q₁q₂)/r²";
+                resultDiv.innerHTML += "<br>Explanation: Coulomb's law describes the force between two electric charges. The force is directly proportional to the product of the charges and inversely proportional to the square of the distance between them.";
+            } else if (formula === "newtonsSecondLaw") {
+                resultDiv.innerText = "Formula: F = ma";
+                resultDiv.innerHTML += "<br>Explanation: Newton's second law states that the force acting on an object is equal to the mass of the object multiplied by its acceleration.";
+            } else if (formula === "gravitationalForce") {
+                resultDiv.innerText = "Formula: F = G * (m₁m₂)/r²";
+                resultDiv.innerHTML += "<br>Explanation: The gravitational force between two masses is proportional to the product of their masses and inversely proportional to the square of the distance between them.";
+            } else if (formula === "acceleration") {
+                resultDiv.innerText = "Formula: a = Δv/t";
+                resultDiv.innerHTML += "<br>Explanation: Acceleration is the rate at which an object's velocity changes over time. It is calculated by dividing the change in velocity by the time taken.";
+            } else if (formula === "momentum") {
+                resultDiv.innerText = "Formula: p = mv";
+                resultDiv.innerHTML += "<br>Explanation: Momentum is the product of an object's mass and its velocity. It is a measure of the object's motion.";
+            } else if (formula === "impulse") {
+                resultDiv.innerText = "Formula: J = FΔt";
+                resultDiv.innerHTML += "<br>Explanation: Impulse is the change in momentum of an object when a force is applied over a period of time. It is the product of the force and the time interval.";
+            } else if (formula === "density") {
+                resultDiv.innerText = "Formula: ρ = m/V";
+                resultDiv.innerHTML += "<br>Explanation: Density is the mass of an object divided by its volume. It is a measure of how much mass is contained in a given volume.";
+            } else if (formula === "speed") {
+                resultDiv.innerText = "Formula: v = d/t";
+                resultDiv.innerHTML += "<br>Explanation: Speed is the distance traveled by an object divided by the time taken to travel that distance.";
+            } else if (formula === "waveSpeed") {
+                resultDiv.innerText = "Formula: v = fλ";
+                resultDiv.innerHTML += "<br>Explanation: The speed of a wave is the product of its frequency and wavelength.";
+            } else if (formula === "electricForce") {
+                resultDiv.innerText = "Formula: F = k * (q₁q₂)/r²";
+                resultDiv.innerHTML += "<br>Explanation: Electric force is the force between two charges, described by Coulomb's law. It is directly proportional to the product of the charges and inversely proportional to the square of the distance between them.";
+            } else if (formula === "heatCapacity") {
+                resultDiv.innerText = "Formula: Q = mcΔT";
+                resultDiv.innerHTML += "<br>Explanation: Specific heat capacity is the amount of heat required to change the temperature of an object by one degree Celsius. It is calculated as the mass of the object multiplied by its specific heat capacity and the change in temperature.";
+            } else if (formula === "idealGasLaw") {
+                resultDiv.innerText = "Formula: PV = nRT";
+                resultDiv.innerHTML += "<br>Explanation: The ideal gas law relates the pressure, volume, and temperature of a gas with the number of moles of gas present. It can be used to predict the behavior of an ideal gas.";
+            } else if (formula === "lawOfReflection") {
+                resultDiv.innerText = "Formula: θ₁ = θ₂";
+                resultDiv.innerHTML += "<br>Explanation: The law of reflection states that the angle of incidence (θ₁) is equal to the angle of reflection (θ₂) when light reflects off a surface.";
+            } else if (formula === "snellsLaw") {
+                resultDiv.innerText = "Formula: n₁sin(θ₁) = n₂sin(θ₂)";
+                resultDiv.innerHTML += "<br>Explanation: Snell's law describes the relationship between the angles of incidence and refraction when light passes through different media.";
+            } else if (formula === "workEnergyTheorem") {
+                resultDiv.innerText = "Formula: W = ΔKE";
+                resultDiv.innerHTML += "<br>Explanation: The work-energy theorem states that the work done on an object is equal to the change in its kinetic energy.";
+            } else if (formula === "powerMechanical") {
+                resultDiv.innerText = "Formula: P = Fv";
+                resultDiv.innerHTML += "<br>Explanation: Mechanical power is the rate at which work is done in mechanical systems. It is calculated as the force applied to an object multiplied by its velocity.";
+            }
+        }
+
+        // Initial call to generate formula for the default selection
+        generateFormula();
+    </script>
+</body>
+</html>
+

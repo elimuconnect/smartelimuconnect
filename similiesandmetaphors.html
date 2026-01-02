@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-METAPHORS & SIMILIES</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .dictionary-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        select {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .meaning {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+        }
+
+        .tts-button {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #2196F3;
+            color: white;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tts-button:hover {
+            background-color: #1976D2;
+        }
+
+        .cartoon-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .cartoon-container img {
+            max-width: 200px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>e-METAPHORS & SIMILIES</h1>
+
+    <div class="dictionary-container">
+        <select id="wordSelect" onchange="showMeaningAndSpeak()">
+            <option value="">choose a simile or a metaphor</option>
+            <!-- Word options will be populated here -->
+        </select>
+
+        <div id="result" class="result"></div>
+        <div id="meaning" class="meaning"></div>
+        <!-- Button to trigger the speech -->
+        <button id="ttsButton" class="tts-button" onclick="speakWord()" style="display: none;">Speak</button>
+    </div>
+
+    <!-- Educational Cartoons Section -->
+    <div class="cartoon-container">
+        <img src="https://publicdomainvectors.org/tn_img/Rfc1394-Book-on-Monitor.webp" alt="Educational Cartoon 1">
+        <img src="https://as2.ftcdn.net/jpg/04/43/97/03/220_F_443970337_a1LmUllM7Ho36Sjg0WoMJQcuGP1MgyZ2.jpg" alt="Educational Cartoon 2">
+    </div>
+
+    <script>
+
+
+        
+        // Dictionary for proverbs and their meanings
+        const dictionary = {
+            "As brave as a lion": "Used to describe someone who is very brave.",
+            "As busy as a bee": "Used to describe someone who is very busy.",
+            "As blind as a bat": "Used to describe someone who cannot see well.",
+            "As cool as a cucumber": "Used to describe someone who is calm and composed, especially in difficult situations.",
+            "As easy as pie": "Used to describe something that is very easy to do.",
+            "As fit as a fiddle": "Used to describe someone who is in good health.",
+            "As free as a bird": "Used to describe someone who is free to do anything they want.",
+            "As gentle as a lamb": "Used to describe someone who is very gentle and mild-tempered.",
+            "As heavy as lead": "Used to describe something that is very heavy.",
+            "As light as a feather": "Used to describe something that is very light.",
+            "As quick as a flash": "Used to describe something that happens very quickly.",
+            "As sharp as a tack": "Used to describe someone who is very smart.",
+            "As smooth as silk": "Used to describe something that is very smooth.",
+            "As strong as an ox": "Used to describe someone who is very strong.",
+            "As sweet as honey": "Used to describe something that is very sweet.",
+            "Time is a thief": "Used to express that time passes quickly and steals moments of our life.",
+            "The world is a stage": "Used to express the idea that life is like a play and people are actors in it.",
+            "He’s a walking encyclopedia": "Used to describe someone who knows a lot of information.",
+            "The classroom was a zoo": "Used to describe a very noisy and chaotic classroom.",
+            "Her voice is music to my ears": "Used to describe a very pleasant sound.",
+            "Love is a battlefield": "Used to describe the emotional struggles involved in love.",
+            "Her eyes are diamonds": "Used to describe eyes that are very beautiful and captivating.",
+            "His heart is a prison": "Used to describe someone who is emotionally closed off.",
+            "The wind was a whisper": "Used to describe a very soft, gentle wind.",
+            "Her soul is a garden": "Used to describe someone with a beautiful and kind personality.",
+            "Life is a journey": "Used to express that life is full of experiences and adventures.",
+            "Her voice is the sound of heaven": "Used to describe a very beautiful voice.",
+            "The past is a distant memory": "Used to express that the past is far behind and no longer relevant.",
+            "His smile is a ray of light": "Used to describe a smile that brings happiness and positivity.",
+            "Her laughter is a melody": "Used to describe a laugh that sounds very pleasant.",
+            "The storm was a beast": "Used to describe a storm that is very powerful and destructive.",
+            "As bright as the sun": "Used to describe something that is very bright or someone who is very optimistic.",
+  "As cold as ice": "Used to describe something that is extremely cold or someone who is emotionally distant.",
+  "As fast as lightning": "Used to describe something that happens or moves very quickly.",
+  "As gentle as a breeze": "Used to describe someone who is very soft and gentle.",
+  "As hard as a rock": "Used to describe something that is very tough or unyielding.",
+  "As hot as fire": "Used to describe something that is extremely hot.",
+  "As loud as thunder": "Used to describe a sound that is very loud and powerful.",
+  "As deep as the ocean": "Used to describe something that is very profound or deep in nature.",
+  "As white as snow": "Used to describe something that is very white or pure.",
+  "As clear as crystal": "Used to describe something that is very easy to understand or see through.",
+  "As quiet as a mouse": "Used to describe someone who is very quiet and unobtrusive.",
+  "As dark as night": "Used to describe something that is very dark.",
+  "As smooth as butter": "Used to describe something that is very smooth or easy to do.",
+  "As sweet as sugar": "Used to describe something that is very sweet or kind.",
+  "As tall as a giraffe": "Used to describe someone who is very tall.",
+  "As big as a house": "Used to describe something that is very large.",
+  "As fast as a cheetah": "Used to describe something that moves very quickly.",
+  "As warm as a blanket": "Used to describe something or someone that is comforting and warm.",
+  "As old as time": "Used to describe something that has existed for a very long time.",
+  "As fresh as a daisy": "Used to describe someone who is energetic and lively.",
+  "As fragile as glass": "Used to describe something that is easily broken or delicate.",
+  "As light as air": "Used to describe something that is extremely light.",
+  "As silent as the grave": "Used to describe something that is completely silent.",
+  "As strong as steel": "Used to describe someone who is very strong or resilient.",
+  "As bright as a diamond": "Used to describe something that shines or stands out brightly.",
+  "As tough as nails": "Used to describe someone who is very tough and unyielding.",
+  "As soft as velvet": "Used to describe something that is very soft to the touch.",
+  "As clean as a whistle": "Used to describe something that is very clean or neat.",
+  "As smooth as glass": "Used to describe something that is very smooth and clear.",
+  "As fast as a rocket": "Used to describe something that is extremely fast.",
+  "As heavy as a ton of bricks": "Used to describe something that is very heavy.",
+  "As happy as a clam": "Used to describe someone who is very content and relaxed.",
+  "As bright as a star": "Used to describe something or someone who shines brightly in a figurative sense.",
+  "As silent as a tomb": "Used to describe an area or situation that is very quiet.",
+  "As blind as a mole": "Used to describe someone who has poor vision.",
+  "As slippery as an eel": "Used to describe something or someone difficult to catch or hold.",
+  "As sharp as a razor": "Used to describe someone or something that is very sharp or precise.",
+  "As quick as a bunny": "Used to describe someone or something that is very fast.",
+  "As wise as an owl": "Used to describe someone who is very wise or knowledgeable.",
+  "As proud as a peacock": "Used to describe someone who is very proud and confident.",
+  "As clean as a pin": "Used to describe something that is very clean or tidy.",
+  "As dry as a bone": "Used to describe something that is very dry.",
+  "As stubborn as a mule": "Used to describe someone who is very determined or obstinate.",
+  "As gentle as a dove": "Used to describe someone who is very gentle and peaceful.",
+  "As busy as a beaver": "Used to describe someone who is very industrious and hardworking.",
+  "As poor as a church mouse": "Used to describe someone who is very poor.",
+  "As quiet as a whisper": "Used to describe something that is very quiet.",
+  "As hard as iron": "Used to describe something that is very hard or unyielding.",
+  "As bright as the moon": "Used to describe something that shines brightly at night.",
+  "As sweet as a rose": "Used to describe someone or something that is very sweet and lovely.",
+  "As smooth as a pebble": "Used to describe something that is very smooth.",
+  "As thin as a rake": "Used to describe someone who is very thin.",
+  "As white as chalk": "Used to describe something that is very white.",
+  "As red as a tomato": "Used to describe someone who is blushing or flushed.",
+  "As quiet as a shadow": "Used to describe something that is very silent and unobtrusive.",
+  "As hot as a furnace": "Used to describe something that is extremely hot.",
+  "As brave as a knight": "Used to describe someone who is very brave.",
+  "As delicate as a snowflake": "Used to describe something that is very delicate and fragile.",
+  "As fast as a wind": "Used to describe something or someone that moves quickly.",
+  "As silent as a whisper": "Used to describe something that is very silent or soft.",
+  "As deep as a well": "Used to describe something that is very deep or profound.",
+  "As simple as ABC": "Used to describe something that is very easy to understand.",
+  "As rich as Croesus": "Used to describe someone who is extremely wealthy.",
+  "As quiet as the night": "Used to describe something that is very quiet.",
+  "As sweet as a peach": "Used to describe someone who is very sweet and kind.",
+  "As tough as leather": "Used to describe someone who is very tough or resilient.",
+  "As cold as a stone": "Used to describe something or someone that is emotionally cold.",
+  "As clear as a bell": "Used to describe something that is very clear or easy to understand.",
+  "As busy as a hornet": "Used to describe someone who is very busy and energetic.",
+  "As smooth as satin": "Used to describe something that is very smooth and shiny.",
+  "As soft as a cloud": "Used to describe something that is very soft and fluffy.",
+  "As hungry as a wolf": "Used to describe someone who is very hungry.",
+  "As free as the wind": "Used to describe someone who is free and unrestricted.",
+  "As light as a butterfly": "Used to describe someone or something that is very light and graceful.",
+  "As quick as a fox": "Used to describe someone who is very quick or clever.",
+  "As loud as a lion’s roar": "Used to describe a sound that is very loud and powerful.",
+  "As calm as a lake": "Used to describe someone who is very calm and peaceful.",
+  "As wild as the sea": "Used to describe something that is very unpredictable or unruly.",
+  "As clear as water": "Used to describe something that is easy to understand.",
+  "As soft as silk": "Used to describe something that is very soft and smooth.",
+  "As strong as a bear": "Used to describe someone who is very strong.",
+  "As slow as a snail": "Used to describe something or someone that moves very slowly.",
+  "As dark as coal": "Used to describe something that is very dark in color.",
+  "As sweet as chocolate": "Used to describe something that is very sweet and pleasant.",
+  "As thin as a thread": "Used to describe something that is very thin or fragile.",
+  "As fast as a race car": "Used to describe something that is very fast.",
+  "As gentle as a whisper": "Used to describe someone or something that is very gentle.",
+  "As tall as a skyscraper": "Used to describe someone who is very tall.",
+  "As dirty as a pig": "Used to describe someone or something that is very dirty.",
+  "As clear as day": "Used to describe something that is very obvious or clear.",
+  "As clean as a whistle": "Used to describe something that is very clean and neat.",
+  "As wild as a stallion": "Used to describe someone or something that is untamed or unruly.",
+  "As soft as cotton": "Used to describe something that is very soft and comforting.",
+  "As sweet as honeycomb": "Used to describe something that is very sweet and delightful.",
+  "As stubborn as a mule": "Used to describe someone who is very stubborn and resistant to change.",
+  "As smooth as glass": "Used to describe something that is very smooth or flawless.",
+  "As sharp as a blade": "Used to describe something or someone that is very sharp or perceptive.",
+  "As deep as the sea": "Used to describe something that is vast or profound.",
+  "As bright as a flashlight": "Used to describe something or someone that is very bright or noticeable.",
+  "As slow as molasses": "Used to describe something that moves very slowly.",
+  "As rich as oil": "Used to describe someone who is very wealthy.",
+  "As gentle as a feather": "Used to describe someone who is very gentle or delicate.",
+  "As wide as the ocean": "Used to describe something that is very wide or vast.",
+  "As cold as a refrigerator": "Used to describe something that is very cold.",
+  "As quiet as a church mouse": "Used to describe someone or something that is very quiet and unobtrusive.",
+  "As happy as a lark": "Used to describe someone who is very happy and carefree.",
+  "As big as a whale": "Used to describe something that is very large.",
+  "As warm as a summer's day": "Used to describe something that is very warm and comforting.",
+  "As fast as a jet": "Used to describe something that moves at an incredible speed.",
+  "As cool as a polar bear": "Used to describe someone who is calm and composed in any situation.",
+  "As thin as paper": "Used to describe something that is very thin.",
+  "As clever as a fox": "Used to describe someone who is very clever and crafty.",
+  "As light as a balloon": "Used to describe something that is very light and airy.",
+  "As loud as a drum": "Used to describe something that is very loud or attention-grabbing.",
+  "As sweet as a song": "Used to describe something that is very pleasant or harmonious.",
+  "As white as ivory": "Used to describe something that is very white or pale in color.",
+  "As proud as a lion": "Used to describe someone who is very proud or self-assured.",
+  "As bright as the stars": "Used to describe something that shines very brightly in the dark.",
+  "As smooth as a pancake": "Used to describe something that is very smooth and even.",
+  "As hard as a diamond": "Used to describe something that is very hard or unyielding.",
+  "As high as a kite": "Used to describe someone who is extremely happy or euphoric.",
+  "As quiet as a whisper": "Used to describe something or someone that is very quiet.",
+  "As clean as a fresh sheet": "Used to describe something that is very clean or pristine.",
+  "As clear as a spring day": "Used to describe something that is very clear and unobstructed.",
+  "As strong as a bulldozer": "Used to describe someone who is very powerful or determined.",
+  "As clear as a mirror": "Used to describe something that is very clear or easy to understand.",
+  "As bright as neon lights": "Used to describe something that is very bright and eye-catching.",
+  "As large as life": "Used to describe something that is very large or noticeable.",
+  "As neat as a pin": "Used to describe something that is very clean and tidy.",
+  "As hot as an oven": "Used to describe something that is very hot.",
+  "As deep as a valley": "Used to describe something that is very deep or profound.",
+  "As quick as a rabbit": "Used to describe someone who is very fast or nimble.",
+  "As brave as a soldier": "Used to describe someone who is very brave and courageous.",
+  "As rare as a unicorn": "Used to describe something that is very rare or unique.",
+  "As soft as butter": "Used to describe something that is very soft and smooth.",
+  "As dry as dust": "Used to describe something that is very dry.",
+  "As sweet as a berry": "Used to describe something that is very sweet.",
+  "As cold as a stone": "Used to describe something that is very cold or emotionally distant.",
+  "As tall as a redwood": "Used to describe someone who is very tall.",
+  "As heavy as a mountain": "Used to describe something that is very heavy or difficult to bear.",
+  "As hot as lava": "Used to describe something that is extremely hot.",
+  "As gentle as a wave": "Used to describe someone who is very gentle and calm.",
+  "As smooth as honey": "Used to describe something that is very smooth and sweet.",
+  "As quiet as a breeze": "Used to describe something that is very quiet and subtle.",
+  "As fierce as a tiger": "Used to describe someone who is very fierce and powerful.",
+  "As old as the hills": "Used to describe something that is very old or ancient.",
+  "As thick as thieves": "Used to describe a very close, secretive friendship or relationship.",
+  "As fast as a stallion": "Used to describe something that moves very quickly.",
+  "As pale as a ghost": "Used to describe someone who looks very pale or sickly.",
+  "As solid as a rock": "Used to describe something that is very reliable and stable.",
+  "As sweet as perfume": "Used to describe something that is very sweet and fragrant.",
+  "As clear as the sky": "Used to describe something that is very clear and unobstructed.",
+  "As thin as a rake": "Used to describe someone who is very thin.",
+  "As smooth as a silk pillow": "Used to describe something that is very soft and smooth.",
+  "As quiet as a mouse's footsteps": "Used to describe something that is very quiet or soft.",
+  "As strong as Hercules": "Used to describe someone who is very strong and powerful.",
+  "As wide as a prairie": "Used to describe something that is very wide or expansive.",
+  "As gentle as a lamb’s touch": "Used to describe someone who is very gentle and caring.",
+  "As full as a tick": "Used to describe someone who is very full or satisfied after eating.",
+  "As tall as a giraffe’s neck": "Used to describe someone who is very tall.",
+  "As messy as a tornado": "Used to describe something that is very chaotic and disorganized.",
+  "As bright as a diamond's sparkle": "Used to describe something that shines with great brilliance.",
+  "As rare as hen’s teeth": "Used to describe something that is extremely rare.",
+  "As wide as a continent": "Used to describe something that is very wide or expansive.",
+  "As heavy as a stone": "Used to describe something that is very heavy and hard.",
+  "As clear as a bell's ring": "Used to describe something that is very clear and distinct.",
+  "As smooth as a glass surface": "Used to describe something that is very smooth and polished.",
+  "As easy as falling off a log": "Used to describe something that is very easy to do.",
+  "As slow as a sloth": "Used to describe something or someone that moves very slowly.",
+  "As silent as a shadow's pass": "Used to describe something that is very silent.",
+  "As fast as a hummingbird’s wings": "Used to describe something that is very fast.",
+  "As old as the moon": "Used to describe something that is very old.",
+  "As quiet as the falling snow": "Used to describe something that is very silent and peaceful.",
+  "As gentle as a child’s touch": "Used to describe someone who is very gentle and tender.",
+  "As calm as a pond": "Used to describe someone who is very calm and unflappable.",
+  "As clear as a polished gemstone": "Used to describe something that is very clear and precise.",
+  "As cold as a winter’s morning": "Used to describe something that is very cold or unfriendly.",
+  "As clean as a whistle": "Used to describe something that is very clean and spotless.",
+  "As weak as a kitten": "Used to describe someone who is very weak or frail.",
+  "As strong as a hurricane": "Used to describe something that is very powerful and forceful.",
+  "As white as snow on the mountaintop": "Used to describe something that is very white and pure.",
+  "As dangerous as a rattlesnake": "Used to describe something that is very dangerous and threatening.",
+  "As small as a pebble": "Used to describe something that is very small.",
+  "As full as a turkey on Thanksgiving": "Used to describe someone who is very full after a meal.",
+  "As smooth as a marble countertop": "Used to describe something that is very smooth and flawless.",
+  "As high as the sky": "Used to describe something that is very high or elevated."
+        };
+
+        // Function to populate the dropdown menu with proverbs
+        function populateWordSelect() {
+            const wordSelect = document.getElementById('wordSelect');
+            const words = Object.keys(dictionary).sort(); // Sort proverbs alphabetically
+
+            words.forEach(word => {
+                const option = document.createElement('option');
+                option.value = word;
+                option.textContent = word;
+                wordSelect.appendChild(option);
+            });
+        }
+
+        // Function to display the meaning and trigger text-to-speech
+        function showMeaningAndSpeak() {
+            const wordSelect = document.getElementById('wordSelect');
+            const word = wordSelect.value;
+
+            if (word) {
+                document.getElementById('result').textContent = `simily or metaphor: ${word}`;
+                document.getElementById('meaning').textContent = `Meaning: ${dictionary[word]}`;
+                document.getElementById('ttsButton').style.display = 'inline-block';
+            } else {
+                document.getElementById('result').textContent = '';
+                document.getElementById('meaning').textContent = '';
+                document.getElementById('ttsButton').style.display = 'none';
+            }
+        }
+
+        // Function to read the proverb aloud using text-to-speech
+        function speakWord() {
+            const word = document.getElementById('result').textContent.replace('Proverb: ', '');
+            const speech = new SpeechSynthesisUtterance(word);
+            speech.lang = 'en-US'; // Set language to English
+            window.speechSynthesis.speak(speech);
+        }
+
+        // Initialize the dropdown menu with proverbs
+        populateWordSelect();
+    </script>
+
+</body>
+</html>
+

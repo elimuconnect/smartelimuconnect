@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Tutor – Elimu Connect Ads</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fce4ec);
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    #toolbar {
+      padding: 15px;
+      background: #1976d2;
+      color: white;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    #toolbar button {
+      background: white;
+      color: #1976d2;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #toolbar button:hover {
+      background: #f0f0f0;
+    }
+    #editor {
+      flex: 1;
+      padding: 40px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  .card {
+  max-width: 800px;
+  width: 100%;
+  padding: 30px;
+  background: white;
+  border-radius: 25px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  font-size: 1.4em;              /* Large base font */
+  line-height: 1.8;              /* Spaced lines */
+  font-weight: bold;             /* Bold text */
+  animation: fadeIn 1s ease;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  color: #1a237e;                /* Deep blue for content */
+}
+
+.card h2 {
+  margin-top: 0;
+  color: #d81b60;                /* Bright pink title */
+  font-size: 1.6em;              /* Larger for titles */
+  font-weight: bold;
+}
+
+.card pre {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  font-size: 1.3em;              /* Large font inside pre */
+  line-height: 1.8;
+  font-weight: bold;
+  color: #1a237e;
+}
+
+
+
+    
+    #status {
+      padding: 15px;
+      background: #388e3c;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      font-size: 16px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 600px) {
+      #toolbar { flex-direction: column; gap: 8px; padding: 10px; }
+      #toolbar button { width: 100%; font-size: 16px; padding: 10px; }
+      .card { padding: 20px; font-size: 1.2em; }
+      .card h2 { font-size: 1.4em; }
+      .card pre {
+  font-size: 1.15em;
+}
+      #status { font-size: 15px; padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+ <div id="toolbar">
+    <button onclick="startTutor()">▶️ Start Tutor</button>
+    <button onclick="prevLesson()">⬅️ Back</button>
+    <button onclick="nextLesson()">➡️ Forward</button>
+  </div>
+
+  <div id="editor">
+    <div class="card">
+      <h2>Welcome to Smart Tutor</h2>
+      <p>Coding Lessons — anytime, anywhere. .</p>
+    </div>
+  </div>
+
+  <div id="status">⏳ Ready when you are!</div>
+</div>
+
+<script>
+
+
+  
+
+const lessonsArray = [
+  `Lesson 1: Introduction to HTML & Web Structure
+
+Lesson Content:
+HTML (Hypertext Markup Language) is the standard language for creating web pages. It provides the basic structure of a webpage using elements (also called tags). 
+Every HTML document begins with the &lt;!DOCTYPE html&gt; declaration, followed by the root element &lt;html&gt;. Inside the &lt;html&gt;, you have the &lt;head&gt; section for metadata and the &lt;body&gt; section for visible content.
+
+Example HTML structure:
+<pre>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My First Webpage&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Welcome to My Website&lt;/h1&gt;
+    &lt;p&gt;This is a paragraph of text.&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+Final Answer:
+HTML is used to create the structure of web pages.`,
+
+  `Lesson 2: Basic HTML Tags
+
+Lesson Content:
+HTML includes several essential tags for building content, such as headings, paragraphs, links, and images. The &lt;h1&gt; to &lt;h6&gt; tags are used for headings (where &lt;h1&gt; is the largest and &lt;h6&gt; is the smallest). The &lt;p&gt; tag defines paragraphs. The &lt;a&gt; tag is used for creating hyperlinks, and the &lt;img&gt; tag is used for embedding images in the webpage.
+
+Example HTML tags:
+<pre>
+&lt;h1&gt;My First Heading&lt;/h1&gt;
+&lt;p&gt;This is a paragraph of text.&lt;/p&gt;
+&lt;a href="https://www.example.com"&gt;Click Here&lt;/a&gt;
+&lt;img src="image.jpg" alt="My Image"&gt;
+</pre>
+
+Final Answer:
+Use appropriate HTML tags to structure text, links, and images on a webpage.`,
+
+  `Lesson 3: Using Links and Images
+
+Lesson Content:
+Links in HTML are created using the &lt;a&gt; tag with the href attribute to specify the destination URL. Images are added using the &lt;img&gt; tag, where the src attribute defines the image file, and the alt attribute provides an alternative description for accessibility.
+
+Example for linking and adding images:
+<pre>
+&lt;a href="https://www.example.com"&gt;Visit Example&lt;/a&gt;
+&lt;img src="image.jpg" alt="A beautiful sunset"&gt;
+</pre>
+
+Final Answer:
+Use the &lt;a&gt; tag for hyperlinks and the &lt;img&gt; tag for embedding images.`,
+
+  `Lesson 4: Lists in HTML
+
+Lesson Content:
+HTML supports two types of lists: unordered lists (&lt;ul&gt;) and ordered lists (&lt;ol&gt;). Each list item is placed within the &lt;li&gt; tag. An unordered list uses bullet points, while an ordered list uses numbered items.
+
+Example of unordered and ordered lists:
+<pre>
+&lt;ul&gt;
+  &lt;li&gt;Item 1&lt;/li&gt;
+  &lt;li&gt;Item 2&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;First item&lt;/li&gt;
+  &lt;li&gt;Second item&lt;/li&gt;
+&lt;/ol&gt;
+</pre>
+
+Final Answer:
+Use &lt;ul&gt; for unordered (bulleted) lists and &lt;ol&gt; for ordered (numbered) lists.`,
+
+  `Lesson 5: Your First Project - Bio Page
+
+Lesson Content:
+For this project, create a webpage about yourself using the tags you've learned so far. Include an &lt;h1&gt; tag with your name, a paragraph &lt;p&gt; introducing yourself, an image of yourself or a placeholder, and an unordered list &lt;ul&gt; of your hobbies. Finally, add a link &lt;a&gt; to your favorite website.
+
+Final Answer:
+Create a webpage that introduces yourself, with a heading, image, list of hobbies, and a link.`,
+
+  `Week 1: Questions
+
+1. What does HTML stand for?
+2. What is the purpose of the &lt;!DOCTYPE html&gt; declaration?
+3. What is the difference between the &lt;head&gt; and &lt;body&gt; sections of an HTML document?
+4. How do you create a heading in HTML?
+5. What is the &lt;a&gt; tag used for?
+6. How do you insert an image in HTML?
+7. What is the difference between an unordered list and an ordered list?
+8. How do you link to an external website in HTML?
+9. What is the use of the alt attribute in an image tag?
+10. How do you create a paragraph of text in HTML?
+11. What is the purpose of the href attribute in a link tag (&lt;a&gt;) in HTML?
+12. How do you add a list of items in HTML?`,
+
+  `Week 1: Solutions
+
+1. What does HTML stand for?
+Solution: HTML stands for Hypertext Markup Language. It is the standard language used to create web pages.
+
+2. What is the purpose of the &lt;!DOCTYPE html&gt; declaration?
+Solution: The &lt;!DOCTYPE html&gt; declaration tells the browser that the document is an HTML5 document, ensuring proper rendering.
+
+3. What is the difference between the &lt;head&gt; and &lt;body&gt; sections of an HTML document?
+Solution:
+&lt;head&gt;: Contains metadata about the webpage, like the title, character set, and links to stylesheets or scripts.  
+&lt;body&gt;: Contains the actual content of the webpage, such as text, images, and links, that is visible to users.
+
+4. How do you create a heading in HTML?
+Solution: To create a heading, you use the &lt;h1&gt;–&lt;h6&gt; tags, with &lt;h1&gt; being the largest and &lt;h6&gt; being the smallest.
+Example: &lt;h1&gt;This is a Heading&lt;/h1&gt;
+
+5. What is the &lt;a&gt; tag used for?
+Solution: The &lt;a&gt; tag is used to create hyperlinks that link to other pages or websites.
+Example: &lt;a href="https://www.example.com"&gt;Click Here&lt;/a&gt;
+
+6. How do you insert an image in HTML?
+Solution: You use the &lt;img&gt; tag with the src (source) and alt (alternative text) attributes.
+Example: &lt;img src="image.jpg" alt="Description of the image"&gt;
+
+7. What is the difference between an unordered list and an ordered list?
+Solution:
+Unordered List (&lt;ul&gt;): A list with bullet points.  
+Ordered List (&lt;ol&gt;): A list with numbered items.
+
+8. How do you link to an external website in HTML?
+Solution: Use the &lt;a&gt; tag with the href attribute pointing to the website URL.
+Example: &lt;a href="https://www.example.com"&gt;Visit Example&lt;/a&gt;
+
+9. What is the use of the alt attribute in an image tag?
+Solution: The alt attribute provides a text description of the image, which is displayed if the image cannot be loaded or for accessibility purposes.
+Example: &lt;img src="image.jpg" alt="A beautiful sunset"&gt;
+
+10. How do you create a paragraph of text in HTML?
+Solution: Use the &lt;p&gt; tag.
+Example: &lt;p&gt;This is a paragraph of text.&lt;/p&gt;
+
+11. What is the purpose of the href attribute in a link tag (&lt;a&gt;) in HTML?
+Solution: The href attribute specifies the URL the link points to. It stands for hyperlink reference.
+Example: &lt;a href="https://www.example.com"&gt;Visit Example&lt;/a&gt;
+
+12. How do you add a list of items in HTML?
+Solution: Use either an unordered list (&lt;ul&gt;) or an ordered list (&lt;ol&gt;), with each list item inside &lt;li&gt; tags.
+
+Unordered List Example:
+&lt;ul&gt;
+  &lt;li&gt;Item 1&lt;/li&gt;
+  &lt;li&gt;Item 2&lt;/li&gt;
+&lt;/ul&gt;
+
+Ordered List Example:
+&lt;ol&gt;
+  &lt;li&gt;First item&lt;/li&gt;
+  &lt;li&gt;Second item&lt;/li&gt;
+&lt;/ol&gt;`
+];
+
+let currentLesson = 0;
+let tutorStarted = false;
+let selectedVoice = null;
+
+const editor = document.getElementById("editor");
+const status = document.getElementById("status");
+
+
+
+function getVoice() {
+  const voices = speechSynthesis.getVoices();
+
+  return voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ke") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ke")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ng") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ng")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-us") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en")
+  ) || voices[0]; // fallback
+}
+
+
+
+
+
+function speak(text, onEnd) {
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.voice = selectedVoice;
+  utter.rate = 0.88;
+  utter.onend = () => onEnd && onEnd();
+  speechSynthesis.speak(utter);
+}
+
+function showLesson(index) {
+  if (index >= lessonsArray.length) {
+    editor.innerHTML = `<div class="card"><h2>✅ All Lessons Complete</h2><p>You’re done! Download more CBC resources on Elimu Connect.</p></div>`;
+    status.textContent = "✅ Done.";
+    return;
+  }
+
+  const lesson = lessonsArray[index];
+  editor.innerHTML = `
+    <div class="card">
+      <pre>${lesson}</pre>
+    </div>
+  `;
+  status.textContent = `📖 Reading Lesson ${index + 1}`;
+  speak(lesson, () => {
+    currentLesson++;
+    setTimeout(() => showLesson(currentLesson), 3000);
+  });
+}
+
+function startTutor() {
+  if (tutorStarted) return;
+  tutorStarted = true;
+
+  // Load voice after user interaction
+  speechSynthesis.onvoiceschanged = () => {
+    selectedVoice = getVoice();
+  };
+
+  const voiceCheck = setInterval(() => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      clearInterval(voiceCheck);
+      selectedVoice = getVoice();
+      showLesson(currentLesson);
+    }
+  }, 200);
+
+  status.textContent = "🟢 Loading voice & starting...";
+}
+
+function skipLesson() {
+  currentLesson++;
+  showLesson(currentLesson);
+}
+
+function nextLesson() {
+  if (currentLesson < lessonsArray.length - 1) {
+    currentLesson++;
+    showLesson(currentLesson);
+  }
+}
+
+function prevLesson() {
+  if (currentLesson > 0) {
+    currentLesson--;
+    showLesson(currentLesson);
+  }
+}
+
+
+</script>
+
+</body>
+</html>

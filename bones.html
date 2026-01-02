@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Human Skeletal System Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .dropdown-container {
+            margin: 20px;
+        }
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 10px;
+        }
+        img {
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+        }
+        #info-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: left;
+        }
+        #info-box h2 {
+            margin: 0 0 10px;
+            color: #4CAF50;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Human Skeletal System Explorer</h1>
+        <p>Select a bone to learn about its name, function, and region!</p>
+    </header>
+
+    <main>
+        <!-- Dropdown -->
+        <div class="dropdown-container">
+            <label for="bone-select">Choose a bone:</label>
+            <select id="bone-select" onchange="displayBoneDetails()">
+                <option value="" selected disabled>Select a bone</option>
+                <optgroup label="Skull">
+                    <option value="Cranium">Cranium</option>
+                    <option value="Mandible">Mandible</option>
+                    <option value="Maxilla">Maxilla</option>
+                    <option value="Nasal Bone">Nasal Bone</option>
+                    <option value="Zygomatic Bone">Zygomatic Bone</option>
+                    <option value="Lacrimal Bone">Lacrimal Bone</option>
+                    <option value="Palatine Bone">Palatine Bone</option>
+                </optgroup>
+                <optgroup label="Vertebral Column">
+                    <option value="Cervical Vertebrae">Cervical Vertebrae</option>
+                    <option value="Thoracic Vertebrae">Thoracic Vertebrae</option>
+                    <option value="Lumbar Vertebrae">Lumbar Vertebrae</option>
+                    <option value="Sacrum">Sacrum</option>
+                    <option value="Coccyx">Coccyx</option>
+                </optgroup>
+                <optgroup label="Thoracic Cage">
+                    <option value="Ribs">Ribs</option>
+                    <option value="Sternum">Sternum</option>
+                </optgroup>
+                <optgroup label="Upper Limb">
+                    <option value="Clavicle">Clavicle</option>
+                    <option value="Scapula">Scapula</option>
+                    <option value="Humerus">Humerus</option>
+                    <option value="Radius">Radius</option>
+                    <option value="Ulna">Ulna</option>
+                    <option value="Carpal Bones">Carpal Bones</option>
+                    <option value="Metacarpal Bones">Metacarpal Bones</option>
+                    <option value="Phalanges (Hand)">Phalanges (Hand)</option>
+                </optgroup>
+                <optgroup label="Pelvic Girdle">
+                    <option value="Ilium">Ilium</option>
+                    <option value="Ischium">Ischium</option>
+                    <option value="Pubis">Pubis</option>
+                </optgroup>
+                <optgroup label="Lower Limb">
+                    <option value="Femur">Femur</option>
+                    <option value="Tibia">Tibia</option>
+                    <option value="Fibula">Fibula</option>
+                    <option value="Patella">Patella</option>
+                    <option value="Tarsal Bones">Tarsal Bones</option>
+                    <option value="Metatarsal Bones">Metatarsal Bones</option>
+                    <option value="Phalanges (Foot)">Phalanges (Foot)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div id="skeletal-image-container">
+            <!-- Image -->
+            <img id="skeletal-image" src="https://cdn.pixabay.com/photo/2012/04/25/01/08/skeleton-41547_640.png" alt="Human Skeletal System">
+        </div>
+
+        <div id="info-box" style="display: none;">
+            <!-- Information -->
+            <h2>Bone Details</h2>
+            <p><strong>Name:</strong> <span id="bone-name"></span></p>
+            <p><strong>Function:</strong> <span id="bone-function"></span></p>
+            <p><strong>Region:</strong> <span id="bone-region"></span></p>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2024 Human Skeletal System Explorer | Public Domain Resources Used</p>
+    </footer>
+
+    <script>
+
+
+        
+        const bones = [
+            { name: "Cranium", function: "Protects the brain", region: "Skull" },
+            { name: "Mandible", function: "Supports lower jaw and teeth", region: "Skull" },
+            { name: "Maxilla", function: "Forms the upper jaw", region: "Skull" },
+            { name: "Nasal Bone", function: "Forms the bridge of the nose", region: "Skull" },
+            { name: "Zygomatic Bone", function: "Forms the cheekbones", region: "Skull" },
+            { name: "Lacrimal Bone", function: "Supports the tear ducts", region: "Skull" },
+            { name: "Palatine Bone", function: "Forms part of the hard palate", region: "Skull" },
+            { name: "Cervical Vertebrae", function: "Supports the neck", region: "Vertebral Column" },
+            { name: "Thoracic Vertebrae", function: "Supports the rib cage", region: "Vertebral Column" },
+            { name: "Lumbar Vertebrae", function: "Supports the lower back", region: "Vertebral Column" },
+            { name: "Sacrum", function: "Connects the spine to the pelvis", region: "Vertebral Column" },
+            { name: "Coccyx", function: "Supports weight while sitting", region: "Vertebral Column" },
+            { name: "Ribs", function: "Protects the heart and lungs", region: "Thoracic Cage" },
+            { name: "Sternum", function: "Supports the rib cage", region: "Thoracic Cage" },
+            { name: "Clavicle", function: "Connects the arms to the trunk", region: "Upper Limb" },
+            { name: "Scapula", function: "Supports shoulder movement", region: "Upper Limb" },
+            { name: "Humerus", function: "Supports arm movement", region: "Upper Limb" },
+            { name: "Radius", function: "Supports forearm movement", region: "Upper Limb" },
+            { name: "Ulna", function: "Supports forearm movement", region: "Upper Limb" },
+            { name: "Carpal Bones", function: "Provides wrist flexibility", region: "Upper Limb" },
+            { name: "Metacarpal Bones", function: "Forms the structure of the hand", region: "Upper Limb" },
+            { name: "Phalanges (Hand)", function: "Supports finger movement", region: "Upper Limb" },
+            { name: "Ilium", function: "Forms the upper part of the pelvis", region: "Pelvic Girdle" },
+            { name: "Ischium", function: "Supports the body's weight while sitting", region: "Pelvic Girdle" },
+            { name: "Pubis", function: "Forms the front part of the pelvis", region: "Pelvic Girdle" },
+            { name: "Femur", function: "Supports thigh and body weight", region: "Lower Limb" },
+            { name: "Tibia", function: "Supports lower leg and body weight", region: "Lower Limb" },
+            { name: "Fibula", function: "Stabilizes the ankle", region: "Lower Limb" },
+            { name: "Patella", function: "Protects the knee joint", region: "Lower Limb" },
+            { name: "Tarsal Bones", function: "Forms the ankle and rear foot", region: "Lower Limb" },
+            { name: "Metatarsal Bones", function: "Forms the structure of the foot", region: "Lower Limb" },
+            { name: "Phalanges (Foot)", function: "Supports toe movement", region: "Lower Limb" }
+        ];
+
+        function displayBoneDetails() {
+            const selectedBone = document.getElementById("bone-select").value;
+            const boneData = bones.find(bone => bone.name === selectedBone);
+            const infoBox = document.getElementById("info-box");
+
+            if (boneData) {
+                document.getElementById("bone-name").textContent = boneData.name;
+                document.getElementById("bone-function").textContent = boneData.function;
+                document.getElementById("bone-region").textContent = boneData.region;
+                infoBox.style.display = "block";
+            } else {
+                infoBox.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
+
+

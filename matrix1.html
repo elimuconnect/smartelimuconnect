@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Calculator</title>
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+            font-size: 20px; /* Increased font size */
+        }
+        h2, h3 {
+            font-size: 24px; /* Larger headings */
+        }
+        .matrix-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .matrix {
+            display: inline-block;
+        }
+        .hidden {
+            display: none;
+        }
+        input {
+            width: 70px; /* Increased input size */
+            height: 40px;
+            text-align: center;
+            font-size: 20px; /* Larger font in inputs */
+        }
+        .result-container {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px; /* Larger button */
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <h2>Matrix Calculator</h2>
+
+    <label for="matrixSize">Matrix Size:</label>
+    <select id="matrixSize" onchange="updateInputs()">
+        <option value="2">2×2</option>
+        <option value="3">3×3</option>
+    </select>
+
+    <label for="operation">Operation:</label>
+    <select id="operation" onchange="updateInputs()">
+        <option value="add">Addition</option>
+        <option value="subtract">Subtraction</option>
+        <option value="multiply">Multiplication</option>
+        <option value="scalar">Scalar Multiplication</option>
+        <option value="determinant">Determinant</option>
+		
+    </select>
+
+    <div id="scalar-container" class="hidden">
+        <label for="scalar">Scalar:</label>
+        <input type="number" id="scalar" value="1">
+    </div>
+
+    <div class="matrix-container">
+        <div>
+            <h3>Matrix A</h3>
+            <div id="matrixA" class="matrix"></div>
+        </div>
+        <div id="matrixB-container">
+            <h3>Matrix B</h3>
+            <div id="matrixB" class="matrix"></div>
+        </div>
+    </div>
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div class="result-container">
+        <h3>Result</h3>
+        <div id="result"></div>
+        <h3>Steps</h3>
+        <div id="steps"></div>
+    </div>
+
+    <script>
+
+
+		
+        function createMatrixInputs() {
+            let size = parseInt(document.getElementById("matrixSize").value);
+            document.getElementById("matrixA").innerHTML = generateMatrixHTML("A", size);
+            document.getElementById("matrixB").innerHTML = generateMatrixHTML("B", size);
+        }
+
+        function generateMatrixHTML(matrixName, size) {
+            let html = "";
+            for (let i = 0; i < size; i++) {
+                for (let j = 0; j < size; j++) {
+                    html += `<input type="number" id="${matrixName}${i}${j}" value="0">`;
+                }
+                html += "<br>";
+            }
+            return html;
+        }
+
+        function updateInputs() {
+            let operation = document.getElementById("operation").value;
+            let size = parseInt(document.getElementById("matrixSize").value);
+            document.getElementById("matrixB-container").style.display = 
+                (operation === "scalar" || operation === "determinant") ? "none" : "block";
+            document.getElementById("scalar-container").classList.toggle("hidden", operation !== "scalar");
+            createMatrixInputs();
+        }
+
+        function getMatrix(matrixName, size) {
+            let matrix = [];
+            for (let i = 0; i < size; i++) {
+                let row = [];
+                for (let j = 0; j < size; j++) {
+                    row.push(parseFloat(document.getElementById(`${matrixName}${i}${j}`).value));
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function formatMatrix(matrix) {
+            return matrix.map(row => row.join("\t")).join("<br>");
+        }
+
+        function calculate() {
+            let size = parseInt(document.getElementById("matrixSize").value);
+            let operation = document.getElementById("operation").value;
+            let A = getMatrix("A", size);
+            let result, steps = [];
+
+            if (operation === "scalar") {
+                let scalar = parseFloat(document.getElementById("scalar").value);
+                result = [];
+                for (let i = 0; i < size; i++) {
+                    let row = [];
+                    for (let j = 0; j < size; j++) {
+                        let value = scalar * A[i][j];
+                        row.push(value);
+                        steps.push(`R${i+1},C${j+1}: ${scalar} × ${A[i][j]} = ${value}`);
+                    }
+                    result.push(row);
+                }
+            } else if (operation === "add" || operation === "subtract") {
+                let B = getMatrix("B", size);
+                result = [];
+                for (let i = 0; i < size; i++) {
+                    let row = [];
+                    for (let j = 0; j < size; j++) {
+                        let calc = operation === "add" ? `${A[i][j]} + ${B[i][j]}` : `${A[i][j]} - ${B[i][j]}`;
+                        let value = operation === "add" ? A[i][j] + B[i][j] : A[i][j] - B[i][j];
+                        row.push(value);
+                        steps.push(`R${i+1},C${j+1}: ${calc} = ${value}`);
+                    }
+                    result.push(row);
+                }
+				
+				
+				
+				
+				
+				}else if (operation === "inverse") {
+    result = inverseMatrix(A, size);
+    steps.push(Array.isArray(result) ? "Inverse matrix computed successfully." : result);
+
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+            } else if (operation === "multiply") {
+                let B = getMatrix("B", size);
+                result = Array(size).fill().map(() => Array(size).fill(0));
+                for (let i = 0; i < size; i++) {
+                    for (let j = 0; j < size; j++) {
+                        let step = [];
+                        for (let k = 0; k < size; k++) {
+                            result[i][j] += A[i][k] * B[k][j];
+                            step.push(`${A[i][k]} × ${B[k][j]}`);
+                        }
+                        steps.push(`R${i+1},C${j+1}: ` + step.join(" + ") + ` = ${result[i][j]}`);
+                    }
+                }
+            } else if (operation === "determinant") {
+                let det;
+                if (size === 2) {
+                    det = (A[0][0] * A[1][1]) - (A[0][1] * A[1][0]);
+                    steps.push(`Det = (${A[0][0]} × ${A[1][1]}) - (${A[0][1]} × ${A[1][0]}) = ${det}`);
+                } else if (size === 3) {
+                    det = A[0][0] * ((A[1][1] * A[2][2]) - (A[1][2] * A[2][1])) -
+                          A[0][1] * ((A[1][0] * A[2][2]) - (A[1][2] * A[2][0])) +
+                          A[0][2] * ((A[1][0] * A[2][1]) - (A[1][1] * A[2][0]));
+                    steps.push(`Det = ${A[0][0]}(${A[1][1]}×${A[2][2]} - ${A[1][2]}×${A[2][1]}) 
+                          - ${A[0][1]}(${A[1][0]}×${A[2][2]} - ${A[1][2]}×${A[2][0]}) 
+                          + ${A[0][2]}(${A[1][0]}×${A[2][1]} - ${A[1][1]}×${A[2][0]}) = ${det}`);
+                }
+                result = det;
+            }
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			function inverseMatrix(A, size) {
+    let det;
+    if (size === 2) {
+        det = (A[0][0] * A[1][1]) - (A[0][1] * A[1][0]);
+        if (det === 0) return "No inverse (det = 0)"; // Singular matrix
+        
+        let inv = [
+            [A[1][1] / det, -A[0][1] / det],
+            [-A[1][0] / det, A[0][0] / det]
+        ];
+        return inv;
+    } else if (size === 3) {
+        det = A[0][0] * ((A[1][1] * A[2][2]) - (A[1][2] * A[2][1])) -
+              A[0][1] * ((A[1][0] * A[2][2]) - (A[1][2] * A[2][0])) +
+              A[0][2] * ((A[1][0] * A[2][1]) - (A[1][1] * A[2][0]));
+
+        if (det === 0) return "No inverse (det = 0)"; // Singular matrix
+
+        let adj = [
+            [
+                (A[1][1] * A[2][2] - A[1][2] * A[2][1]),
+                -(A[0][1] * A[2][2] - A[0][2] * A[2][1]),
+                (A[0][1] * A[1][2] - A[0][2] * A[1][1])
+            ],
+            [
+                -(A[1][0] * A[2][2] - A[1][2] * A[2][0]),
+                (A[0][0] * A[2][2] - A[0][2] * A[2][0]),
+                -(A[0][0] * A[1][2] - A[0][2] * A[1][0])
+            ],
+            [
+                (A[1][0] * A[2][1] - A[1][1] * A[2][0]),
+                -(A[0][0] * A[2][1] - A[0][1] * A[2][0]),
+                (A[0][0] * A[1][1] - A[0][1] * A[1][0])
+            ]
+        ];
+
+        let inv = adj.map(row => row.map(value => value / det)); // Divide by determinant
+        return inv;
+    }
+    return "Only 2x2 and 3x3 inverses are supported.";
+	}
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+            document.getElementById("result").innerHTML = Array.isArray(result) ? formatMatrix(result) : result;
+            document.getElementById("steps").innerHTML = steps.join("<br>");
+        }
+
+        createMatrixInputs();
+    </script>
+
+</body>
+</html>
+

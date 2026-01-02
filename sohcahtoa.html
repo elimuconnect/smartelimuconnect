@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOHCAHTOA Solver</title>
+    <style>
+        body {
+            font-size: 2em;
+            text-align: center;
+        }
+        input, select, button {
+            font-size: 1em;
+            margin: 10px;
+            padding: 10px;
+        }
+        #container {
+            width: 75%;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h2>SOHCAHTOA Solver</h2>
+        <p>Enter known values and choose the function:</p>
+        <label for="angle">Angle (degrees): </label>
+        <input type="number" id="angle" placeholder="Enter angle"><br>
+        <label for="opposite">Opposite: </label>
+        <input type="number" id="opposite" placeholder="Enter opposite"><br>
+        <label for="adjacent">Adjacent: </label>
+        <input type="number" id="adjacent" placeholder="Enter adjacent"><br>
+        <label for="hypotenuse">Hypotenuse: </label>
+        <input type="number" id="hypotenuse" placeholder="Enter hypotenuse"><br>
+        <label for="function">Choose function: </label>
+        <select id="function">
+            <option value="sin">Sin</option>
+            <option value="cos">Cos</option>
+            <option value="tan">Tan</option>
+        </select><br>
+        <button onclick="solveTrig()">Solve</button>
+        <p id="result"></p>
+        <p id="steps"></p>
+    </div>
+
+    <script>
+
+        
+        function solveTrig() {
+            let angle = parseFloat(document.getElementById("angle").value);
+            let opp = parseFloat(document.getElementById("opposite").value);
+            let adj = parseFloat(document.getElementById("adjacent").value);
+            let hyp = parseFloat(document.getElementById("hypotenuse").value);
+            let func = document.getElementById("function").value;
+            let result = "";
+            let steps = "";
+
+            if (!isNaN(angle)) {
+                let rad = angle * (Math.PI / 180);
+                if (func === "sin") {
+                    if (!isNaN(opp) && isNaN(hyp)) {
+                        hyp = opp / Math.sin(rad);
+                        result = `Hypotenuse = ${hyp.toFixed(2)} cm`;
+                        steps = `sin(${angle}) = ${opp} / hypotenuse\nHypotenuse = ${opp} / sin(${angle}) = ${hyp.toFixed(2)} cm`;
+                    } else if (!isNaN(hyp) && isNaN(opp)) {
+                        opp = hyp * Math.sin(rad);
+                        result = `Opposite = ${opp.toFixed(2)} cm`;
+                        steps = `sin(${angle}) = opposite / ${hyp}\nOpposite = sin(${angle}) * ${hyp} = ${opp.toFixed(2)} cm`;
+                    }
+                } else if (func === "cos") {
+                    if (!isNaN(adj) && isNaN(hyp)) {
+                        hyp = adj / Math.cos(rad);
+                        result = `Hypotenuse = ${hyp.toFixed(2)} cm`;
+                        steps = `cos(${angle}) = ${adj} / hypotenuse\nHypotenuse = ${adj} / cos(${angle}) = ${hyp.toFixed(2)} cm`;
+                    } else if (!isNaN(hyp) && isNaN(adj)) {
+                        adj = hyp * Math.cos(rad);
+                        result = `Adjacent = ${adj.toFixed(2)} cm`;
+                        steps = `cos(${angle}) = adjacent / ${hyp}\nAdjacent = cos(${angle}) * ${hyp} = ${adj.toFixed(2)} cm`;
+                    }
+                } else if (func === "tan") {
+                    if (!isNaN(opp) && isNaN(adj)) {
+                        adj = opp / Math.tan(rad);
+                        result = `Adjacent = ${adj.toFixed(2)} cm`;
+                        steps = `tan(${angle}) = ${opp} / adjacent\nAdjacent = ${opp} / tan(${angle}) = ${adj.toFixed(2)} cm`;
+                    } else if (!isNaN(adj) && isNaN(opp)) {
+                        opp = adj * Math.tan(rad);
+                        result = `Opposite = ${opp.toFixed(2)} cm`;
+                        steps = `tan(${angle}) = opposite / ${adj}\nOpposite = tan(${angle}) * ${adj} = ${opp.toFixed(2)} cm`;
+                    }
+                }
+            } else if (!isNaN(opp) && !isNaN(hyp) && func === "sin") {
+                angle = Math.asin(opp / hyp) * (180 / Math.PI);
+                result = `Angle = ${angle.toFixed(2)}°`;
+                steps = `sin(angle) = ${opp} / ${hyp}\nAngle = sin⁻¹(${opp} / ${hyp}) = ${angle.toFixed(2)}°`;
+            } else if (!isNaN(adj) && !isNaN(hyp) && func === "cos") {
+                angle = Math.acos(adj / hyp) * (180 / Math.PI);
+                result = `Angle = ${angle.toFixed(2)}°`;
+                steps = `cos(angle) = ${adj} / ${hyp}\nAngle = cos⁻¹(${adj} / ${hyp}) = ${angle.toFixed(2)}°`;
+            } else if (!isNaN(opp) && !isNaN(adj) && func === "tan") {
+                angle = Math.atan(opp / adj) * (180 / Math.PI);
+                result = `Angle = ${angle.toFixed(2)}°`;
+                steps = `tan(angle) = ${opp} / ${adj}\nAngle = tan⁻¹(${opp} / ${adj}) = ${angle.toFixed(2)}°`;
+            }
+
+            document.getElementById("result").innerText = result || "Enter sufficient values to calculate.";
+            document.getElementById("steps").innerText = steps;
+        }
+    </script>
+</body>
+</html>
+

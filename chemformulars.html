@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High School Chemistry Formula Generator</title>
+    <style>
+        label, input, select { margin: 10px; }
+        #result { font-size: 1.2em; margin-top: 20px; }
+        #formulaDescription { font-size: 1.1em; margin-top: 20px; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+    <h2>High School Chemistry Formula Generator</h2>
+    
+    <!-- Dropdown for selecting formula -->
+    <label for="formula">Select a Formula:</label>
+    <select id="formula" onchange="generateFormula()">
+        <option value="molesMassMolarMass">Moles = Mass / Molar Mass</option>
+        <option value="particlesMoles">Number of Particles = Moles × Avogadro's Number</option>
+        <option value="molesVolume">Moles = Volume / Molar Volume (22.4L at STP)</option>
+        <option value="densityFormula">Density = Mass / Volume</option>
+        <option value="idealGasLaw">PV = nRT (Ideal Gas Law)</option>
+        <option value="concentrationMolesVolume">Concentration = Moles / Volume</option>
+        <option value="molarity">Molarity = Moles of Solute / Volume of Solution</option>
+        <option value="ram">Relative Atomic Mass (RAM)</option>
+        <option value="boyle">Boyle's Law (P1V1 = P2V2)</option>
+        <option value="charles">Charles's Law (V1/T1 = V2/T2)</option>
+        <option value="avogadro">Avogadro's Law (V1/n1 = V2/n2)</option>
+        <option value="daltonsLaw">Dalton's Law of Partial Pressures</option>
+        <option value="faradaysLaw">Faraday's Laws of Electrolysis</option>
+        <option value="faradaysConstant">Faraday's Constant (F = 96500 C/mol)</option>
+        <option value="energyChange">Energy Change (ΔH = Hproducts - Hreactants)</option>
+        <option value="solubility">Solubility (Solubility = Amount of solute / Amount of solvent)</option>
+        <option value="rateOfReaction">Rate of Reaction (Rate = Change in concentration / Time)</option>
+        <option value="radioactivity">Radioactive Decay (N = N0e^(-λt))</option>
+        <option value="ph">pH = -log[H+]</option>
+        <option value="kw">Kw = [H+][OH-]</option>
+        <option value="buffer">Buffer Solution: pH = pKa + log([A-]/[HA])</option>
+        <option value="equilibriumConstant">Kc = [products]^coefficients / [reactants]^coefficients</option>
+        <option value="nernstEquation">Nernst Equation: E = E° - (RT/nF) * ln(Q)</option>
+        <option value="HessLaw">Hess's Law: ΔH = ΣΔH(products) - ΣΔH(reactants)</option>
+        <option value="bondEnergy">Bond Energy: ΔH = Σ(ΔHbonds broken) - Σ(ΔHbonds formed)</option>
+        <option value="electronegativity">Electronegativity Difference: ΔEN = EN(Atom A) - EN(Atom B)</option>
+        <option value="grahamsLaw">Graham’s Law: Rate1 / Rate2 = √(Molar Mass2 / Molar Mass1)</option>
+        <option value="calorimetry">Calorimetry: Q = mcΔT</option>
+        <option value="leChateliersPrinciple">Le Chatelier's Principle: (shifts to restore equilibrium)</option>
+        <option value="molesAndEquations">Moles in Reaction: n = (mass / Molar Mass) × stoichiometric coefficient</option>
+        <option value="oxidationState">Oxidation State: Sum of oxidation numbers = 0 for neutral molecule, sum of charges for polyatomic ions</option>
+    </select>
+
+    <div id="inputs">
+        <!-- Inputs will change based on the selected formula -->
+    </div>
+
+    <div id="formulaDescription"></div>
+
+    <script>
+
+
+    
+        function generateFormula() {
+            let formula = document.getElementById("formula").value;
+            let inputsDiv = document.getElementById("inputs");
+            let descriptionDiv = document.getElementById("formulaDescription");
+
+            // Clear previous inputs and description
+            inputsDiv.innerHTML = "";
+            descriptionDiv.innerHTML = "";
+
+            // Formula descriptions
+            if (formula === "molesMassMolarMass") {
+                descriptionDiv.innerHTML = "Formula: Moles = Mass / Molar Mass. This formula calculates the number of moles in a given mass of a substance by dividing the mass by its molar mass.";
+            } else if (formula === "particlesMoles") {
+                descriptionDiv.innerHTML = "Formula: Number of Particles = Moles × Avogadro's Number. This formula allows you to calculate the number of particles in a sample, given the number of moles.";
+            } else if (formula === "molesVolume") {
+                descriptionDiv.innerHTML = "Formula: Moles = Volume / Molar Volume (22.4L at STP). This formula is used to calculate the number of moles of gas at Standard Temperature and Pressure (STP).";
+            } else if (formula === "densityFormula") {
+                descriptionDiv.innerHTML = "Formula: Density = Mass / Volume. This formula is used to calculate the density of a substance, where mass is divided by volume.";
+            } else if (formula === "idealGasLaw") {
+                descriptionDiv.innerHTML = "Formula: PV = nRT (Ideal Gas Law). This formula describes the relationship between pressure (P), volume (V), moles (n), temperature (T), and the gas constant (R).";
+            } else if (formula === "concentrationMolesVolume") {
+                descriptionDiv.innerHTML = "Formula: Concentration = Moles / Volume. This formula calculates the concentration of a solution given the number of moles of solute and the volume of solvent.";
+            } else if (formula === "molarity") {
+                descriptionDiv.innerHTML = "Formula: Molarity = Moles of Solute / Volume of Solution. Molarity is a way to express the concentration of a solution.";
+            } else if (formula === "ram") {
+                descriptionDiv.innerHTML = "Formula: Relative Atomic Mass (RAM). The relative atomic mass is the weighted average mass of an element’s atoms, measured in atomic mass units (amu).";
+            } else if (formula === "boyle") {
+                descriptionDiv.innerHTML = "Formula: Boyle's Law (P1V1 = P2V2). This law states that the pressure and volume of a gas are inversely proportional at a constant temperature.";
+            } else if (formula === "charles") {
+                descriptionDiv.innerHTML = "Formula: Charles's Law (V1/T1 = V2/T2). This law states that the volume of a gas is directly proportional to its temperature at a constant pressure.";
+            } else if (formula === "avogadro") {
+                descriptionDiv.innerHTML = "Formula: Avogadro's Law (V1/n1 = V2/n2). This law states that the volume of a gas is directly proportional to the number of moles of gas at a constant pressure and temperature.";
+            } else if (formula === "daltonsLaw") {
+                descriptionDiv.innerHTML = "Formula: Dalton's Law of Partial Pressures. This law states that the total pressure exerted by a mixture of gases is the sum of the partial pressures of the individual gases.";
+            } else if (formula === "faradaysLaw") {
+                descriptionDiv.innerHTML = "Formula: Faraday's Laws of Electrolysis. These laws relate the amount of substance deposited or dissolved at an electrode to the charge passed through the electrolyte.";
+            } else if (formula === "faradaysConstant") {
+                descriptionDiv.innerHTML = "Formula: Faraday's Constant (F = 96500 C/mol). This constant represents the charge carried by one mole of electrons.";
+            } else if (formula === "energyChange") {
+                descriptionDiv.innerHTML = "Formula: Energy Change (ΔH = Hproducts - Hreactants). This represents the enthalpy change of a reaction, calculated by subtracting the enthalpy of reactants from the products.";
+            } else if (formula === "solubility") {
+                descriptionDiv.innerHTML = "Formula: Solubility (Solubility = Amount of solute / Amount of solvent). This formula calculates the solubility of a substance in a solvent.";
+            } else if (formula === "rateOfReaction") {
+                descriptionDiv.innerHTML = "Formula: Rate of Reaction (Rate = Change in concentration / Time). This formula calculates the rate at which a chemical reaction occurs based on concentration change over time.";
+            } else if (formula === "radioactivity") {
+                descriptionDiv.innerHTML = "Formula: Radioactive Decay (N = N0e^(-λt)). This formula describes the decay of radioactive isotopes, where N is the number of atoms remaining, N0 is the initial number, λ is the decay constant, and t is time.";
+            } else if (formula === "ph") {
+                descriptionDiv.innerHTML = "Formula: pH = -log[H+]. pH measures the acidity or alkalinity of a solution, calculated by taking the negative logarithm of the hydrogen ion concentration.";
+            } else if (formula === "kw") {
+                descriptionDiv.innerHTML = "Formula: Kw = [H+][OH-]. Kw represents the ionization constant for water, where [H+] is the concentration of hydrogen ions and [OH-] is the concentration of hydroxide ions.";
+            } else if (formula === "buffer") {
+                descriptionDiv.innerHTML = "Formula: Buffer Solution: pH = pKa + log([A-]/[HA]). This formula represents the pH of a buffer solution, where pKa is the acid dissociation constant and [A-] and [HA] represent the concentrations of the conjugate base and weak acid, respectively.";
+            } else if (formula === "equilibriumConstant") {
+                descriptionDiv.innerHTML = "Formula: Kc = [products]^coefficients / [reactants]^coefficients. This formula calculates the equilibrium constant (Kc) of a chemical reaction, based on the concentrations of products and reactants.";
+            } else if (formula === "nernstEquation") {
+                descriptionDiv.innerHTML = "Formula: Nernst Equation: E = E° - (RT/nF) * ln(Q). The Nernst equation calculates the potential of a half-cell in an electrochemical reaction, where E° is the standard electrode potential, R is the gas constant, T is the temperature in Kelvin, n is the number of electrons, F is the Faraday constant, and Q is the reaction quotient.";
+            } else if (formula === "HessLaw") {
+                descriptionDiv.innerHTML = "Formula: Hess's Law: ΔH = ΣΔH(products) - ΣΔH(reactants). This law states that the total enthalpy change for a reaction is the sum of the enthalpy changes for the steps of the reaction.";
+            } else if (formula === "bondEnergy") {
+                descriptionDiv.innerHTML = "Formula: Bond Energy: ΔH = Σ(ΔHbonds broken) - Σ(ΔHbonds formed). This formula calculates the enthalpy change of a reaction based on bond energies, by subtracting the energy needed to break bonds from the energy released when new bonds are formed.";
+            } else if (formula === "electronegativity") {
+                descriptionDiv.innerHTML = "Formula: Electronegativity Difference: ΔEN = EN(Atom A) - EN(Atom B). This formula calculates the electronegativity difference between two atoms, which can indicate bond polarity.";
+            } else if (formula === "grahamsLaw") {
+                descriptionDiv.innerHTML = "Formula: Graham’s Law: Rate1 / Rate2 = √(Molar Mass2 / Molar Mass1). This law relates the rates of diffusion of two gases to their molar masses, showing that the lighter gas diffuses faster.";
+            } else if (formula === "calorimetry") {
+                descriptionDiv.innerHTML = "Formula: Calorimetry: Q = mcΔT. This formula calculates the heat absorbed or released by a substance, where Q is heat, m is mass, c is specific heat capacity, and ΔT is the temperature change.";
+            } else if (formula === "leChateliersPrinciple") {
+                descriptionDiv.innerHTML = "Formula: Le Chatelier's Principle. This principle states that if a dynamic equilibrium is disturbed by changing the conditions (such as temperature, pressure, or concentration), the position of equilibrium moves to counteract the change.";
+            } else if (formula === "molesAndEquations") {
+                descriptionDiv.innerHTML = "Formula: Moles in Reaction: n = (mass / Molar Mass) × stoichiometric coefficient. This formula calculates the number of moles involved in a reaction based on the mass of a substance and the stoichiometry of the balanced equation.";
+            } else if (formula === "oxidationState") {
+                descriptionDiv.innerHTML = "Formula: Oxidation State: Sum of oxidation numbers = 0 for neutral molecule, sum of charges for polyatomic ions. This rule is used to assign oxidation states to elements in a compound.";
+            }
+        }
+    </script>
+</body>
+</html>
+

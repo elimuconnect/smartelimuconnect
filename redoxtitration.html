@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<title>Redox Titration Simulator</title>
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font-family:Segoe UI,system-ui,Arial;display:flex;flex-direction:column;align-items:center;padding:18px;background:#f7fbff;color:#042}
+  h1{margin-bottom:6px}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+  label{background:#fff;padding:8px 10px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+  input[type=number]{width:100px;padding:6px;border-radius:6px;border:1px solid #cce}
+  select{padding:6px;border-radius:6px;border:1px solid #cce}
+  
+ 
+ 
+ 
+ canvas {
+  width: 100%;
+  max-width: 760px;   /* match your drawing width */
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+  border: 2px solid #bfe;
+  box-shadow: 0 6px 18px rgba(10,40,60,0.06);
+  background: #fff;
+}
+
+
+  
+  
+  .info{width:100%;max-width:760px;margin-top:10px;background:#fff;padding:10px;border-radius:8px;border:1px solid #e6f2ff}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{background:#0078d7;color:#fff;padding:8px 12px;border-radius:8px;text-decoration:none;border:none;cursor:pointer}
+  .small{font-size:0.9rem;color:#045}
+  output{font-weight:700}
+  .legend{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .swatch{width:20px;height:14px;border-radius:3px;border:1px solid #999}
+  @media(max-width:520px){.controls{flex-direction:column;align-items:stretch}label{width:100%}}
+  /* reuse pulse glow feel for proceed button shown later */
+  @keyframes pulseGlow {
+    0% { box-shadow: 0 0 8px #0078D7; }
+    50% { box-shadow: 0 0 18px #00aaff; }
+    100% { box-shadow: 0 0 8px #0078D7; }
+  }
+  a.proceed {
+    display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%);
+    background:#0078D7; color:#fff; padding:10px 20px; border-radius:6px;
+    text-decoration:none; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.2);
+    font-family:Segoe UI, sans-serif; letter-spacing:0.5px;
+    animation:pulseGlow 1.5s infinite; cursor:pointer; z-index:999;
+  }
+  
+  
+
+  
+  .card { background:#fff; padding:14px 16px; border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,0.08); width:100%; max-width:1200px; margin:10px 0; } .controls-card .controls label, .info-card .info .row div{ margin-bottom:6px; }
+  
+  
+  
+  
+  
+  
+ @media(max-width:520px){
+  canvas { border:1px solid #bfe; }
+  .small, label, .btn { font-size:1rem; }
+}
+ 
+  
+  
+  /* Limit canvas max size on PC */
+@media (min-width: 900px) {
+  canvas {
+    max-width: 900px !important;
+    margin: auto;
+  }
+}
+
+  
+  @media(max-width:520px){
+  canvas {
+    display: block;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+  
+</style>
+</head>
+<body>
+<h1>Redox Titration Simulator</h1>
+<p class="small">Default: oxidant in burette (acidified where required). Click canvas (tap) to add drops (0.5 mL)</p>
+<a id="proceedCalcBtn" class="proceed" href="https://elimuconnect.github.io/ELIMU-CONNECT-/titrations" aria-hidden="true">
+  Proceed to Calculations <span style="display:inline-block; transition:transform 0.3s;">➜</span>
+</a>
+
+
+<div class="card controls-card">
+  <div class="controls">
+    <label>Mode:
+      <select id="modeSelect">
+        <option value="oxidant_buret">Oxidant in burette (typical)</option>
+        <option value="reductant_buret">Reductant in burette</option>
+      </select>
+    </label>
+
+    <label>Oxidant:
+      <select id="oxidantSelect">
+        <option value="KMnO4">KMnO₄ (permanganate)</option>
+        <option value="K2Cr2O7">K₂Cr₂O₇ (dichromate)</option>
+        <option value="I2">I₂ (iodine)</option>
+        <option value="Ce4">Ce⁴⁺ (cerium(IV))</option>
+      </select>
+    </label>
+
+    <label>Reductant:
+      <select id="reductantSelect">
+        <option value="Fe2">Fe²⁺ (ferrous)</option>
+        <option value="S2O3">S₂O₃²⁻ (thiosulfate)</option>
+        <option value="Oxalate">C₂O₄²⁻ (oxalate)</option>
+      </select>
+    </label>
+
+    <label>Analyte Vol (mL): <input id="analyteVol" type="number" value="25" step="1"></label>
+    <label>Analyte Conc (M): <input id="analyteConc" type="number" value="0.100" step="0.001"></label>
+    <label>Titrant Conc (M): <input id="titrantConc" type="number" value="0.100" step="0.001"></label>
+
+    <label>Acid (if needed):
+      <select id="acidSelect">
+        <option value="H2SO4">H₂SO₄ (acidified)</option>
+        <option value="HCl">HCl</option>
+        <option value="none">None / neutral</option>
+      </select>
+    </label>
+
+    <button id="calcBtn" class="btn">Calculate</button>
+    <button id="resetBtn" class="btn" style="background:#6c757d">Reset</button>
+  </div>
+</div>
+
+
+
+<canvas id="simCanvas" width="760" height="500"></canvas>
+
+
+
+<div class="card info-card">
+  <div class="info">
+    <div class="row">
+      <div class="small">Reaction (auto-chosen): <span id="reactionText">—</span></div>
+    </div>
+
+    <div class="row" style="margin-top:8px;gap:18px">
+      <div class="small">Analyte moles: <output id="analyteMoles">—</output></div>
+      <div class="small">Titrant moles needed: <output id="titrantMoles">—</output></div>
+      <div class="small">Titrant volume required (mL): <output id="titrantVol">—</output></div>
+    </div>
+
+    <div style="margin-top:8px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <button id="addDropBtn" class="btn">Add drop (0.5 mL)</button>
+      <input id="autoAdd" type="checkbox"> <label class="small" for="autoAdd">Auto titrate (1 drop / 200ms)</label>
+      <div class="small">Added: <output id="addedVol">0.00</output> mL</div>
+    </div>
+
+    <div class="legend">
+      <div style="display:flex;gap:6px;align-items:center"><div class="swatch" id="swatchAnalyte"></div><div class="small">Analyte</div></div>
+      <div style="display:flex;gap:6px;align-items:center"><div class="swatch" id="swatchTitrant"></div><div class="small">Titrant</div></div>
+      <div style="display:flex;gap:6px;align-items:center"><div class="swatch" id="swatchEndpoint"></div><div class="small">Endpoint colour</div></div>
+    </div>
+  </div>
+</div>
+
+
+
+
+<script>
+
+
+let buretteVol = 50; // assume full burette = 50 mL
+
+
+let displayHeight = 0; // visual height of liquid in flask
+const maxFlaskHeight = 160; // max pixels liquid can rise in flask
+const visualStep = 2; // how many pixels liquid rises per drop
+
+
+/* ---------------------------
+   Data: colors & stoichiometry
+   --------------------------- */
+const COLORS = {
+  KMnO4: '#7b1fa2',         
+  KMnO4_end: '#ffd7e5',     
+  K2Cr2O7: '#ff8c00',       
+  K2Cr2O7_end: '#2e8b57',   
+  I2: '#5c3a21',             
+  I2_end: '#ffffff',         
+  Ce4: '#ffd700',            
+  Ce4_end: '#ffffff',        
+  Fe2: '#98fb98',            
+  Fe3: '#a0522d',            
+  S2O3: '#ffffff',           
+  Oxalate: '#ffffff',        
+  starch_blue: '#00008b'     
+};
+
+const STOICH = {
+  KMnO4: { Fe2: 5, Oxalate: 5 },
+  K2Cr2O7: { Fe2: 6 },
+  I2: { S2O3: 2 },
+  Ce4: { Fe2: 1 }
+};
+
+const REACTIONS = {
+  KMnO4: 'MnO₄⁻ + 5 Fe²⁺ + 8 H⁺ → Mn²⁺ + 5 Fe³⁺ + 4 H₂O (acidified)',
+  K2Cr2O7: 'Cr₂O₇²⁻ + 6 Fe²⁺ + 14 H⁺ → 2 Cr³⁺ + 6 Fe³⁺ + 7 H₂O (acidified)',
+  I2: 'I₂ + 2 S₂O3²⁻ → 2 I⁻ + S₄O6²⁻ (starch detects free I₂)',
+  Ce4: 'Ce⁴⁺ + Fe²⁺ → Ce³⁺ + Fe³⁺ (1:1)'
+};
+
+/* ---------------------------
+   UI references
+   --------------------------- */
+const modeSelect = document.getElementById('modeSelect');
+const oxidantSel = document.getElementById('oxidantSelect');
+const reductantSel = document.getElementById('reductantSelect');
+const analyteVolEl = document.getElementById('analyteVol');
+const analyteConcEl = document.getElementById('analyteConc');
+const titrantConcEl = document.getElementById('titrantConc');
+const acidSel = document.getElementById('acidSelect');
+const reactionText = document.getElementById('reactionText');
+const analyteMolesOut = document.getElementById('analyteMoles');
+const titrantMolesOut = document.getElementById('titrantMoles');
+const titrantVolOut = document.getElementById('titrantVol');
+const addedVolOut = document.getElementById('addedVol');
+const swatchAnalyte = document.getElementById('swatchAnalyte');
+const swatchTitrant = document.getElementById('swatchTitrant');
+const swatchEndpoint = document.getElementById('swatchEndpoint');
+const addDropBtn = document.getElementById('addDropBtn');
+const calcBtn = document.getElementById('calcBtn');
+const resetBtn = document.getElementById('resetBtn');
+const autoAdd = document.getElementById('autoAdd');
+const proceedBtn = document.getElementById('proceedCalcBtn');
+
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+
+/* ---------------------------
+   State variables
+   --------------------------- */
+let analyteMoles = 0;
+let titrantMolesNeeded = 0;
+let titrantVolNeeded = 0;
+let addedVol = 0;
+let dropVolume = 0.5;
+let drops = [];
+let autoInterval = null;
+
+function toSF4(x){
+  if(!isFinite(x)) return '—';
+  return Number(Number(x).toPrecision(4)).toString();
+}
+
+/* ---------------------------
+   Computation
+   --------------------------- */
+function computeValues(){
+buretteVol = 50; // or set dynamically based on titrantVolNeeded
+
+  const oxidant = oxidantSel.value;
+  const reductant = reductantSel.value;
+  const analyteVol = parseFloat(analyteVolEl.value) || 0;
+  const analyteConc = parseFloat(analyteConcEl.value) || 0;
+  const titrantConc = parseFloat(titrantConcEl.value) || 0;
+  const mode = modeSelect.value;
+
+  const titrantKey = (mode === 'oxidant_buret') ? oxidant : reductant;
+  const analyteKey = (mode === 'oxidant_buret') ? reductant : oxidant;
+
+  const pair = STOICH[titrantKey];
+  if(!pair || typeof pair[analyteKey] === 'undefined'){
+    reactionText.textContent = 'Pair not supported in built-in stoichiometry.';
+    analyteMolesOut.textContent = '—';
+    titrantMolesOut.textContent = '—';
+    titrantVolOut.textContent = '—';
+    return false;
+  }
+
+  const factor = pair[analyteKey];
+  analyteMoles = analyteConc * analyteVol / 1000;
+  titrantMolesNeeded = analyteMoles / factor;
+  titrantVolNeeded = (titrantMolesNeeded / titrantConc) * 1000;
+
+  analyteMolesOut.textContent = toSF4(analyteMoles);
+  titrantMolesOut.textContent = toSF4(titrantMolesNeeded);
+  titrantVolOut.textContent = '—'; // hide required volume
+
+  reactionText.textContent = REACTIONS[titrantKey] || 'Reaction';
+
+  let analyteColor = '#fff', titColor = '#ddd', epColor = '#fff';
+  if(analyteKey === 'Fe2') analyteColor = COLORS.Fe2;
+  if(analyteKey === 'S2O3') analyteColor = COLORS.S2O3;
+  if(analyteKey === 'Oxalate') analyteColor = COLORS.Oxalate;
+
+  if(titrantKey === 'KMnO4') titColor = COLORS.KMnO4;
+  if(titrantKey === 'K2Cr2O7') titColor = COLORS.K2Cr2O7;
+  if(titrantKey === 'I2') titColor = COLORS.I2;
+  if(titrantKey === 'Ce4') titColor = COLORS.Ce4;
+
+  if(titrantKey === 'KMnO4') epColor = COLORS.KMnO4_end;
+  if(titrantKey === 'K2Cr2O7') epColor = COLORS.K2Cr2O7_end;
+  if(titrantKey === 'I2') epColor = COLORS.starch_blue;
+  if(titrantKey === 'Ce4') epColor = COLORS.Ce4_end;
+
+  swatchAnalyte.style.background = analyteColor;
+  swatchTitrant.style.background = titColor;
+  swatchEndpoint.style.background = epColor;
+
+  addedVol = 0;
+  addedVolOut.textContent = addedVol.toFixed(2);
+  drops = [];
+  proceedBtn.style.display = 'none';
+  proceedBtn.setAttribute('aria-hidden','true');
+
+  draw();
+  return true;
+}
+
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+ const scale = Math.min(canvas.width / 760, 1);  // never exceed normal size
+
+
+
+
+  const centerX = canvas.width / 2;
+
+  // --- Burette ---
+  const buretteHeight = 300 * scale;
+  const radiusX = 40 * scale;
+  const radiusY = 10 * scale;
+  const buretteTop = 40 * scale;
+  const buretteX = centerX;
+
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#000';
+  ctx.fillStyle = '#f8ffffaa';
+  ctx.beginPath();
+  ctx.ellipse(buretteX, buretteTop, radiusX, radiusY, 0, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(buretteX - radiusX, buretteTop);
+  ctx.lineTo(buretteX - radiusX, buretteTop + buretteHeight);
+  ctx.moveTo(buretteX + radiusX, buretteTop);
+  ctx.lineTo(buretteX + radiusX, buretteTop + buretteHeight);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(buretteX, buretteTop + buretteHeight, radiusX, radiusY, 0, 0, Math.PI*2);
+  ctx.stroke();
+
+  // --- Semi-transparent liquid in burette ---
+  const titrantKey = (modeSelect.value==='oxidant_buret')?oxidantSel.value:reductantSel.value;
+  const titColorHex = (titrantKey==='KMnO4')?COLORS.KMnO4:
+                      (titrantKey==='K2Cr2O7')?COLORS.K2Cr2O7:
+                      (titrantKey==='I2')?COLORS.I2:
+                      (titrantKey==='Ce4')?COLORS.Ce4:'#cfc';
+ 
+
+
+ const liquidFrac = buretteVol / 50; // fraction remaining
+const liquidHeight = buretteHeight * liquidFrac;
+ctx.fillStyle = titColorHex;
+ctx.globalAlpha = 0.18;
+ctx.beginPath();
+ctx.ellipse(buretteX, buretteTop + 5*scale, radiusX-3*scale, radiusY-2*scale, 0, 0, Math.PI*2);
+ctx.fill();
+ctx.fillRect(buretteX - radiusX + 3*scale, buretteTop + buretteHeight - liquidHeight, 2*(radiusX-3*scale), liquidHeight);
+ctx.globalAlpha = 1;
+
+  // --- Burette ticks & labels ---
+  ctx.strokeStyle = '#000'; ctx.fillStyle = '#000';
+  ctx.font = `${15*scale}px Arial`;
+  for(let i=0;i<=50;i++){
+    const y = buretteTop + (i*buretteHeight)/50;
+    const tickLen = (i%5===0)?10*scale:5*scale;
+    ctx.beginPath();
+    ctx.moveTo(buretteX - radiusX - tickLen, y);
+    ctx.lineTo(buretteX - radiusX, y);
+    ctx.stroke();
+    if(i%5===0){
+      ctx.fillText(Math.round(i/50*50)+' cm³', buretteX - radiusX - 48*scale, y+3);
+    }
+  }
+
+  // --- Tap handle ---
+  ctx.fillStyle = '#888';
+  ctx.fillRect(buretteX - 25*scale, buretteTop + buretteHeight - 10*scale, 50*scale/1.2, 10*scale/1.2);
+
+  ctx.strokeStyle='#000'; ctx.fillStyle='#000'; ctx.lineWidth=2;
+  ctx.beginPath(); 
+  ctx.moveTo(buretteX + 30*scale, buretteTop + buretteHeight - 10*scale); 
+  ctx.lineTo(buretteX + 2*scale, buretteTop + buretteHeight + 10*scale); 
+  ctx.stroke();
+
+  ctx.beginPath(); 
+  ctx.moveTo(buretteX + 2*scale, buretteTop + buretteHeight + 10*scale);
+  ctx.lineTo(buretteX - 2*scale, buretteTop + buretteHeight + 2*scale);
+  ctx.lineTo(buretteX + 6*scale, buretteTop + buretteHeight + 2*scale);
+  ctx.closePath(); ctx.fill();
+
+  ctx.font = `${14*scale}px Arial`; ctx.fillStyle='#000';
+  ctx.fillText('Tap to add drops', buretteX + 40*scale, buretteTop + buretteHeight - 20*scale);
+  ctx.font = `${12*scale}px Arial`;
+  ctx.fillText('Volume added: ' + addedVol.toFixed(1)+' mL', buretteX + 40*scale, buretteTop + buretteHeight);
+
+// --- Flask ---
+const fw = 180 * scale, fh = 200 * scale;
+const fx = centerX - fw / 2;
+const fy = buretteTop + buretteHeight - 10 * scale;
+
+// Flask outline (same as before)
+ctx.strokeStyle = '#000'; ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(fx + 20 * scale, fy + fh);
+ctx.lineTo(fx + fw - 20 * scale, fy + fh);
+ctx.lineTo(fx + fw - 50 * scale, fy + 40 * scale);
+ctx.lineTo(fx + 50 * scale, fy + 40 * scale);
+ctx.closePath(); ctx.stroke();
+
+// Colors for flask liquid
+const mode = modeSelect.value;
+const analyteKey = (mode === 'oxidant_buret') ? reductantSel.value : oxidantSel.value;
+let startColor = '#ffffff', endColor = '#ffffff';
+if (analyteKey === 'Fe2') startColor = COLORS.Fe2;
+if (analyteKey === 'S2O3') startColor = COLORS.S2O3;
+if (analyteKey === 'Oxalate') startColor = COLORS.Oxalate;
+if (titrantKey === 'KMnO4') endColor = COLORS.KMnO4_end;
+else if (titrantKey === 'K2Cr2O7') endColor = COLORS.K2Cr2O7_end;
+else if (titrantKey === 'I2') endColor = COLORS.starch_blue;
+else if (titrantKey === 'Ce4') endColor = COLORS.Ce4_end;
+
+// Convert color hex to RGB
+function hexToRgb(h){ 
+  const c = h.replace('#',''); 
+  return [parseInt(c.substring(0,2),16), parseInt(c.substring(2,4),16), parseInt(c.substring(4,6),16)]; 
+}
+function interpCol(a,b,f){ 
+  return `rgb(${Math.round(a[0]+(b[0]-a[0])*f)},${Math.round(a[1]+(b[1]-a[1])*f)},${Math.round(a[2]+(b[2]-a[2])*f)})`; 
+}
+const frac = Math.min(1, addedVol / (titrantVolNeeded || 50));
+const flaskColor = interpCol(hexToRgb(startColor), hexToRgb(endColor), frac);
+
+// Calculate liquid height based on **displayHeight**
+displayHeight = Math.min(displayHeight, maxFlaskHeight);
+const topY = fy + fh - displayHeight;
+
+// Shrink top ellipse radius as flask fills (optional)
+const maxRadiusX = fw / 2 - 20 * scale;
+
+// Draw liquid
+ctx.fillStyle = flaskColor; ctx.globalAlpha = 0.95;
+ctx.beginPath();
+ctx.ellipse(fx + fw/2, topY, radiusX, radiusY, 0, 0, Math.PI*2);
+ctx.fill();
+ctx.fillRect(fx + fw/2 - radiusX, topY, radiusX*2, fy + fh - topY);
+ctx.globalAlpha = 1;
+
+
+// --- Drops ---
+for(let i = drops.length-1; i >= 0; i--){
+  const d = drops[i];
+  ctx.fillStyle = titColorHex;
+  ctx.beginPath(); ctx.arc(d.x, d.y, 4*scale, 0, Math.PI*2); ctx.fill();
+}
+
+// Labels
+ctx.fillStyle = '#000'; 
+ctx.font = `${14*scale}px Arial`;
+ctx.fillText((mode==='oxidant_buret'?oxidantSel.value:reductantSel.value)+' Burette', buretteX-2*scale, buretteTop-10*scale);
+ctx.fillText((mode==='oxidant_buret'?reductantSel.value:oxidantSel.value)+' Flask', fx+50*scale, fy+fh+16*scale);
+}
+
+/* Animate drops */
+function animateDrops(){
+ const scale = Math.max(canvas.getBoundingClientRect().width / 760, 0.8);
+
+
+  const centerX = canvas.width / 2;
+  const fw = 180*scale, fh = 200*scale;
+  const fx = centerX - fw/2;
+  const fy = 40*scale + 300*scale - 10*scale;
+  const flaskTop = fy + 40*scale;
+
+  for(let i=drops.length-1; i>=0; i--){
+    const d = drops[i];
+    const dx = (fx + fw/2) - d.x;
+    d.vx += dx * 0.03;
+    d.vx *= 0.95;
+    d.vy += 0.6;
+    d.y += d.vy;
+    d.x += d.vx;
+
+    if(d.y > flaskTop) drops.splice(i,1);
+  }
+  draw();
+  requestAnimationFrame(animateDrops);
+}
+
+
+
+function addDrop(){
+  const scale = Math.max(canvas.getBoundingClientRect().width / 760, 0.8);
+  const centerX = canvas.width / 2;
+  const buretteTop = 40 * scale;
+  const buretteHeight = 300 * scale;
+
+  // Create drop
+  const startX = centerX + (Math.random() - 0.5) * 6*scale;
+  const startY = buretteTop + buretteHeight - 10 * scale - 6*scale;
+  drops.push({ x: startX, y: startY, vx: 0, vy: 0 });
+
+  // **Update actual volumes for calculations**
+  addedVol += dropVolume;
+  addedVolOut.textContent = addedVol.toFixed(2);
+  buretteVol = Math.max(0, 50 - addedVol);
+
+  // **Increase visual height slightly**
+  displayHeight = Math.min(displayHeight + visualStep, maxFlaskHeight);
+
+  draw();
+  checkEndpoint();
+}
+
+
+
+function resizeCanvas(){
+  const rect = canvas.parentElement.getBoundingClientRect(); // use card width
+  const width = rect.width;
+  const height = width * 0.65 + 200; // maintain aspect ratio
+
+  // Set CSS display size
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+
+  // Set internal pixel size for high-DPI screens
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  ctx.setTransform(1,0,0,1,0,0); // reset any previous scaling
+  ctx.scale(dpr, dpr);           // scale drawing to match CSS size
+
+  draw();
+}
+
+
+window.addEventListener('resize', resizeCanvas);
+
+// ---------- Init ----------
+window.onload = ()=>{
+  resizeCanvas(); computeValues(); animateDrops();
+};
+
+// ---------- Auto titrate ----------
+autoAdd.addEventListener('change', ()=>{
+  if(autoAdd.checked) autoInterval = setInterval(addDrop,300);
+  else clearInterval(autoInterval);
+});
+
+
+function checkEndpoint() {
+  if (titrantVolNeeded && addedVol >= titrantVolNeeded) {
+    proceedCalcBtn.style.display = 'inline-block'; // <-- show the button
+    proceedCalcBtn.style.opacity = "1";
+    proceedCalcBtn.style.pointerEvents = "auto";
+    proceedCalcBtn.setAttribute("aria-hidden", "false");
+  }
+}
+
+
+ 
+/* Event wiring */
+addDropBtn.addEventListener('click', addDrop);
+canvas.addEventListener('click', ()=>{ addDrop(); });
+
+[oxidantSel,reductantSel,modeSelect,analyteVolEl,analyteConcEl,titrantConcEl,acidSel].forEach(el=>{
+  el.addEventListener('input', ()=>{ computeValues(); });
+  el.addEventListener('change', ()=>{ computeValues(); });
+});
+
+calcBtn.addEventListener('click', ()=>{ computeValues(); });
+resetBtn.addEventListener('click', ()=>{
+  analyteVolEl.value = 25;
+  analyteConcEl.value = 0.100;
+  titrantConcEl.value = 0.100;
+  oxidantSel.value = 'KMnO4';
+  reductantSel.value = 'Fe2';
+  modeSelect.value = 'oxidant_buret';
+  acidSel.value = 'H2SO4';
+  addedVol = 0; addedVolOut.textContent = addedVol.toFixed(2);
+  drops = [];
+  proceedBtn.style.display = 'none';
+  computeValues();
+  draw();
+});
+
+autoAdd.addEventListener('change', ()=>{
+  if(autoAdd.checked){
+    autoInterval = setInterval(addDrop, 300);
+  }else{
+    clearInterval(autoInterval);
+    autoInterval = null;
+  }
+});
+
+/* ---------------------------
+   Init
+   --------------------------- */
+window.onload = ()=>{
+  resizeCanvas();
+  computeValues();
+  animateDrops();
+};
+</script>
+
+</body>
+</html>
+

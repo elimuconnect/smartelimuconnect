@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Graphing Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .graph-selection {
+            margin: 20px 0;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input, select {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #graphExplanation {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+
+        canvas {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+        }
+
+        #inputFields {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Math Graphing Tool</h1>
+
+        <div class="graph-selection">
+            <label for="graphType">Choose a Graph Type:</label>
+            <select id="graphType">
+                <option value="linear">Linear (y = mx + c)</option>
+                <option value="quadratic">Quadratic (y = ax² + bx + c)</option>
+                <option value="cubic">Cubic (y = ax³ + bx² + cx + d)</option>
+                <option value="parabola">Parabola (y = a(x - h)² + k)</option>
+            </select>
+        </div>
+
+        <div id="inputFields"></div>
+
+        <button onclick="drawGraph()">Generate Graph</button>
+
+        <div id="graphExplanation"></div>
+
+        <canvas id="graphCanvas" width="800" height="800"></canvas>
+    </div>
+
+    <script>
+
+        
+        // Generate input fields based on selected graph type
+        function generateInputFields(graphType) {
+            let inputFields = document.getElementById('inputFields');
+            inputFields.innerHTML = "";  // Clear existing fields
+
+            if (graphType === "linear") {
+                inputFields.innerHTML = `
+                    <label for="m">Slope (m):</label>
+                    <input type="number" id="m" step="any" placeholder="Enter slope (m)" required>
+                    <label for="c">Y-Intercept (c):</label>
+                    <input type="number" id="c" step="any" placeholder="Enter y-intercept (c)" required>
+                `;
+            } else if (graphType === "quadratic") {
+                inputFields.innerHTML = `
+                    <label for="a">Coefficient a:</label>
+                    <input type="number" id="a" step="any" placeholder="Enter a" required>
+                    <label for="b">Coefficient b:</label>
+                    <input type="number" id="b" step="any" placeholder="Enter b" required>
+                    <label for="c">Y-Intercept (c):</label>
+                    <input type="number" id="c" step="any" placeholder="Enter c" required>
+                `;
+            } else if (graphType === "cubic") {
+                inputFields.innerHTML = `
+                    <label for="a">Coefficient a:</label>
+                    <input type="number" id="a" step="any" placeholder="Enter a" required>
+                    <label for="b">Coefficient b:</label>
+                    <input type="number" id="b" step="any" placeholder="Enter b" required>
+                    <label for="c">Coefficient c:</label>
+                    <input type="number" id="c" step="any" placeholder="Enter c" required>
+                    <label for="d">Y-Intercept (d):</label>
+                    <input type="number" id="d" step="any" placeholder="Enter d" required>
+                `;
+            } else if (graphType === "parabola") {
+                inputFields.innerHTML = `
+                    <label for="a">Coefficient a:</label>
+                    <input type="number" id="a" step="any" placeholder="Enter a" required>
+                    <label for="h">X-Coordinate of Vertex (h):</label>
+                    <input type="number" id="h" step="any" placeholder="Enter h" required>
+                    <label for="k">Y-Coordinate of Vertex (k):</label>
+                    <input type="number" id="k" step="any" placeholder="Enter k" required>
+                `;
+            }
+        }
+
+        // Draw the graph on the canvas based on input fields
+        function drawGraph() {
+            let graphType = document.getElementById('graphType').value;
+            let m, a, b, c, d, h, k;
+
+            if (graphType === "linear") {
+                m = parseFloat(document.getElementById('m').value);
+                c = parseFloat(document.getElementById('c').value);
+            } else if (graphType === "quadratic") {
+                a = parseFloat(document.getElementById('a').value);
+                b = parseFloat(document.getElementById('b').value);
+                c = parseFloat(document.getElementById('c').value);
+            } else if (graphType === "cubic") {
+                a = parseFloat(document.getElementById('a').value);
+                b = parseFloat(document.getElementById('b').value);
+                c = parseFloat(document.getElementById('c').value);
+                d = parseFloat(document.getElementById('d').value);
+            } else if (graphType === "parabola") {
+                a = parseFloat(document.getElementById('a').value);
+                h = parseFloat(document.getElementById('h').value);
+                k = parseFloat(document.getElementById('k').value);
+            }
+
+            const canvas = document.getElementById('graphCanvas');
+            const ctx = canvas.getContext('2d');
+            const scale = 20; // Adjusted scale for larger view
+            const originX = canvas.width / 2;
+            const originY = canvas.height / 2;
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the Cartesian plane with number lines
+            ctx.beginPath();
+            ctx.moveTo(0, originY);  // Y-axis (vertical line)
+            ctx.lineTo(canvas.width, originY);
+            ctx.moveTo(originX, 0);  // X-axis (horizontal line)
+            ctx.lineTo(originX, canvas.height);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw grid lines
+            ctx.beginPath();
+            ctx.lineWidth = 0.5;
+            ctx.strokeStyle = '#ddd';
+
+            // Draw vertical grid lines (X-axis)
+            for (let x = originX + scale * 20; x <= canvas.width; x += scale) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+            }
+            for (let x = originX - scale * 20; x >= 0; x -= scale) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+            }
+
+            // Draw horizontal grid lines (Y-axis)
+            for (let y = originY + scale * 20; y <= canvas.height; y += scale) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            for (let y = originY - scale * 20; y >= 0; y -= scale) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+
+            // Draw axis labels
+            ctx.fillStyle = '#000';
+            for (let i = -20; i <= 20; i++) {
+                let xLabelPos = originX + (i * scale);
+                if (xLabelPos >= 0 && xLabelPos <= canvas.width) {
+                    ctx.fillText(i, xLabelPos - 5, originY + 20);  // X-axis labels
+                }
+                
+                let yLabelPos = originY - (i * scale);
+                if (yLabelPos >= 0 && yLabelPos <= canvas.height) {
+                    ctx.fillText(i, originX + 10, yLabelPos + 5);  // Y-axis labels
+                }
+            }
+
+            // Now plot the selected graph
+            let xValues = Array.from({length: 41}, (_, i) => i - 20);  // x values from -20 to 20
+            let yValues = xValues.map(x => {
+                if (graphType === "linear") {
+                    return m * x + c;
+                } else if (graphType === "quadratic") {
+                    return a * x * x + b * x + c;
+                } else if (graphType === "cubic") {
+                    return a * x * x * x + b * x * x + c * x + d;
+                } else if (graphType === "parabola") {
+                    return a * Math.pow(x - h, 2) + k;
+                }
+            });
+
+            // Draw the graph curve
+            ctx.beginPath();
+            ctx.moveTo(originX + xValues[0] * scale, originY - yValues[0] * scale);
+            for (let i = 1; i < xValues.length; i++) {
+                ctx.lineTo(originX + xValues[i] * scale, originY - yValues[i] * scale);
+            }
+            ctx.strokeStyle = 'rgba(75, 192, 192, 1)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Provide explanation based on the graph type
+            updateExplanation(graphType);
+        }
+
+        // Update the explanation text based on selected graph type
+        function updateExplanation(graphType) {
+            const explanation = document.getElementById('graphExplanation');
+            explanation.innerHTML = "";
+
+            if (graphType === "linear") {
+                explanation.innerHTML = `
+                    <h2>Linear Graph: y = mx + c</h2>
+                    <p>The graph represents a straight line. The slope (m) determines the steepness of the line, and c is the y-intercept.</p>
+                `;
+            } else if (graphType === "quadratic") {
+                explanation.innerHTML = `
+                    <h2>Quadratic Graph: y = ax² + bx + c</h2>
+                    <p>A parabolic curve. The coefficient a controls the direction and width of the parabola.</p>
+                `;
+            } else if (graphType === "cubic") {
+                explanation.innerHTML = `
+                    <h2>Cubic Graph: y = ax³ + bx² + cx + d</h2>
+                    <p>This graph has one or two turning points and can have an inflection point.</p>
+                `;
+            } else if (graphType === "parabola") {
+                explanation.innerHTML = `
+                    <h2>Parabola Graph: y = a(x - h)² + k</h2>
+                    <p>This is a transformed parabola where (h, k) is the vertex of the curve.</p>
+                `;
+            }
+        }
+
+        // Initialize the tool by setting up input fields
+        document.getElementById('graphType').addEventListener('change', (e) => {
+            generateInputFields(e.target.value);
+        });
+
+        // Initial call to set up fields
+        generateInputFields(document.getElementById('graphType').value);
+    </script>
+</body>
+</html>
+

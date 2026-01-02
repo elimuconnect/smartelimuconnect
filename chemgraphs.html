@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Graphs Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        select {
+            margin: 10px 0 20px;
+            padding: 8px;
+            font-size: 16px;
+              
+        }
+        p {
+            font-size: 16px;
+            color: #555;
+			}
+			img {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border: 1px solid #ddd;
+    background: #fff;
+    margin: 20px auto;
+}
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chemistry Graphs Tool</h1>
+        <label for="graphType">Select a Graph:</label>
+        <select id="graphType">
+            <option value="solubility-temperature">Solubility vs Temperature</option>
+            <option value="solubility-crystallisation">Solubility vs Crystallisation Temperature</option>
+            <option value="heating-curve">Heating Curve</option>
+            <option value="cooling-curve">Cooling Curve</option>
+            <option value="enthalpy-endothermic">Enthalpy of Solution (Endothermic)</option>
+			<option value="enthalpy-endothermic2">Enthalpy of Solution (Endothermic2)</option>
+            <option value="enthalpy-exothermic">Enthalpy of Solution (Exothermic)</option>
+			<option value="enthalpy-exothermic2">Enthalpy of Solution (Exothermic2)</option>
+            <option value="neutralisation-endothermic">Enthalpy of Neutralisation (Endothermic)</option>
+            <option value="neutralisation-exothermic">Enthalpy of Neutralisation (Exothermic)</option>
+            <option value="displacement-endothermic">Enthalpy of Displacement (Endothermic)</option>
+			 <option value="displacement-endothermic2">Enthalpy of Displacement (Endothermic2)</option>
+            <option value="displacement-exothermic">Enthalpy of Displacement (Exothermic)</option>
+			<option value="displacement-exothermic2">Enthalpy of Displacement (Exothermic2)</option>
+            <option value="rate-concentration">Rate of Reaction vs Concentration</option>
+            <option value="rate-temperature">Rate of Reaction vs Temperature</option>
+        </select>
+        <img id="graphImage" src="images/solubility-temperature.png" alt="Graph">
+        <p id="description">Solubility increases with temperature.</p>
+    </div>
+
+    <script>
+
+		
+        const graphTypeSelector = document.getElementById('graphType');
+        const graphImage = document.getElementById('graphImage');
+        const description = document.getElementById('description');
+
+        const graphInfo = {
+            "solubility-temperature": { src: "https://static.wixstatic.com/media/9ba186_a13fc8321c6b498ab0774ba88d06ceea~mv2.png" },
+            "solubility-crystallisation": { src: "https://static.wixstatic.com/media/9ba186_9bddc35926a54ca889f47d8874d033bb~mv2.png" },
+            "heating-curve": { src: "https://static.wixstatic.com/media/9ba186_f236b6d9a6e845809a704663e1601c00~mv2.png", desc: "Heating curve showing phase changes over time." },
+            "cooling-curve": { src: "https://static.wixstatic.com/media/9ba186_2f406e3702714f348a6dd50ebb0dabd6~mv2.png", desc: "Cooling curve showing phase changes over time." },
+            "enthalpy-endothermic": { src: "https://static.wixstatic.com/media/9ba186_a64ddb26aa924ffdb07b93cad8f415ae~mv2.png", desc: "When there is a break in temperature reading." },
+			"enthalpy-endothermic2": { src: "https://static.wixstatic.com/media/9ba186_2078169fccea49629c5f9ae59c48a81d~mv2.png", desc: "When there is no break in temperature reading." },
+            "enthalpy-exothermic": { src: "https://static.wixstatic.com/media/9ba186_314bf6af42a3459bb392d4479cd18529~mv2.png", desc: "When there is no break in temperature reading." },
+			"enthalpy-exothermic2": { src: "https://static.wixstatic.com/media/9ba186_15ea7c3e396d460e8c4f40f2393639b2~mv2.png", desc: "When there is a break in temperature reading." },
+            "neutralisation-endothermic": { src: "https://static.wixstatic.com/media/9ba186_9da7fbe071134c2695282c4f4f1644fe~mv2.png", desc: "Endothermic enthalpy of neutralisation." },
+            "neutralisation-exothermic": { src: "https://static.wixstatic.com/media/9ba186_ddb93f2240214000b984c63f6731d422~mv2.png", desc: "Exothermic enthalpy of neutralisation." },
+            "displacement-endothermic": { src: "https://static.wixstatic.com/media/9ba186_a64ddb26aa924ffdb07b93cad8f415ae~mv2.png", desc: "When there is a break in temperature reading." },
+             "displacement-endothermic2": { src: "https://static.wixstatic.com/media/9ba186_2078169fccea49629c5f9ae59c48a81d~mv2.png", desc: "When there is no break in temperature reading." },
+			"displacement-exothermic": { src: "https://static.wixstatic.com/media/9ba186_314bf6af42a3459bb392d4479cd18529~mv2.png", desc: "When there is no break in temperature reading." },
+            "displacement-exothermic2": { src: "https://static.wixstatic.com/media/9ba186_15ea7c3e396d460e8c4f40f2393639b2~mv2.png", desc: "When there is a break in temperature reading." },
+			"rate-concentration": { src: "https://static.wixstatic.com/media/9ba186_f3ae277a52224666a5dea2943d85093c~mv2.png", desc: "Rate of reaction increases with concentration." },
+            "rate-temperature": { src: "https://static.wixstatic.com/media/9ba186_f0a26243ed4c477786201aaeeaea392a~mv2.png", desc: "Rate of reaction increases with temperature." }
+        };
+
+        graphTypeSelector.addEventListener('change', (e) => {
+            const selectedGraph = graphInfo[e.target.value];
+            graphImage.src = selectedGraph.src;
+            description.textContent = selectedGraph.desc;
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Error and Approximation Tool</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button, select { margin: 5px; padding: 5px; font-size: 16px; }
+    .section { margin-bottom: 20px; }
+    .output { background: #f0f0f0; padding: 10px; border-left: 5px solid #007acc; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+
+  <h2>Error and Approximation Tool</h2>
+
+  <div class="section">
+    <label>Actual Value: <input type="number" id="actual" step="any"></label><br>
+    <label>Measured/Approximated Value: <input type="number" id="measured" step="any"></label><br>
+    <button onclick="absoluteError()">Calculate Absolute Error</button>
+    <button onclick="relativeError()">Calculate Relative Error</button>
+    <button onclick="percentageError()">Calculate Percentage Error</button>
+  </div>
+
+  <div class="section">
+    <label>Value to Round: <input type="number" id="valueToRound" step="any"></label><br>
+    <label>Decimal Places: <input type="number" id="dp" value="2"></label>
+    <button onclick="roundToDP()">Round to Decimal Places</button><br>
+    <label>Significant Figures: <input type="number" id="sf" value="3"></label>
+    <button onclick="roundToSF()">Round to Significant Figures</button>
+  </div>
+
+  <div class="section">
+    <label>Rounded Value (for bounds): <input type="number" id="roundedVal" step="any"></label><br>
+    <label>Accuracy Type:
+      <select id="boundType">
+        <option value="dp">Decimal Places</option>
+        <option value="sf">Significant Figures</option>
+      </select>
+    </label>
+    <label>Unit of measurement(for whole number write 0, for 1 decimal place , write 1 etc: <input type="number" id="boundPlaces" value="3"></label>
+    <button onclick="findBounds()">Find Upper and Lower Bounds</button>
+  </div>
+
+  <div class="output" id="output">Results will appear here...</div>
+
+  <script>
+
+
+    
+    function absoluteError() {
+      let a = parseFloat(document.getElementById("actual").value);
+      let m = parseFloat(document.getElementById("measured").value);
+      if (isNaN(a) || isNaN(m)) return alert("Enter both actual and measured values.");
+
+      let absErr = Math.abs(a - m);
+      let output = `Absolute Error:\n|${a} - ${m}| = ${absErr}`;
+      document.getElementById("output").innerText = output;
+    }
+
+    function relativeError() {
+      let a = parseFloat(document.getElementById("actual").value);
+      let m = parseFloat(document.getElementById("measured").value);
+      if (isNaN(a) || isNaN(m)) return alert("Enter both actual and measured values.");
+
+      let absErr = Math.abs(a - m);
+      let relErr = absErr / Math.abs(a);
+      let output = `Relative Error:\n|${a} - ${m}| / ${a} = ${relErr.toFixed(6)}`;
+      document.getElementById("output").innerText = output;
+    }
+
+    function percentageError() {
+      let a = parseFloat(document.getElementById("actual").value);
+      let m = parseFloat(document.getElementById("measured").value);
+      if (isNaN(a) || isNaN(m)) return alert("Enter both actual and measured values.");
+
+      let absErr = Math.abs(a - m);
+      let percErr = (absErr / Math.abs(a)) * 100;
+      let output = `Percentage Error:\n(|${a} - ${m}| / ${a}) × 100 = ${percErr.toFixed(2)}%`;
+      document.getElementById("output").innerText = output;
+    }
+
+    function roundToDP() {
+      let val = parseFloat(document.getElementById("valueToRound").value);
+      let dp = parseInt(document.getElementById("dp").value);
+      if (isNaN(val) || isNaN(dp)) return alert("Enter a number and decimal places.");
+
+      let rounded = val.toFixed(dp);
+      let output = `Rounded to ${dp} Decimal Places:\n${val} → ${rounded}`;
+      document.getElementById("output").innerText = output;
+    }
+
+    function roundToSF() {
+      let val = parseFloat(document.getElementById("valueToRound").value);
+      let sf = parseInt(document.getElementById("sf").value);
+      if (isNaN(val) || isNaN(sf)) return alert("Enter a number and significant figures.");
+
+      if (val === 0) return document.getElementById("output").innerText = "0 has no significant figures.";
+      let output = `Rounded to ${sf} Significant Figures:\nOriginal: ${val}`;
+
+      let power = Math.floor(Math.log10(Math.abs(val)));
+      let factor = Math.pow(10, sf - 1 - power);
+      let rounded = Math.round(val * factor) / factor;
+
+      output += `\nShift by factor ${factor}\n= ${rounded}`;
+      document.getElementById("output").innerText = output;
+    }
+
+    function findBounds() {
+      let val = parseFloat(document.getElementById("roundedVal").value);
+      let type = document.getElementById("boundType").value;
+      let places = parseInt(document.getElementById("boundPlaces").value);
+      if (isNaN(val) || isNaN(places)) return alert("Enter a value and number of places.");
+
+      let unit = (type === 'dp') ? Math.pow(10, -places) : Math.pow(10, Math.floor(Math.log10(Math.abs(val))) - (places - 1));
+      let bound = unit / 2;
+      let lower = val - bound;
+      let upper = val + bound;
+
+      let output = `Bounds for ${val} (${places} ${type.toUpperCase()}):\n`;
+      output += `Unit = ${unit}, Half Unit = ${bound}\n`;
+      output += `Lower Bound = ${val} - ${bound} = ${lower}\n`;
+      output += `Upper Bound = ${val} + ${bound} = ${upper}`;
+      document.getElementById("output").innerText = output;
+    }
+  </script>
+
+</body>
+</html>
+

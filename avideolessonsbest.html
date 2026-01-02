@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CBC JSS Video Lessons – Elimu Connect</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #e1f5fe, #fce4ec);
+    }
+
+    header {
+      background-color: #1976d2;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+
+    .grade-selector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 20px;
+    }
+
+    select {
+      padding: 12px;
+      font-size: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 90%;
+      max-width: 300px;
+    }
+
+    #videos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px;
+      gap: 20px;
+    }
+
+    .video-card {
+      flex: 1 1 100%;
+      max-width: 700px;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .video-title {
+      padding: 12px;
+      font-weight: bold;
+      font-size: 1.1em;
+      color: #1565c0;
+      text-align: center;
+    }
+
+    #noResult {
+      text-align: center;
+      color: red;
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>📚 CBC JSS VIDEO LESSONS – Grade 7 to 10</header>
+
+ <div class="grade-selector">
+  <select id="gradeSelect" onchange="populateSubjects()">
+    <option value="">Select Grade</option>
+    <option value="grade7">Grade 7</option>
+    <option value="grade8">Grade 8</option>
+    <option value="grade9">Grade 9</option>
+    <option value="grade10">Grade 10</option>
+  </select>
+
+  <select id="subjectSelect" onchange="populateTopics()" disabled>
+    <option value="">Select Subject</option>
+  </select>
+
+  <select id="topicSelect" onchange="renderVideos()" disabled>
+    <option value="">Select Topic</option>
+  </select>
+</div>
+
+
+  <div id="noResult">No video found. Please select another topic.</div>
+
+  <div id="videos"></div>
+
+  <script>
+    const videoData = {
+     
+  grade7: {
+    math: {
+      fractions: { title: "Introduction to Fractions", id: "VIDEO_ID_1" },
+      geometry: { title: "2D and 3D Shapes", id: "VIDEO_ID_2" }
+    },
+    english: {
+      nouns: { title: "Types of Nouns", id: "VIDEO_ID_3" },
+      punctuation: { title: "Basic Punctuation", id: "VIDEO_ID_4" }
+    },
+    science: {
+      plants: { title: "Plant Growth", id: "VIDEO_ID_5" },
+      weather: { title: "Weather Patterns", id: "VIDEO_ID_6" }
+    },
+    social: {
+      community: { title: "Roles in Community", id: "VIDEO_ID_7" }
+    },
+    computer: {
+      parts: { title: "Parts of a Computer", id: "VIDEO_ID_8" }
+    }
+  },
+  grade8: {
+    math: {
+      algebra: { title: "Simple Algebra", id: "VIDEO_ID_9" }
+    },
+    english: {
+      grammar: { title: "Grammar Rules", id: "VIDEO_ID_10" }
+    },
+    science: {
+      light: { title: "Properties of Light", id: "VIDEO_ID_11" }
+    },
+    social: {
+      leadership: { title: "Leadership Skills", id: "VIDEO_ID_12" }
+    },
+    computer: {
+      safety: { title: "Digital Safety", id: "VIDEO_ID_13" }
+    }
+  },
+  grade9: {
+    math: {
+      algebra: { title: "Algebraic Expressions", id: "YOUR_VIDEO_ID21" },
+      geometry: { title: "Geometry of Triangles", id: "YOUR_VIDEO_ID22" },
+      probability: { title: "Basic Probability", id: "YOUR_VIDEO_ID23" }
+    },
+    english: {
+      comprehension: { title: "Reading Comprehension", id: "YOUR_VIDEO_ID31" },
+      grammar: { title: "Grammar Usage", id: "YOUR_VIDEO_ID33" }
+    },
+    science: {
+    structureAtom: { title: "Structure of the Atom", id: "S3NaP1gu8Tw" },
+    metals: { title: "Metals and Alloys", id: "7HyjCOUK6CQ" },
+    waterHardness: { title: "Water Hardness", id: "YcoH6QQWatA" },
+    nutritionPlants: { title: "Nutrition In Plants", id: "YSLqVYTUquA" },
+    nutritionAnimals: { title: "Nutrition In Animals", id: "mLo6QUCuJq0" },
+    reproductionPlants: { title: "Reproduction In Plants", id: "tcvyN0cWB5o" },
+    interdependenceLife: { title: "Interdependence In Life", id: "I0azf8Mf-2k" },
+    curvedMirrors: { title: "Curved Mirrors", id: "GaENFrIdn1A" },
+    waves: { title: "Waves", id: "kORVHNHT7i4" }
+    
+    },
+    computer: {
+      coding: { title: "Introduction to Coding", id: "YOUR_VIDEO_ID12" },
+      hardware: { title: "Computer Hardware", id: "YOUR_VIDEO_ID13" }
+    },
+    social: {
+      government: { title: "Government Structure", id: "YOUR_VIDEO_ID1" },
+      democracy: { title: "Democracy in Kenya", id: "YOUR_VIDEO_ID3" }
+    }
+  },
+  grade10: {
+    math: {
+      trigonometry: { title: "Intro to Trigonometry", id: "VIDEO_ID_14" }
+    },
+    english: {
+      literature: { title: "Themes in Literature", id: "VIDEO_ID_15" }
+    },
+    science: {
+      periodic: { title: "Periodic Table", id: "VIDEO_ID_16" }
+    },
+    social: {
+      planning: { title: "Development Planning", id: "VIDEO_ID_17" }
+    },
+    computer: {
+      databases: { title: "Databases", id: "VIDEO_ID_18" }
+    }
+  }
+};
+
+
+    const subjectOptions = {
+  grade7: ["math", "english", "science", "social", "computer"],
+  grade8: ["math", "english", "science", "social", "computer"],
+  grade9: ["math", "english", "science", "computer", "social"],
+  grade10: ["math", "english", "science", "social", "computer"]
+};
+
+const topicOptions = {
+  grade7: {
+    math: ["fractions", "geometry"],
+    english: ["nouns", "punctuation"],
+    science: ["plants", "weather"],
+    social: ["community"],
+    computer: ["parts"]
+  },
+  grade8: {
+    math: ["algebra"],
+    english: ["grammar"],
+    science: ["light"],
+    social: ["leadership"],
+    computer: ["safety"]
+  },
+  grade9: {
+    math: ["algebra", "geometry", "probability"],
+    english: ["comprehension", "grammar"],
+    science: ["structureAtom", "metals", "waterHardness", "nutritionPlants", "nutritionAnimals", "reproductionPlants", "interdependenceLife", "curvedMirrors","waves",],
+    computer: ["coding", "hardware"],
+    social: ["government", "democracy"]
+  },
+  grade10: {
+    math: ["trigonometry"],
+    english: ["literature"],
+    science: ["periodic"],
+    social: ["planning"],
+    computer: ["databases"]
+  }
+};
+
+
+    function capitalize(text) {
+      return text.charAt(0).toUpperCase() + text.slice(1).replace(/-/g, " ");
+    }
+
+    function populateSubjects() {
+      const grade = document.getElementById("gradeSelect").value;
+      const subjectSelect = document.getElementById("subjectSelect");
+      const topicSelect = document.getElementById("topicSelect");
+
+      subjectSelect.innerHTML = `<option value="">Select Subject</option>`;
+      topicSelect.innerHTML = `<option value="">Select Topic</option>`;
+      subjectSelect.disabled = true;
+      topicSelect.disabled = true;
+
+      if (subjectOptions[grade]) {
+        subjectOptions[grade].forEach(subject => {
+          const option = document.createElement("option");
+          option.value = subject;
+          option.textContent = capitalize(subject);
+          subjectSelect.appendChild(option);
+        });
+        subjectSelect.disabled = false;
+      }
+
+      document.getElementById("videos").innerHTML = "";
+      document.getElementById("noResult").style.display = "none";
+    }
+
+    function populateTopics() {
+      const grade = document.getElementById("gradeSelect").value;
+      const subject = document.getElementById("subjectSelect").value;
+      const topicSelect = document.getElementById("topicSelect");
+
+      topicSelect.innerHTML = `<option value="">Select Topic</option>`;
+      topicSelect.disabled = true;
+
+      if (topicOptions[grade] && topicOptions[grade][subject]) {
+        topicOptions[grade][subject].forEach(topic => {
+          const option = document.createElement("option");
+          option.value = topic;
+          option.textContent = capitalize(topic);
+          topicSelect.appendChild(option);
+        });
+        topicSelect.disabled = false;
+      }
+
+      document.getElementById("videos").innerHTML = "";
+      document.getElementById("noResult").style.display = "none";
+    }
+
+    function renderVideos() {
+      const grade = document.getElementById("gradeSelect").value;
+      const subject = document.getElementById("subjectSelect").value;
+      const topic = document.getElementById("topicSelect").value;
+      const container = document.getElementById("videos");
+
+      container.innerHTML = "";
+      document.getElementById("noResult").style.display = "none";
+
+      if (
+        videoData[grade] &&
+        videoData[grade][subject] &&
+        videoData[grade][subject][topic]
+      ) {
+        const video = videoData[grade][subject][topic];
+        const card = document.createElement("div");
+        card.className = "video-card";
+        card.innerHTML = `
+          <div class="video-wrapper">
+            <iframe loading="lazy" src="https://www.youtube.com/embed/${video.id}" allowfullscreen></iframe>
+          </div>
+          <div class="video-title">Grade 9: ${capitalize(subject)} – ${video.title}</div>
+        `;
+        container.appendChild(card);
+        setTimeout(() => card.scrollIntoView({ behavior: "smooth" }), 100);
+      } else {
+        document.getElementById("noResult").style.display = "block";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hess's Law Calculator (Up to 4 Steps)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; line-height: 1.6; }
+    h2 { color: #004080; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input[type="number"] { padding: 6px; margin-top: 6px; width: 180px; font-size: 15px; }
+    button { margin-top: 20px; padding: 10px 24px; font-size: 16px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #output { margin-top: 30px; padding: 20px; background: #eef6ff; border-left: 5px solid #007BFF; border-radius: 4px; white-space: pre-wrap; font-size: 17px; }
+  </style>
+</head>
+<body>
+
+  <h2>🔥 Hess's Law Calculator (Up to 4 Steps)</h2>
+
+  <label for="dh1">ΔH₁ (kJ/mol):</label>
+  <input type="number" id="dh1" placeholder="e.g. -100" step="any">
+
+  <label for="dh2">ΔH₂ (kJ/mol):</label>
+  <input type="number" id="dh2" placeholder="Optional" step="any">
+
+  <label for="dh3">ΔH₃ (kJ/mol):</label>
+  <input type="number" id="dh3" placeholder="Optional" step="any">
+
+  <label for="dh4">ΔH₄ (kJ/mol):</label>
+  <input type="number" id="dh4" placeholder="Optional" step="any">
+
+  <button onclick="calculateHess()">Calculate Overall ΔH</button>
+
+  <div id="output"></div>
+
+  <script>
+    function formatNumber(num) {
+      if (Number.isInteger(num)) return num.toString();
+      return parseFloat(num.toFixed(3)).toString();
+    }
+
+    function calculateHess() {
+      const dh1 = parseFloat(document.getElementById("dh1").value);
+      const dh2 = parseFloat(document.getElementById("dh2").value);
+      const dh3 = parseFloat(document.getElementById("dh3").value);
+      const dh4 = parseFloat(document.getElementById("dh4").value);
+
+      let steps = [];
+      let output = "Step-by-step Hess’s Law Calculation:\n\n";
+
+      if (!isNaN(dh1)) steps.push(dh1);
+      if (!isNaN(dh2)) steps.push(dh2);
+      if (!isNaN(dh3)) steps.push(dh3);
+      if (!isNaN(dh4)) steps.push(dh4);
+
+      if (steps.length === 0) {
+        document.getElementById("output").innerHTML = "<span style='color:red;'>Please enter at least one ΔH value.</span>";
+        return;
+      }
+
+      steps.forEach((val, index) => {
+        output += `ΔH${index + 1} = ${formatNumber(val)} kJ/mol\n`;
+      });
+
+      const total = steps.reduce((sum, val) => sum + val, 0);
+      const stepStr = steps.map(formatNumber).join(" + ");
+
+      output += `\nOverall ΔH = ${stepStr} = ${formatNumber(total)} kJ/mol\n`;
+
+      // Determine endo or exothermic
+      if (total > 0) {
+        output += "\nThis reaction is Endothermic (absorbs heat).";
+      } else if (total < 0) {
+        output += "\nThis reaction is Exothermic (releases heat).";
+      } else {
+        output += "\nThis reaction has no net heat change (ΔH = 0).";
+      }
+
+      document.getElementById("output").textContent = output;
+    }
+  </script>
+
+</body>
+</html>

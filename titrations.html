@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Titration Calculator</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background-color: #eef2f7;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    input {
+      margin: 5px;
+      padding: 5px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .section {
+      background: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #ccc;
+    }
+    .step {
+      margin-bottom: 10px;
+    }
+    .formula {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+
+
+
+ .section { max-width:760px; padding:16px; border:1px solid #ddd; border-radius:8px; font-family:system-ui,Segoe UI,Roboto,Arial; }
+  label{display:block; margin-top:8px; font-weight:600;}
+  input[type=number]{width:160px; padding:6px; margin-top:4px;}
+  .small{width:80px;}
+  button{margin-top:12px; padding:8px 12px; border-radius:6px; cursor:pointer;}
+  .result{margin-top:12px; background:#fafafa; border-radius:6px; padding:12px; font-size:14px;}
+  .step{margin:8px 0; padding:8px; background:#fff; border-left:4px solid #0b61b6; border-radius:4px;}
+  .formula{font-family:monospace; color:#222;}
+  .error{color:#a00; font-weight:700;}
+    
+  </style>
+</head>
+<body>
+
+<h2>Direct & Back Titration Calculator(Use values obtained from the simulators)</h2>
+
+<div class="section">
+  <h3>Direct Titration(calculating molarity)</h3>
+  <label>Volume of acid (cm³):</label>
+  <input type="number" id="directVolAcid" step="any"><br>
+  <label>Concentration of acid (mol/dm³):</label>
+  <input type="number" id="directConcAcid" step="any"><br>
+  <label>Volume of base (cm³):</label>
+  <input type="number" id="directVolBase" step="any"><br>
+ 
+  
+  
+  <label>Mole Ratio Acid:Base = </label>
+  <input type="number" id="directRatioAcid" value="1" style="width: 50px;"> :
+  <input type="number" id="directRatioBase" value="1" style="width: 50px;"><br>
+
+  <button onclick="calculateDirect()">Calculate Direct Titration</button>
+  <div id="directResult"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class="section">
+  <h3>Back Titration — Auto solver (show steps)</h3>
+
+  <label>Mass of substance (g)</label>
+  <input type="number" id="mass" step="any" placeholder="e.g. 0.250">
+
+  <label>Relative Formula Mass / RFM (g·mol⁻¹) — (leave blank to solve for it)</label>
+  <input type="number" id="rfm" step="any" placeholder="e.g. 58.44">
+
+  <label>Volume of acid added initially (cm³)</label>
+  <input type="number" id="volAcid" step="any" placeholder="e.g. 25.0">
+
+  <label>Concentration of acid(Original) (mol·dm⁻³)</label>
+  <input type="number" id="concAcid" step="any" placeholder="e.g. 0.100">
+
+  <label>Volume of base used in titration (cm³)</label>
+  <input type="number" id="volBase" step="any" placeholder="e.g. 15.0">
+
+  <label>Concentration of base (mol·dm⁻³)</label>
+  <input type="number" id="concBase" step="any" placeholder="e.g. 0.100">
+
+  <label>Mole ratio (Acid : Base)</label>
+  <input type="number" id="ratioAbA" class="small" value="1" min="1"> :
+  <input type="number" id="ratioAbB" class="small" value="1" min="1">
+
+  <label>Moles (Acid : Substance)</label>
+  <input type="number" id="ratioAsA" class="small" value="1" min="1"> :
+  <input type="number" id="ratioAsB" class="small" value="1" min="1">
+
+  <div>
+    <button onclick="solveBackTitration()">Solve (calculate the ONE missing value)</button>
+    <button onclick="fillExample()">Fill example values</button>
+    <button onclick="clearAll()">Clear</button>
+  </div>
+
+  <div id="result" class="result" aria-live="polite"></div>
+</div>
+
+  
+
+
+  
+
+<div class="section">
+  <h3>Redox Titration Calculator (Find missing concentration)</h3>
+  <label>Volume of oxidant (cm³):</label>
+  <input type="number" id="redoxVolOx" step="any"><br>
+  <label>Concentration of oxidant (mol/dm³, leave empty if unknown):</label>
+  <input type="number" id="redoxConcOx" step="any"><br>
+  <label>Volume of reductant (cm³):</label>
+  <input type="number" id="redoxVolRed" step="any"><br>
+  <label>Concentration of reductant (mol/dm³, leave empty if unknown):</label>
+  <input type="number" id="redoxConcRed" step="any"><br>
+  <label>Mole Ratio Oxidant:Reductant = </label>
+  <input type="number" id="redoxRatioOx" value="1" style="width: 50px;"> :
+  <input type="number" id="redoxRatioRed" value="1" style="width: 50px;"><br>
+  <button onclick="calculateRedox()">Calculate Redox Titration</button>
+  <div id="redoxResult"></div>
+</div>
+
+
+
+
+
+
+<script>
+
+  
+ function format(num) {
+  if (Math.abs(num) < 1 && num !== 0) {
+    // For small numbers, show up to 6 decimal places (without trailing zeros)
+    return parseFloat(num.toFixed(6)).toString();
+  }
+  return parseFloat(num.toFixed(4)).toString(); // For regular numbers
+}
+
+  function calculateDirect() {
+    const vA = parseFloat(document.getElementById('directVolAcid').value) / 1000;
+    const cA = parseFloat(document.getElementById('directConcAcid').value);
+    const vB = parseFloat(document.getElementById('directVolBase').value) / 1000;
+  
+    const rA = parseFloat(document.getElementById('directRatioAcid').value);
+    const rB = parseFloat(document.getElementById('directRatioBase').value);
+
+    const steps = [];
+    steps.push(`<div class='step formula'>Step 1: Calculate moles of acid = volume × concentration</div>`);
+    const molesA = vA * cA;
+    steps.push(`<div class='step'>${format(vA)} × ${cA} = ${format(molesA)} mol</div>`);
+
+    steps.push(`<div class='step formula'>Step 2: Use mole ratio (Acid:Base = ${rA}:${rB})</div>`);
+    const molesB = molesA * (rB / rA);
+    steps.push(`<div class='step'>Moles of base = ${format(molesA)} × (${rB}/${rA}) = ${format(molesB)} mol</div>`);
+
+    steps.push(`<div class='step formula'>Step 3: Calculate concentration of base = moles / volume</div>`);
+    const concB = molesB / vB;
+    steps.push(`<div class='step'>${format(molesB)} ÷ ${format(vB)} = ${format(concB)} mol/dm³</div>`);
+
+    document.getElementById('directResult').innerHTML = steps.join('');
+  }
+
+
+
+
+
+
+
+  
+  function getVal(id){ const v = document.getElementById(id).value.trim(); return v==="" ? null : parseFloat(v); }
+function fmt(x, dp=6){ if (x===null || isNaN(x)) return '—'; return Number(x.toPrecision(8)).toString(); }
+let resSteps = [];
+
+function appendStep(html){ resSteps.push(`<div class="step">${html}</div>`); }
+
+function solveBackTitration(){
+  resSteps = [];
+  const mass = getVal('mass');
+  const rfm = getVal('rfm');
+  const volA = getVal('volAcid');
+  const cA = getVal('concAcid');
+  const volB = getVal('volBase');
+  const cB = getVal('concBase');
+
+  const ratioAbA = getVal('ratioAbA') || 1;
+  const ratioAbB = getVal('ratioAbB') || 1;
+  const ratioAsA = getVal('ratioAsA') || 1;
+  const ratioAsB = getVal('ratioAsB') || 1;
+
+  const inputs = {mass, rfm, volA, cA, volB, cB};
+  const blanks = Object.keys(inputs).filter(k => inputs[k] === null);
+
+  const out = document.getElementById('result');
+  if(blanks.length === 0){ out.innerHTML = `<div class="error">No field is blank. Leave ONE field blank to solve.</div>`; return; }
+  if(blanks.length > 1){ out.innerHTML = `<div class="error">Please leave ONLY ONE field blank. Found ${blanks.length} missing.</div>`; return; }
+
+  const unknown = blanks[0];
+
+  try {
+    // Step 1: compute molesBaseUsed if possible
+    let nBase = null, acidEq = null;
+    if(volB !== null && cB !== null) { nBase = volB/1000*cB; acidEq = nBase*(ratioAbA/ratioAbB); appendStep(`Moles of base used = ${fmt(nBase)} mol; Acid equivalent neutralised = ${fmt(acidEq)} mol`); }
+
+    // Step 2: compute molesAcidInitial if possible
+    let nAcidInitial = null;
+    if(volA !== null && cA !== null){ nAcidInitial = volA/1000*cA; appendStep(`Moles of acid initially added = ${fmt(nAcidInitial)} mol`); }
+
+    // Step 3: compute molesAcidReacted
+    let nAcidReacted = null;
+    if(nAcidInitial !== null && acidEq !== null){ nAcidReacted = nAcidInitial - acidEq; appendStep(`Moles of acid reacted with substance = ${fmt(nAcidReacted)} mol`); }
+
+    // Step 4: compute molesSubstance
+    let nSubstance = null;
+    if(nAcidReacted !== null){ nSubstance = nAcidReacted*(ratioAsB/ratioAsA); appendStep(`Moles of substance = ${fmt(nSubstance)} mol`); }
+
+    // Step 5: compute the unknown
+    let result = null;
+    switch(unknown){
+      case 'mass':
+        if(rfm===null) throw new Error('RFM is required to compute mass.');
+        result = nSubstance*rfm;
+        appendStep(`Mass = moles_substance × RFM = ${fmt(nSubstance)} × ${fmt(rfm)} = ${fmt(result)} g`);
+        break;
+
+      case 'rfm':
+        if(mass===null) throw new Error('Mass is required to compute RFM.');
+        result = mass/nSubstance;
+        appendStep(`RFM = mass ÷ moles_substance = ${fmt(mass)} ÷ ${fmt(nSubstance)} = ${fmt(result)} g·mol⁻¹`);
+        break;
+
+      case 'volAcid':
+        if(cA===null) throw new Error('Acid concentration is required to compute volume.');
+        result = ((nAcidReacted || (mass/rfm)*(ratioAsA/ratioAsB)) + acidEq)/cA*1000;
+        appendStep(`Volume of acid = (moles_acid_initial ÷ concAcid) × 1000 = ${fmt(result)} cm³`);
+        break;
+
+      case 'concAcid':
+        if(volA===null) throw new Error('Acid volume is required to compute concentration.');
+        result = ((nAcidReacted || (mass/rfm)*(ratioAsA/ratioAsB)) + acidEq)/(volA/1000);
+        appendStep(`Concentration of acid = moles_acid_initial ÷ (volA/1000) = ${fmt(result)} mol·dm⁻³`);
+        break;
+
+      case 'volBase':
+        if(cB===null) throw new Error('Base concentration is required to compute volume.');
+        if(nAcidReacted===null) { if(mass===null||rfm===null) throw new Error('Mass and RFM needed to compute base volume'); nAcidReacted = mass/rfm*(ratioAsA/ratioAsB); }
+        result = (nAcidReacted + acidEq)/cB*1000*(ratioAbB/ratioAbA);
+        appendStep(`Volume of base = (acid equivalent ÷ concBase) × 1000 × ratioBase/ratioAcid = ${fmt(result)} cm³`);
+        break;
+
+      case 'concBase':
+        if(volB===null) throw new Error('Base volume is required to compute concentration.');
+        if(nAcidReacted===null) { if(mass===null||rfm===null) throw new Error('Mass and RFM needed to compute base concentration'); nAcidReacted = mass/rfm*(ratioAsA/ratioAsB); }
+        result = (nAcidReacted + acidEq)/(volB/1000)*(ratioAbB/ratioAbA);
+        appendStep(`Concentration of base = (acid equivalent ÷ volBase in dm³) × ratioBase/ratioAcid = ${fmt(result)} mol·dm⁻³`);
+        break;
+
+      default:
+        throw new Error('Unknown field to solve.');
+    }
+
+    out.innerHTML = resSteps.join('');
+
+  } catch(err){
+    out.innerHTML = `<div class="error">Cannot solve: ${err.message}</div>`;
+  }
+}
+
+function clearAll(){ ['mass','rfm','volAcid','concAcid','volBase','concBase'].forEach(id=>document.getElementById(id).value=''); document.getElementById('result').innerHTML=''; }
+function fillExample(){
+  document.getElementById('mass').value='0.250';
+  document.getElementById('rfm').value='';
+  document.getElementById('volAcid').value='25.0';
+  document.getElementById('concAcid').value='0.100';
+  document.getElementById('volBase').value='15.0';
+  document.getElementById('concBase').value='0.100';
+  document.getElementById('ratioAbA').value='1';
+  document.getElementById('ratioAbB').value='1';
+  document.getElementById('ratioAsA').value='1';
+  document.getElementById('ratioAsB').value='1';
+  document.getElementById('result').innerHTML='<div>Example values filled. Leave mass or RFM blank and press Solve.</div>';
+}
+  
+  
+  
+  
+
+
+
+
+
+
+
+  
+
+function calculateRedox() {
+  const vOx = parseFloat(document.getElementById('redoxVolOx').value) / 1000;
+  const cOx = parseFloat(document.getElementById('redoxConcOx').value);
+  const vRed = parseFloat(document.getElementById('redoxVolRed').value) / 1000;
+  const cRed = parseFloat(document.getElementById('redoxConcRed').value);
+  const rOx = parseFloat(document.getElementById('redoxRatioOx').value);
+  const rRed = parseFloat(document.getElementById('redoxRatioRed').value);
+
+  const steps = [];
+
+  // Determine which concentration is missing
+  let missing = null;
+  if (!cOx && cRed) missing = 'oxidant';
+  else if (!cRed && cOx) missing = 'reductant';
+  else if (!cOx && !cRed) {
+    document.getElementById('redoxResult').innerHTML = "<div class='step'>Error: Enter at least one concentration!</div>";
+    return;
+  }
+
+  steps.push(`<div class='step formula'>Step 1: Use mole ratio Oxidant:Reductant = ${rOx}:${rRed}</div>`);
+
+  if (missing === 'oxidant') {
+    // Moles of reductant
+    const molesRed = vRed * cRed;
+    steps.push(`<div class='step'>Moles of reductant = ${format(vRed)} × ${format(cRed)} = ${format(molesRed)} mol</div>`);
+    // Moles of oxidant
+    const molesOx = molesRed * (rOx / rRed);
+    steps.push(`<div class='step formula'>Moles of oxidant = moles of reductant × (${rOx}/${rRed})</div>`);
+    steps.push(`<div class='step'>Moles of oxidant = ${format(molesRed)} × (${rOx}/${rRed}) = ${format(molesOx)} mol</div>`);
+    // Concentration of oxidant
+    const concOx = molesOx / vOx;
+    steps.push(`<div class='step formula'>Concentration of oxidant = moles / volume</div>`);
+    steps.push(`<div class='step'>${format(molesOx)} ÷ ${format(vOx)} = ${format(concOx)} mol/dm³</div>`);
+  } else {
+    // Moles of oxidant
+    const molesOx = vOx * cOx;
+    steps.push(`<div class='step'>Moles of oxidant = ${format(vOx)} × ${format(cOx)} = ${format(molesOx)} mol</div>`);
+    // Moles of reductant
+    const molesRed = molesOx * (rRed / rOx);
+    steps.push(`<div class='step formula'>Moles of reductant = moles of oxidant × (${rRed}/${rOx})</div>`);
+    steps.push(`<div class='step'>Moles of reductant = ${format(molesOx)} × (${rRed}/${rOx}) = ${format(molesRed)} mol</div>`);
+    // Concentration of reductant
+    const concRed = molesRed / vRed;
+    steps.push(`<div class='step formula'>Concentration of reductant = moles / volume</div>`);
+    steps.push(`<div class='step'>${format(molesRed)} ÷ ${format(vRed)} = ${format(concRed)} mol/dm³</div>`);
+  }
+
+  document.getElementById('redoxResult').innerHTML = steps.join('');
+}
+
+
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+  
+
+

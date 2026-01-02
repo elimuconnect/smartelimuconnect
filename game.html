@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>🔥 BODMAS Math Game</title>
+  <style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #d9e4f5, #f3f9ff);
+  margin: 0; padding: 10px;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+#scoreboard, #gameArea, #startForm {
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-top: 20px; padding: 15px;
+  box-sizing: border-box;
+}
+
+h1, h2 {
+  font-size: 6vw;
+  text-align: center;
+}
+
+.player {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0; margin: 4px 0; border-bottom: 1px solid #eee;
+  font-size: 4vw;
+}
+
+.player img {
+  width: 32px; height: 32px; border-radius: 50%; margin-right: 10px;
+}
+
+.player span { flex: 1; text-align: left; overflow-wrap: break-word; }
+
+#yourName { font-weight: bold; background: #e0ffe0; }
+
+.question {
+  font-size: 6vw; font-weight: bold; margin: 15px;
+  transition: transform 0.2s ease;
+  word-wrap: break-word;
+}
+
+input, button {
+  font-size: 5vw;
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+#timer, .score, .level {
+  font-size: 4.5vw;
+  margin: 5px 0;
+  text-align: center;
+}
+
+#previewImg {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  margin-top: 10px;
+  display: none;
+}
+
+#winnerMessage {
+  text-align: center;
+  font-size: 4.5vw;
+  font-weight: bold;
+  margin-top: 10px;
+  color: darkgreen;
+}
+
+.correct { animation: correctAnim 0.4s ease; }
+.wrong { animation: wrongAnim 0.4s ease; }
+
+@keyframes correctAnim {
+  0% { background: #e0ffe0; transform: scale(1.05); }
+  100% { background: none; transform: scale(1); }
+}
+
+@keyframes wrongAnim {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+
+</style>
+</head>
+<body>
+
+  <h1>🔥 BODMAS Math Game</h1>
+
+  <div id="scoreboard">
+    <h2>🏆 Live Leaderboard</h2>
+    <div id="playersScores"></div>
+    <div id="winnerMessage"></div>
+  </div>
+
+  <div id="startForm">
+    <p><label>Enter your name:</label><br>
+      <input type="text" id="username" placeholder="e.g. Genius254" /></p>
+    <p>
+      <label>Upload Profile Picture:</label><br>
+      <input type="file" accept="image/*" id="profilePic" onchange="resizeAndPreview(event)" />
+      <br>
+      <img id="previewImg" />
+    </p>
+    <button onclick="startGame()">Start Game</button>
+  </div>
+
+  <div id="gameArea" style="display:none;">
+    <div class="score">Your Score: <span id="score">0</span></div>
+    <div class="level">Level: <span id="level">1</span></div>
+    <div id="timer">Time: 10s</div>
+    <div class="question" id="question"></div>
+    <input type="number" id="answer" />
+    <button onclick="checkAnswer()">Submit</button>
+  </div>
+
+  <!-- Correct/Wrong Sounds -->
+  <audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+  <audio id="wrongSound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCqVbwAOuZ2DlrX4WyB3YoyxoY1BVJesU4",
+      authDomain: "bodmas-game.firebaseapp.com",
+      databaseURL: "https://bodmas-game-default-rtdb.firebaseio.com",
+      projectId: "bodmas-game",
+      storageBucket: "bodmas-game.firebasestorage.app",
+      messagingSenderId: "744829563877",
+      appId: "1:744829563877:web:9dffb888825b7075ee350c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let username = '', score = 0, level = 1, currentAnswer = 0, profileImage = '', timerInterval, timeLeft = 20;
+
+    function resizeAndPreview(event) {
+      const file = event.target.files[0];
+      if (!file || !file.type.startsWith("image/")) {
+        alert("Upload a valid image.");
+        event.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const maxSize = 100;
+          const scale = Math.min(maxSize / img.width, maxSize / img.height);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          profileImage = canvas.toDataURL("image/jpeg", 0.7);
+          const preview = document.getElementById("previewImg");
+          preview.src = profileImage;
+          preview.style.display = "inline";
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function startGame() {
+      username = document.getElementById('username').value.trim();
+      if (!username) return alert("Enter a name to play.");
+      db.ref("players/" + username).set({ profile: profileImage || '', score: 0 });
+      document.getElementById('gameArea').style.display = 'block';
+      document.getElementById('startForm').style.display = 'none';
+      generateQuestion();
+      setInterval(fetchScores, 2000);
+      setInterval(checkForWinner, 60000);
+    }
+
+    
+	
+	
+	function generateQuestion() {
+  clearInterval(timerInterval);
+  timeLeft = 20;
+  updateTimer();
+
+  const ops = ['+', '-', '*'];
+  const getRandom = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+  // Helper to return a number in range depending on operation
+  const pickNumber = (op) => {
+    return op === '*' ? getRandom(-5, 5) : getRandom(-9, 9);
+  };
+
+  // Randomly choose two operations
+  const op1 = ops[Math.floor(Math.random() * 3)];
+  const op2 = ops[Math.floor(Math.random() * 3)];
+
+  // Pick numbers depending on operators
+  const a = pickNumber(op1);
+  const b = pickNumber(op1);
+  const c = pickNumber(op2);
+  const d = pickNumber(op2);
+
+  // Alternate between two formats for variety
+  let expression = Math.random() > 0.5
+    ? `(${a} ${op1} ${b}) ${op2} (${c} - ${d})`
+    : `(${a} ${op2} ${c}) ${op1} (${b} + ${d})`;
+
+  try {
+    let result = eval(expression);
+    if (!Number.isInteger(result)) return generateQuestion(); // avoid fractions
+    currentAnswer = result;
+    const qEl = document.getElementById("question");
+    qEl.innerText = expression;
+    qEl.className = "question";
+  } catch {
+    generateQuestion(); // retry on any error
+  }
+
+  // Timer logic
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      playSound('wrong');
+      markFeedback(false);
+      document.getElementById('answer').value = '';
+      generateQuestion();
+    }
+  }, 1000);
+}
+
+	
+	
+	
+	
+
+    function updateTimer() {
+      document.getElementById('timer').innerText = `Time: ${timeLeft}s`;
+    }
+
+    function checkAnswer() {
+      const ans = parseInt(document.getElementById('answer').value);
+      const qEl = document.getElementById("question");
+      if (ans === currentAnswer) {
+        score++;
+        level = Math.floor(score / 5) + 1;
+        document.getElementById('score').innerText = score;
+        document.getElementById('level').innerText = level;
+        db.ref("players/" + username + "/score").set(score);
+        playSound('correct');
+        markFeedback(true);
+      } else {
+        playSound('wrong');
+        markFeedback(false);
+      }
+      document.getElementById('answer').value = '';
+      generateQuestion();
+    }
+
+    function markFeedback(isCorrect) {
+      const el = document.getElementById('question');
+      el.classList.add(isCorrect ? "correct" : "wrong");
+      setTimeout(() => el.className = "question", 400);
+    }
+
+    function playSound(type) {
+      const audio = document.getElementById(type === 'correct' ? "correctSound" : "wrongSound");
+      audio.currentTime = 0;
+      audio.play();
+    }
+
+    function fetchScores() {
+      db.ref("players").once("value", (snapshot) => {
+        const players = snapshot.val() || {};
+        const sorted = Object.entries(players).sort((a, b) => b[1].score - a[1].score);
+        document.getElementById("playersScores").innerHTML = '';
+        sorted.forEach(([name, data]) => {
+          const pic = data.profile || 'https://via.placeholder.com/32';
+          const tag = name === username ? 'yourName' : '';
+          document.getElementById("playersScores").innerHTML += `
+            <div class="player" id="${tag}">
+              <img src="${pic}" />
+              <span>${name}</span>
+              <strong>${data.score}</strong>
+            </div>
+          `;
+        });
+      });
+    }
+
+    function checkForWinner() {
+      const now = new Date();
+      if (now.getHours() === 23 && now.getMinutes() === 0) {
+        db.ref("players").once("value", (snapshot) => {
+          const players = snapshot.val() || {};
+          const sorted = Object.entries(players).sort((a, b) => b[1].score - a[1].score);
+          if (sorted.length > 0) {
+            const [winner, data] = sorted[0];
+            document.getElementById("winnerMessage").innerText =
+              `🏆 Winner of the Day: ${winner} with ${data.score} points!`;
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>

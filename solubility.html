@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Solubility Curve Tool</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    table { border-collapse: collapse; margin-top: 20px; width: 100%; max-width: 800px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; }
+    input[type="number"] { width: 80px; }
+    button {
+      margin: 10px 5px; padding: 8px 16px; font-size: 14px;
+      background-color: #007BFF; color: white; border: none; border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background-color: #0056b3; }
+    #result { margin-top: 10px; font-weight: bold; }
+    canvas { margin-top: 30px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+
+<h2>💧 Solubility Curve Tool</h2>
+
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Solute (g)</th>
+      <th>Solvent (g)</th>
+      <th>Temperature (°C)</th>
+      <th>Solubility (g/100g solvent)</th>
+    </tr>
+  </thead>
+  <tbody id="dataBody">
+    <!-- Rows will be inserted here -->
+  </tbody>
+</table>
+
+<button onclick="addRow()">+ Add Row</button>
+<button onclick="calculateAll()">Calculate Solubility</button>
+<button onclick="drawGraph()">Draw Graph</button>
+<button onclick="clearAll()">Clear All</button>
+
+<div id="result"></div>
+<canvas id="solubilityChart" width="700" height="400"></canvas>
+
+<script>
+
+  
+  const dataBody = document.getElementById('dataBody');
+  let rowCount = 0;
+  const dataPoints = [];
+
+  function addRow() {
+    rowCount++;
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${rowCount}</td>
+      <td><input type="number" step="any" class="solute" /></td>
+      <td><input type="number" step="any" class="solvent" /></td>
+      <td><input type="number" step="any" class="temp" /></td>
+      <td class="solubilityCell">-</td>
+    `;
+    dataBody.appendChild(row);
+  }
+
+  function calculateAll() {
+    dataPoints.length = 0;
+    const rows = dataBody.querySelectorAll("tr");
+
+    rows.forEach(row => {
+      const solute = parseFloat(row.querySelector(".solute").value);
+      const solvent = parseFloat(row.querySelector(".solvent").value);
+      const temp = parseFloat(row.querySelector(".temp").value);
+      const cell = row.querySelector(".solubilityCell");
+
+      if (!isNaN(solute) && !isNaN(solvent) && solvent > 0 && !isNaN(temp)) {
+        const solubility = (solute / solvent) * 100;
+        dataPoints.push({ temperature: temp, solubility });
+        cell.textContent = solubility.toFixed(2);
+      } else {
+        cell.textContent = "-";
+      }
+    });
+
+    document.getElementById("result").textContent =
+      `${dataPoints.length} valid data point(s) calculated.`;
+  }
+
+  
+  
+  
+  
+  
+   function drawGraph() {
+    const canvas = document.getElementById("solubilityChart");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (dataPoints.length === 0) {
+      alert("No valid data points to graph. Please calculate solubility first.");
+      return;
+    }
+
+    dataPoints.sort((a, b) => a.temperature - b.temperature);
+
+    const margin = 50;
+    const width = canvas.width - 2 * margin;
+    const height = canvas.height - 2 * margin;
+
+    const temps = dataPoints.map(p => p.temperature);
+    const sols = dataPoints.map(p => p.solubility);
+
+    const tempMin = Math.min(...temps);
+    const tempMax = Math.max(...temps);
+    const solMax = Math.max(...sols) * 1.1;
+
+    // Axes
+    ctx.beginPath();
+    ctx.moveTo(margin, margin);
+    ctx.lineTo(margin, margin + height);
+    ctx.lineTo(margin + width, margin + height);
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Axis labels
+    ctx.font = "14px Arial";
+    ctx.fillText("Solubility (g/100g solvent)", 10, margin - 15);
+    ctx.fillText("Temperature (°C)", margin + width - 90, margin + height + 40);
+
+    // Draw line graph
+    ctx.strokeStyle = "#007BFF";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    dataPoints.forEach((point, i) => {
+      const x = margin + ((point.temperature - tempMin) / (tempMax - tempMin)) * width;
+      const y = margin + height - ((point.solubility) / solMax) * height;
+
+      if (i === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+    ctx.stroke(); // draw the connected curve
+
+    // Now draw the dots on top
+    ctx.fillStyle = "#0056b3";
+    dataPoints.forEach(point => {
+      const x = margin + ((point.temperature - tempMin) / (tempMax - tempMin)) * width;
+      const y = margin + height - ((point.solubility) / solMax) * height;
+
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+    });
+
+    // Tick marks and labels (x-axis)
+    ctx.textAlign = "center";
+    for (let t = tempMin; t <= tempMax; t += (tempMax - tempMin) / 5) {
+      const x = margin + ((t - tempMin) / (tempMax - tempMin)) * width;
+      ctx.fillRect(x, margin + height, 1, 5);
+      ctx.fillText(t.toFixed(0), x, margin + height + 20);
+    }
+
+    // Tick marks and labels (y-axis)
+    ctx.textAlign = "right";
+    for (let s = 0; s <= solMax; s += solMax / 5) {
+      const y = margin + height - (s / solMax) * height;
+      ctx.fillRect(margin - 5, y, 5, 1);
+      ctx.fillText(s.toFixed(1), margin - 10, y + 5);
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  function clearAll() {
+    dataBody.innerHTML = "";
+    rowCount = 0;
+    dataPoints.length = 0;
+    document.getElementById("result").textContent = "";
+    const canvas = document.getElementById("solubilityChart");
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Add 10 default rows on load
+  for (let i = 0; i < 10; i++) addRow();
+</script>
+
+</body>
+</html>
+

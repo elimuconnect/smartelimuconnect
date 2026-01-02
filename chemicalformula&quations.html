@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Formula and Equation Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result, .instructions {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e9f5e9;
+            border: 1px solid #b6dcb6;
+            border-radius: 5px;
+            color: #2a572a;
+        }
+        .instructions {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .valency {
+            background: #fffcf3;
+            padding: 10px;
+            border: 1px solid #f1e0a1;
+            color: #b5834d;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chemical Formula and Equation Tool</h1>
+
+        <h2>How to Write a Chemical Formula</h2>
+        <div class="instructions">
+            <h3>Steps to Write a Formula:</h3>
+            <ol>
+                <li>Identify the elements involved (e.g., Hydrogen, Oxygen).</li>
+                <li>Write the symbols for each element (H, O).</li>
+                <li>Find the valency of each element or radical. (e.g., H = 1, O = 2)</li>
+                <li>Use the crisscross method to determine the subscript for each element. The valency of one element becomes the subscript for the other.</li>
+                <li>For radicals (polyatomic ions), use brackets if their valency is greater than 1 (e.g., SO₄²⁻ becomes (SO₄)₂).</li>
+                <li>For multiple atoms of the same element, use a subscript after the element symbol (e.g., H₂O for 2 Hydrogen atoms and 1 Oxygen atom).</li>
+            </ol>
+            <p><strong>Example:</strong> Sodium (Na) has a valency of 1 and Chlorine (Cl) has a valency of 1. Using the crisscross method, the formula becomes NaCl.</p>
+        </div>
+
+        <h2>Practice Writing Formulas Using the Crisscross Method</h2>
+        <div class="instructions">
+            <p><strong>Formula Practice:</strong> Enter the valency of each element or ion and apply the crisscross method to write the formula.</p>
+            <label for="element1">Element 1: </label>
+            <input type="text" id="element1" placeholder="e.g., Mg" /> 
+            <input type="number" id="valency1" placeholder="Valency" />
+            <br />
+            <label for="element2">Element 2: </label>
+            <input type="text" id="element2" placeholder="e.g., PO₄" /> 
+            <input type="number" id="valency2" placeholder="Valency" />
+            <br />
+            <button onclick="crisscrossFormula()">Generate Formula</button>
+            <div id="formulaResult" class="result" style="display: none;"></div>
+        </div>
+
+        <h2>Balance Chemical Equations</h2>
+        <div class="instructions">
+            <p><strong>Equation Balancer:</strong> Enter the reactants and products, and manually add coefficients to balance the equation.START BY WRITING COEFFICIENTS AS 1,1,1 TO WRITE THE EQUATION, THEN ADJUST THEM TO BALANCE AS YOU CLICK , "CHECK BALANCE"</p>
+            
+            <label for="reactants">Reactants (separate with a plus sign): </label>
+            <input type="text" id="reactants" placeholder="e.g., H₂ + O₂" />
+            <br />
+            <label for="reactantCoefficients">Reactant Coefficients (separate with a plus sign): </label>
+            <input type="text" id="reactantCoefficients" placeholder="e.g., 1 + 1" />
+            <br />
+
+            <label for="products">Products (separate with a plus sign): </label>
+            <input type="text" id="products" placeholder="e.g., H₂O" />
+            <br />
+            <label for="productCoefficients">Product Coefficients (separate with a plus sign): </label>
+            <input type="text" id="productCoefficients" placeholder="e.g., 1" />
+            <br />
+
+            <button onclick="checkBalance()">Check Balance</button>
+            <div id="balancedEquation" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+
+       // Function to generate chemical formula using the crisscross method
+function crisscrossFormula() {
+    const element1 = document.getElementById('element1').value;
+    const valency1 = parseInt(document.getElementById('valency1').value);
+    const element2 = document.getElementById('element2').value;
+    const valency2 = parseInt(document.getElementById('valency2').value);
+
+    if (!element1 || !element2 || !valency1 || !valency2) {
+        alert('Please enter both elements and their valencies.');
+        return;
+    }
+
+    // Simplify the formula by reducing the valencies if possible
+    let gcd = function(a, b) {
+        return b === 0 ? a : gcd(b, a % b);
+    };
+
+    const commonDivisor = gcd(valency1, valency2);
+    const simplifiedValency1 = valency1 / commonDivisor;
+    const simplifiedValency2 = valency2 / commonDivisor;
+
+    let formula = "";
+
+    // List of known radicals (polyatomic ions)
+    const radicals = [
+        "NH4", "OH", "SO4", "SO3", "PO4", "NO3", "NO2", "CO3", "C2H3O2", 
+        "ClO3", "ClO2", "ClO4", "HCO3", "CrO4", "Cr2O7", "MnO4", "CN", "SCN", 
+        "C2O4", "HPO4", "H2PO4"
+    ];
+
+    // Check if element1 or element2 is a polyatomic ion (radical) that needs brackets
+    const isRadical1 = radicals.some(radical => element1.includes(radical));
+    const isRadical2 = radicals.some(radical => element2.includes(radical));
+
+    // Handle formula with brackets around the radical if valency > 1
+    if (isRadical1) {
+        formula = `${simplifiedValency2 === 1 ? element1 : `(${element1})`}<sub>${simplifiedValency2 === 1 ? '' : simplifiedValency2}</sub>${element2}${simplifiedValency1 === 1 ? '' : `<sub>${simplifiedValency1}</sub>`}`;
+    } else if (isRadical2) {
+        formula = `${element1}${simplifiedValency2 === 1 ? '' : `<sub>${simplifiedValency2}</sub>`}${simplifiedValency1 === 1 ? element2 : `(${element2})`}<sub>${simplifiedValency1 === 1 ? '' : simplifiedValency1}</sub>`;
+    } else {
+        formula = `${element1}${simplifiedValency2 === 1 ? '' : `<sub>${simplifiedValency2}</sub>`}${element2}${simplifiedValency1 === 1 ? '' : `<sub>${simplifiedValency1}</sub>`}`;
+    }
+
+    // Apply brackets correctly for radicals with valency > 1
+    const resultDiv = document.getElementById('formulaResult');
+    resultDiv.innerHTML = `Chemical Formula: ${formula}`;
+    resultDiv.style.display = 'block';
+}
+        // Function to check if the equation is balanced manually
+        function checkBalance() {
+            const reactants = document.getElementById('reactants').value.trim();
+            const reactantCoefficients = document.getElementById('reactantCoefficients').value.trim();
+            const products = document.getElementById('products').value.trim();
+            const productCoefficients = document.getElementById('productCoefficients').value.trim();
+            
+            if (!reactants || !reactantCoefficients || !products || !productCoefficients) {
+                alert('Please enter both the reactants, products, and their coefficients.');
+                return;
+            }
+
+            // Split inputs into arrays
+            const reactantList = reactants.split('+').map(item => item.trim());
+            const productList = products.split('+').map(item => item.trim());
+            const reactantCoefficientsList = reactantCoefficients.split('+').map(item => parseInt(item.trim()));
+            const productCoefficientsList = productCoefficients.split('+').map(item => parseInt(item.trim()));
+
+            // Check if the number of coefficients matches the number of reactants/products
+            if (reactantList.length !== reactantCoefficientsList.length || productList.length !== productCoefficientsList.length) {
+                alert('The number of coefficients does not match the number of reactants or products.');
+                return;
+            }
+
+            // Format the equation using the entered coefficients
+            const formattedReactants = formatEquation(reactantList, reactantCoefficientsList);
+            const formattedProducts = formatEquation(productList, productCoefficientsList);
+
+            // Display the balanced equation
+            const resultDiv = document.getElementById('balancedEquation');
+            resultDiv.innerHTML = `Balanced Equation: ${formattedReactants} → ${formattedProducts}`;
+            resultDiv.style.display = 'block';
+        }
+
+        // Function to format the equation with coefficients, omitting 1s
+        function formatEquation(substances, coefficients) {
+            return substances.map((substance, index) => {
+                if (coefficients[index] === 1) {
+                    return substance; // Omit coefficient '1'
+                }
+                return `${coefficients[index]} ${substance}`;
+            }).join(' + ');
+        }
+    </script>
+</body>
+</html>
+

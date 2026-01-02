@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High School Physics Principles Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #1e3d58;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #principles-list {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #principle-details {
+            display: none;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #back-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .principle-section {
+            margin-top: 20px;
+        }
+
+        .principle-title {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .formula-section, .application-section {
+            margin-top: 20px;
+        }
+
+        .symbol-section {
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        #principle-visuals {
+            margin-top: 20px;
+        }
+    </style>
+    <!-- Include MathJax script -->
+    <script type="text/javascript" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>High School Physics Principles Explorer</h1>
+    </header>
+
+    <section id="principles-list">
+        <!-- Dropdown for Principles -->
+        <select id="principle-dropdown">
+            <option value="">Select a principle...</option>
+            <option value="newtons-first-law">Newton's First Law</option>
+            <option value="newtons-second-law">Newton's Second Law</option>
+            <option value="newtons-third-law">Newton's Third Law</option>
+            <option value="conservation-of-energy">Conservation of Energy</option>
+            <option value="conservation-of-momentum">Conservation of Momentum</option>
+            <option value="work-energy-and-power">Work, Energy, and Power</option>
+            <option value="gravitational-forces-and-fields">Gravitational Forces and Fields</option>
+            <option value="ohms-law">Ohm's Law</option>
+            <option value="electromagnetic-induction">Electromagnetic Induction</option>
+            <option value="waves">Waves</option>
+            <option value="sound">Sound</option>
+            <option value="doppler-effect">Doppler Effect</option>
+            <option value="light-and-optics">Light and Optics</option>
+            <option value="circular-motion">Circular Motion</option>
+        </select>
+        <br><br>
+        <button id="view-details-btn" disabled>View Details</button>
+    </section>
+
+    <div id="principle-details" class="hidden">
+        <button id="back-btn">Back</button>
+        <div id="principle-section" class="principle-section"></div>
+        <div id="formula-section" class="formula-section"></div>
+        <div id="symbol-section" class="symbol-section"></div>
+        <div id="application-section" class="application-section"></div>
+        <div id="principle-visuals"></div>
+    </div>
+
+    <script>
+
+        // Data for Principles (Major High School Physics Principles)
+        const principlesData = {
+            "newtons-first-law": {
+                "title": "Newton's First Law",
+                "description": "An object at rest will remain at rest, and an object in motion will remain in motion unless acted upon by an external force.",
+                "formula": "",
+                "symbolExplanation": "",
+                "application": "This law is used to explain inertia, why passengers continue moving forward in a car when it stops suddenly, or the motion of planets in space.",
+                "visuals": "https://cdn.pixabay.com/video/2020/08/25/48115-452601294_tiny.mp4"
+            },
+            "newtons-second-law": {
+                "title": "Newton's Second Law",
+                "description": "The force acting on an object is equal to the mass of the object multiplied by its acceleration.",
+                "formula": "F = ma",
+                "symbolExplanation": "Where: <br>F = Force (in Newtons, N) <br>m = Mass (in kilograms, kg) <br>a = Acceleration (in meters per second squared, m/s²)",
+                "application": "This law is used to calculate how much force is needed to accelerate an object or to understand how objects behave when forces are applied.",
+                "visuals": "https://cdn.pixabay.com/video/2021/01/27/63039-505518613_large.mp4"
+            },
+            "newtons-third-law": {
+                "title": "Newton's Third Law",
+                "description": "For every action, there is an equal and opposite reaction.",
+                "formula": "",
+                "symbolExplanation": "",
+                "application": "This principle is used in explaining propulsion, such as how a rocket launches into space by pushing exhaust gases downward, and the reaction force propels the rocket upwards.",
+                "visuals": "https://cdn.pixabay.com/video/2022/11/27/140628-775595867_tiny.mp4"
+            },
+            "conservation-of-energy": {
+                "title": "Conservation of Energy",
+                "description": "Energy in a closed system can neither be created nor destroyed, only transformed from one form to another.",
+                "formula": "E{total} = KE + PE",
+                "symbolExplanation": "Where: <br>E_total = Total energy (in joules, J) <br>KE = Kinetic energy (in joules, J) <br>PE = Potential energy (in joules, J)",
+                "application": "This principle is used in understanding roller coasters, where potential energy is converted into kinetic energy and back, and in calculating the energy efficiency of machines.",
+                "visuals": "https://cdn.pixabay.com/video/2017/02/26/7949-205815272_tiny.mp4"
+            },
+            "conservation-of-momentum": {
+                "title": "Conservation of Momentum",
+                "description": "The total momentum of a system remains constant if no external forces act on it.",
+                "formula": "p{total} = m1v1 + m2v2",
+                "symbolExplanation": "Where: <br>ptotal = Total momentum (in kg·m/s) <br>m = Mass (in kilograms, kg) <br>v = Velocity (in meters per second, m/s)",
+                "application": "This principle is essential in collision analysis, like understanding how two billiard balls will behave after a collision or how car crash simulations are made.",
+                "visuals": "https://cdn.pixabay.com/video/2020/08/25/48115-452601294_tiny.mp4"
+            },
+            "work-energy-and-power": {
+                "title": "Work, Energy, and Power",
+                "description": "Work is done when a force causes a displacement, and energy is the capacity to do work. Power is the rate of work done.",
+                "formula": "W = F × d <br> P = W/t",
+                "symbolExplanation": "For work: <br>W = Work (in joules, J) <br>F = Force (in newtons, N) <br>d = Displacement (in meters, m) <br>For power: <br>P = Power (in watts, W) <br>W = Work (in joules, J) <br>t = Time (in seconds, s)",
+                "application": "This principle helps calculate the energy required for tasks such as lifting an object, or the power needed to run a machine like a motor.",
+                "visuals": "https://cdn.pixabay.com/video/2017/12/13/13360-247515785_large.mp4"
+            },
+            "gravitational-forces-and-fields": {
+        "title": "Gravitational Forces and Fields",
+        "description": "Gravitational forces are the attractive forces between objects with mass. Formula for gravitational force: \(F = G \frac{m_1 m_2}{r^2}\)",
+        "formula": "F = G x (m1 x m2) / r^2",
+        "symbolExplanation": "Where: <br>F = Gravitational force (in Newtons, N) <br>G = Gravitational constant (6.67430 × 10^-11 m^3·kg^-1·s^-2) <br>m1, m2 = Masses of the objects (in kilograms, kg) <br>r = Distance between the objects (in meters, m)",
+        "application": "This law governs everything from the falling of an apple from a tree to the motion of planets and moons. It explains orbital dynamics and the force between celestial bodies.",
+        "visuals": "https://cdn.pixabay.com/video/2016/07/21/3921-175860796_tiny.mp4"
+    },
+    "ohms-law": {
+        "title": "Ohm's Law",
+        "description": "Ohm's Law states that the current through a conductor between two points is directly proportional to the voltage across the two points and inversely proportional to the resistance of the conductor.",
+        "formula": "V = IR",
+        "symbolExplanation": "Where: <br>V = Voltage (in Volts, V) <br>I = Current (in Amperes, A) <br>R = Resistance (in Ohms, Ω)",
+        "application": "This law is foundational in electrical engineering and is used to calculate the current in electrical circuits, the resistance of wires, and the voltage required to power devices.",
+        "visuals": "https://cdn.pixabay.com/video/2020/08/14/47218-450995803_tiny.mp4"
+    },
+    "electromagnetic-induction": {
+        "title": "Electromagnetic Induction",
+        "description": "Electromagnetic induction is the process by which a changing magnetic field induces an electric current in a conductor.",
+        "formula": "E = -dΦB/dt",
+        "symbolExplanation": "Where: <br>E = Induced electromotive force (in Volts, V) <br>Φ_B = Magnetic flux (in Weber, Wb) <br>dt = Time interval (in seconds, s)",
+        "application": "This principle is used in electric generators, transformers, and even induction cooktops, where a magnetic field generates electricity or heat.",
+        "visuals": "https://cdn.pixabay.com/video/2023/06/22/168380-839220639_tiny.mp4"
+    },
+    "waves": {
+        "title": "Waves",
+        "description": "Waves are disturbances that transfer energy from one place to another.",
+        "formula": "v = f x λ",
+        "symbolExplanation": "Where: <br>v = Wave velocity (in meters per second, m/s) <br>f = Frequency (in Hertz, Hz) <br>λ = Wavelength (in meters, m)",
+        "application": "Waves are everywhere, from light waves in optics to sound waves in acoustics. This principle explains the behavior of water waves, radio signals, and more.",
+        "visuals": "https://cdn.pixabay.com/video/2018/09/19/18324-291012885_tiny.mp4"
+    },
+    "sound": {
+        "title": "Sound",
+        "description": "Sound is a mechanical wave that propagates through a medium.",
+        "formula": "v = √(B/ρ)",
+        "symbolExplanation": "Where: <br>v = Speed of sound (in meters per second, m/s) <br>B = Bulk modulus (in Pascals, Pa) <br>ρ = Density of the medium (in kilograms per cubic meter, kg/m³)",
+        "application": "This principle helps explain how we hear sounds, the speed of sound in different materials, and how sound waves interact with objects.",
+        "visuals": "https://cdn.pixabay.com/video/2023/02/05/149469-796096114_large.mp4"
+    },
+    "doppler-effect": {
+        "title": "Doppler Effect",
+        "description": "The Doppler effect explains the change in frequency of a wave as the source and observer move.",
+        "formula": "f' = f (v ± v_o) / (v ± v_s)",
+        "symbolExplanation": "Where: <br>f' = Observed frequency (in Hertz, Hz) <br>f = Source frequency (in Hertz, Hz) <br>v = Speed of the wave (in meters per second, m/s) <br>v_o = Speed of the observer (in meters per second, m/s) <br>v_s = Speed of the source (in meters per second, m/s)",
+        "application": "This effect explains the change in sound or light frequency when an ambulance passes by or the redshift seen in light from distant galaxies.",
+        "visuals": "https://cdn.pixabay.com/video/2023/05/31/165252-832460065_tiny.mp4"
+    },
+    "light-and-optics": {
+        "title": "Light and Optics",
+        "description": "Light is an electromagnetic wave that travels through space.",
+        "formula": "n1 x sin(θ1) = n2 x sin(θ2)",
+        "symbolExplanation": "Where: <br>n1, n2 = Refractive indices of the two mediums (unitless) <br>θ1, θ2 = Angles of incidence and refraction (in degrees or radians)",
+        "application": "This principle governs how light refracts through lenses, creating magnifying glasses, cameras, and glasses. It also explains the rainbow effect.",
+        "visuals": "https://cdn.pixabay.com/video/2022/06/21/121563-724710159_tiny.mp4"
+    },
+    "circular-motion": {
+        "title": "Circular Motion",
+        "description": "In circular motion, an object experiences a centripetal force.",
+        "formula": "Fc = m x v^2 / r",
+        "symbolExplanation": "Where: <br>Fc = Centripetal force (in Newtons, N) <br>m = Mass of the object (in kilograms, kg) <br>v = Speed of the object (in meters per second, m/s) <br>r = Radius of the circular path (in meters, m)",
+        "application": "This principle applies to objects moving in a circle, such as cars going around a bend or planets orbiting the sun.",
+        "visuals": "https://cdn.pixabay.com/video/2022/10/07/133872-758336535_tiny.mp4"
+		}
+        };
+
+        // Enable "View Details" button when a principle is selected
+        const principleDropdown = document.getElementById('principle-dropdown');
+        const viewDetailsBtn = document.getElementById('view-details-btn');
+
+        principleDropdown.addEventListener('change', () => {
+            if (principleDropdown.value) {
+                viewDetailsBtn.disabled = false;
+            } else {
+                viewDetailsBtn.disabled = true;
+            }
+        });
+
+        // Show Principle Details when the "View Details" button is clicked
+        viewDetailsBtn.addEventListener('click', () => {
+            const selectedPrinciple = principleDropdown.value;
+
+            if (selectedPrinciple) {
+                showPrincipleDetails(selectedPrinciple);
+            }
+        });
+
+        function showPrincipleDetails(key) {
+            const principle = principlesData[key];
+
+            // Clear previous details
+            document.getElementById('principle-section').innerHTML = '';
+            document.getElementById('formula-section').innerHTML = '';
+            document.getElementById('symbol-section').innerHTML = '';
+            document.getElementById('application-section').innerHTML = '';
+            document.getElementById('principle-visuals').innerHTML = '';
+
+            // Principle Description
+            document.getElementById('principle-section').innerHTML = `<div class="principle-title">${principle.title}</div>
+            <p>${principle.description}</p>`;
+
+            // Formula
+            if (principle.formula) {
+                document.getElementById('formula-section').innerHTML = `<strong>Formula:</strong> ${principle.formula}`;
+            }
+
+            // Symbol Explanations
+            if (principle.symbolExplanation) {
+                document.getElementById('symbol-section').innerHTML = `<strong>Symbol Explanation:</strong><br>${principle.symbolExplanation}`;
+            }
+
+            // Applications
+            if (principle.application) {
+                document.getElementById('application-section').innerHTML = `<strong>Applications:</strong> ${principle.application}`;
+            }
+
+            // Visuals
+            if (principle.visuals) {
+                document.getElementById('principle-visuals').innerHTML = `<video width="320" height="240" controls>
+                    <source src="${principle.visuals}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>`;
+            }
+
+            // Hide the dropdown and show the principle details
+            document.getElementById('principles-list').style.display = 'none';
+            document.getElementById('principle-details').style.display = 'block';
+
+            // Reprocess MathJax to render the formulas
+            MathJax.typeset();
+        }
+
+        // Go back to principle list
+        document.getElementById('back-btn').addEventListener('click', () => {
+            document.getElementById('principle-details').style.display = 'none';
+            document.getElementById('principles-list').style.display = 'block';
+        });
+    </script>
+</body>
+
+</html>
+

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bond Enthalpy ΔH Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    h2 { margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    select { width: 100%; padding: 4px; font-size: 14px; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
+    button {
+      margin-top: 15px; padding: 10px 20px; font-size: 16px;
+      background: #007BFF; color: white; border: none; border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 20px; font-size: 18px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>🔗 Bond Enthalpy ΔH Calculator</h2>
+  <p>First two rows are required; rows 3–4 are optional (leave “–” to skip).</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th colspan="2">🔨 Bonds Broken</th>
+        <th></th>
+        <th colspan="2">🛠 Bonds Formed</th>
+      </tr>
+      <tr>
+        <th>Count</th><th>Type</th><th></th><th>Count</th><th>Type</th>
+      </tr>
+    </thead>
+    <tbody id="bondRows">
+      <!-- 4 rows total -->
+      <!-- we'll generate them in JS -->
+    </tbody>
+  </table>
+
+  <label for="bondsBrokenManual">Manual Bonds Broken (optional):</label>
+  <input type="text" id="bondsBrokenManual"
+    placeholder="e.g. 2×O-H:463, H-H:436, 3×C-Cl:328" />
+
+  <label for="bondsFormedManual">Manual Bonds Formed (optional):</label>
+  <input type="text" id="bondsFormedManual"
+    placeholder="e.g. O-H:463, 1×H-Cl:431" />
+
+  <button onclick="calculateDeltaH()">🧮 Calculate ΔH</button>
+  <div id="result"></div>
+
+  <script>
+
+   
+	  
+    const bondEnergies = {
+      "H-H":436, "O=O":498, "C-H":412, "C=C":614, "C≡C":839,
+      "O-H":463, "C=O":743, "N≡N":941, "C-C":348,
+      "Cl-Cl":243, "Br-Br":193,
+      "H-Cl":431, "C-Cl":328
+    };
+    const bondTypes = Object.keys(bondEnergies);
+    const maxCount = 10;
+
+    // Build 4 rows
+    const tbody = document.getElementById("bondRows");
+    for (let i = 0; i < 4; i++) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><select class="break-count"></select></td>
+        <td><select class="break-bond"></select></td>
+        <td>→</td>
+        <td><select class="form-count"></select></td>
+        <td><select class="form-bond"></select></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Populate selects
+    function populate() {
+      const countOpts = [`<option value="">–</option>`]
+        .concat([...Array(maxCount)].map((_,i)=>
+          `<option value="${i+1}">${i+1}</option>`))
+        .join("");
+      const bondOpts = [`<option value="">–</option>`]
+        .concat(bondTypes.map(b=>
+          `<option value="${b}">${b} (${bondEnergies[b]})</option>`))
+        .join("");
+
+      document.querySelectorAll(".break-count, .form-count")
+        .forEach(s => s.innerHTML = countOpts);
+      document.querySelectorAll(".break-bond, .form-bond")
+        .forEach(s => s.innerHTML = bondOpts);
+    }
+    populate();
+
+    // Sum from dropdown table
+    
+	
+	
+	
+	function sumDropdowns() {
+  const rows = document.querySelectorAll("#bondRows tr");
+  let sumBroken = 0, sumForm = 0;
+
+  rows.forEach((row, idx) => {
+    const bc = row.querySelector(".break-count").value;
+    const bb = row.querySelector(".break-bond").value;
+    const fc = row.querySelector(".form-count").value;
+    const fb = row.querySelector(".form-bond").value;
+
+    // Only row 1 (idx===0) is required
+    if (idx === 0) {
+      if (!bc || !bb || !fc || !fb) {
+        throw `Row 1 must have both a break and a form entry.`;
+      }
+    }
+
+    // If both count and type are provided, include them; otherwise skip
+    if (bc && bb) sumBroken += Number(bc) * bondEnergies[bb];
+    if (fc && fb) sumForm   += Number(fc) * bondEnergies[fb];
+  });
+
+  return { sumBroken, sumForm };
+}
+
+	
+	
+	
+	
+	
+
+    // Parse manual entries
+    function sumManual(id) {
+      let txt = document.getElementById(id).value.trim();
+      if (!txt) return 0;
+      let total = 0;
+      txt.split(",").forEach(part=>{
+        const m = part.trim().match(/^(?:(\d+)×)?([A-Za-z=≡\-]+):\s*([\d.]+)/);
+        if (m) total += (parseInt(m[1]||1)*parseFloat(m[3]));
+      });
+      return total;
+    }
+
+    function calculateDeltaH() {
+  let sb = 0, sf = 0;
+  let detail = `<strong>Step-by-Step Calculation:</strong><br>`;
+
+  // 1) Dropdown rows
+  document.querySelectorAll("#bondRows tr").forEach((row, idx) => {
+    const bc = row.querySelector(".break-count").value;
+    const bb = row.querySelector(".break-bond").value;
+    const fc = row.querySelector(".form-count").value;
+    const fb = row.querySelector(".form-bond").value;
+
+    // only row 1 is required
+    if (idx === 0 && (!bc || !bb || !fc || !fb)) {
+      document.getElementById("result").innerHTML = 
+        `<span style="color:red;">Row 1 must have all entries.</span>`;
+      throw "";
+    }
+
+    if (bc && bb) {
+      const e = bc * bondEnergies[bb];
+      sb += e;
+      detail += `Row ${idx+1} Broken: ${bc}×${bb} (${bondEnergies[bb]}) = ${e} kJ<br>`;
+    }
+    if (fc && fb) {
+      const e = fc * bondEnergies[fb];
+      sf += e;
+      detail += `Row ${idx+1} Formed: ${fc}×${fb} (${bondEnergies[fb]}) = ${e} kJ<br>`;
+    }
+  });
+
+  detail += `<br><u>Subtotal</u>:<br>`;
+  detail += `Total Broken = ${sb} kJ<br>`;
+  detail += `Total Formed = ${sf} kJ<br>`;
+
+  // 2) Manual entries
+  function parseManual(id, label) {
+    let sum = 0;
+    const txt = document.getElementById(id).value.trim();
+    if (!txt) return sum;
+    detail += `<br><u>${label} (manual)</u>:<br>`;
+    txt.split(",").forEach(p => {
+      const m = p.trim().match(/^(?:(\d+)×)?([A-Za-z=≡\-]+):\s*([\d.]+)/);
+      if (m) {
+        const qty = parseInt(m[1]||1,10);
+        const bond = m[2];
+        const val  = parseFloat(m[3]);
+        const e = qty * val;
+        detail += `${qty}×${bond} (${val}) = ${e} kJ<br>`;
+        sum += e;
+      }
+    });
+    return sum;
+  }
+
+  const mb = parseManual("bondsBrokenManual", "Broken");
+  const mf = parseManual("bondsFormedManual", "Formed");
+  sb += mb; sf += mf;
+
+  detail += `<br><u>Grand Total</u>:<br>`;
+  detail += `Broken = ${sb} kJ, Formed = ${sf} kJ<br>`;
+
+  // 3) Final ΔH
+  const dH = sb - sf;
+  const type = dH>0 ? "Endothermic (ΔH > 0)" 
+                   : dH<0 ? "Exothermic (ΔH < 0)"
+                          : "ΔH = 0\u00A0kJ/mol";
+  detail += `<br><strong>ΔH = ${sb} – ${sf} = ${dH} kJ/mol</strong><br>${type}`;
+
+  document.getElementById("result").innerHTML = detail;
+}
+
+  </script>
+
+</body>
+</html>
+

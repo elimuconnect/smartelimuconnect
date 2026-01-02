@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELECTRONIC PROVERBS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .dictionary-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        select {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .meaning {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #555;
+            text-align: center;
+        }
+
+        .tts-button {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #2196F3;
+            color: white;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .tts-button:hover {
+            background-color: #1976D2;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ELECTRONIC PROVERBS</h1>
+
+    <div class="dictionary-container">
+        <select id="wordSelect" onchange="showMeaningAndSpeak()">
+            <option value="">Choose a Proverb</option>
+            <!-- Word options will be populated here -->
+        </select>
+
+        <div id="result" class="result"></div>
+        <div id="meaning" class="meaning"></div>
+		<!-- Button to trigger the speech -->
+    </div>
+	<!-- Educational Cartoons Section -->
+    <div class="cartoon-container">
+        <!-- Cartoon 1 -->
+		 <img src="https://publicdomainvectors.org/tn_img/Rfc1394-Book-on-Monitor.webp" alt="Educational Cartoon 1">
+		 <!-- Cartoon 2 -->
+        <img src="https://as2.ftcdn.net/jpg/04/43/97/03/220_F_443970337_a1LmUllM7Ho36Sjg0WoMJQcuGP1MgyZ2.jpg" alt="Educational Cartoon 2">
+       
+    </div>
+
+    <script>
+
+        // Complex and medium-level word dictionary
+        const dictionary = {
+  "A bird in the hand is worth two in the bush": "It’s better to have something certain than risk it for something uncertain.",
+  "A penny saved is a penny earned": "Saving money is just as important as earning it.",
+  "Actions speak louder than words": "What people do is more significant than what they say.",
+  "A watched pot never boils": "Things seem to take longer when you're anxiously waiting for them.",
+  "An apple a day keeps the doctor away": "Eating healthy food, like apples, can help keep you healthy.",
+  "All good things must come to an end": "Nothing lasts forever, even the best experiences.",
+  "All is fair in love and war": "In some situations, like love or conflict, any action is acceptable to achieve your goal.",
+  "A stitch in time saves nine": "Taking care of problems early on prevents them from becoming worse later.",
+  "Better late than never": "It's better to do something late than not to do it at all.",
+  "Blood is thicker than water": "Family relationships are stronger than other relationships.",
+  "Cleanliness is next to godliness": "Being clean and tidy is a virtue and important for moral well-being.",
+  "Curiosity killed the cat": "Being too inquisitive can lead to trouble.",
+  "Don't bite the hand that feeds you": "Don’t harm someone who helps or supports you.",
+  "Don't count your chickens before they hatch": "Don’t assume something will happen before it actually does.",
+  "Don’t put all your eggs in one basket": "Don’t risk everything on a single opportunity.",
+  "Early to bed, early to rise, makes a man healthy, wealthy, and wise": "Getting up early is beneficial for success and well-being.",
+  "Easy come, easy go": "Things that are gained easily are often lost just as easily.",
+  "Empty vessels make the most noise": "Those who talk the most often have the least to say.",
+  "Every cloud has a silver lining": "There’s something good in every bad situation.",
+  "Failure is the mother of success": "Failure is often a stepping stone to success.",
+  "Fortune favors the bold": "Those who take risks are more likely to succeed.",
+  "Good things come to those who wait": "Patience is rewarded in the end.",
+  "Haste makes waste": "Acting too quickly without thinking can lead to mistakes.",
+  "Honesty is the best policy": "Being honest is always the best choice.",
+  "If it ain't broke, don't fix it": "If something is working well, don't try to change it.",
+  "If the shoe fits, wear it": "If something applies to you, accept it.",
+  "Ignorance is bliss": "Not knowing about something can sometimes make you happier.",
+  "It’s no use crying over spilt milk": "Don’t waste time worrying about things that have already happened and cannot be changed.",
+  "Laughter is the best medicine": "Laughter helps improve health and lift your mood.",
+  "Let sleeping dogs lie": "Avoid stirring up trouble that isn’t necessary.",
+  "Look before you leap": "Think carefully before taking an action.",
+  "Make hay while the sun shines": "Take advantage of an opportunity while it lasts.",
+  "Misery loves company": "People who are unhappy often want others to share in their misery.",
+  "Money doesn’t grow on trees": "Money is limited, so it should be used carefully.",
+  "Necessity is the mother of invention": "People invent things because they need them.",
+  "No man is an island": "Everyone needs help from others at some point.",
+  "No pain, no gain": "You must endure hardship to achieve something worthwhile.",
+  "One man's trash is another man's treasure": "What one person values little may be of great value to someone else.",
+  "One step at a time": "Take things slowly and do things step by step.",
+  "Practice makes perfect": "The more you practice something, the better you get at it.",
+  "Prevention is better than cure": "It’s better to avoid problems than to fix them after they arise.",
+  "Rome wasn’t built in a day": "Great things take time to achieve.",
+  "Silence is golden": "Sometimes, saying nothing is the best option.",
+  "The early bird catches the worm": "Those who act early have an advantage.",
+  "The grass is always greener on the other side": "People often think others have it better, but their situation might not be as good as it seems.",
+  "The pen is mightier than the sword": "Writing is a more effective tool for change than violence.",
+  "Time is money": "Time is valuable, and wasting it is like wasting money.",
+  "To each their own": "Everyone has their own preferences, and that’s okay.",
+  "Two heads are better than one": "It’s easier to solve a problem when two people work together.",
+  "Variety is the spice of life": "Life is more interesting when it includes different experiences and changes.",
+  "What goes around comes around": "The way you treat others will eventually come back to you, for good or bad.",
+  "When in Rome, do as the Romans do": "Adapt to the customs or behavior of the place you are in.",
+  "Where there's smoke, there's fire": "If there are signs of trouble, there’s usually some truth behind them.",
+  "You can lead a horse to water, but you can’t make it drink": "You can provide opportunities for someone, but you can't force them to take advantage of them.",
+  "You can't have your cake and eat it too": "You can’t have two conflicting things at the same time.",
+  "You can’t judge a book by its cover": "Appearances can be deceiving.",
+  "A fool and his money are soon parted": "People who are not careful with money will lose it quickly.",
+  "A house divided against itself cannot stand": "If there is internal conflict, a group or organization will fail.",
+  "A leopard can’t change its spots": "People cannot change their inherent nature.",
+  "A problem shared is a problem halved": "Talking about your problems with others makes them easier to deal with.",
+  "Actions speak louder than words": "What you do is more important than what you say.",
+  "All that glitters is not gold": "Things that look valuable on the outside may not be.",
+  "An ounce of prevention is worth a pound of cure": "It’s easier to prevent problems than to fix them later.",
+  "As you sow, so shall you reap": "You will get what you deserve based on your actions.",
+  "Beggars can’t be choosers": "When you're in a desperate situation, you can’t be picky.",
+  "Birds of a feather flock together": "People with similar interests or characteristics tend to associate with each other.",
+  "Clean your own doorstep before criticizing others": "Fix your own problems before judging others.",
+  "Do unto others as you would have them do unto you": "Treat others the way you want to be treated.",
+  "Don’t bite off more than you can chew": "Don’t take on more responsibilities than you can handle.",
+  "Don’t judge a book by its cover": "Don’t judge someone or something based solely on their appearance.",
+  "Don’t put all your eggs in one basket": "Don’t risk everything on a single opportunity.",
+  "Don’t throw stones at glass houses": "Don’t criticize others if you are just as guilty of the same faults.",
+  "Even a broken clock is right twice a day": "Even someone who is usually wrong can be right occasionally.",
+  "Give credit where credit is due": "Acknowledge and appreciate others for their contributions.",
+  "He who laughs last, laughs best": "The final outcome is more important than the initial success or failure.",
+  "If you want something done right, do it yourself": "If you want a task done properly, you may have to do it yourself.",
+  "It takes two to tango": "Certain actions or situations require the cooperation of more than one person.",
+  "Jack of all trades, master of none": "Someone who is skilled in many things, but not an expert in any.",
+  "Keep your friends close, but your enemies closer": "Know your enemies well so you can anticipate their actions.",
+  "Laughter is the best medicine": "Laughter helps relieve stress and improves health.",
+  "Let bygones be bygones": "Forgive and forget past mistakes or wrongdoings.",
+  "Life is not a bed of roses": "Life is not always easy or pleasant.",
+  "Live and let live": "Allow others to live their lives as they wish, without interference.",
+  "Look before you leap": "Think carefully before you act.",
+  "Money can’t buy happiness": "Material wealth does not guarantee emotional well-being.",
+  "Necessity is the mother of invention": "When people need something, they often find creative ways to make it.",
+  "No man is an island": "Everyone needs help from others.",
+  "One man's loss is another man's gain": "What one person loses may be an opportunity for someone else.",
+  "One step at a time": "Progress is made gradually.",
+  "The best things in life are free": "The most valuable things in life cannot be bought with money.",
+  "A chain is only as strong as its weakest link": "The strength of a group depends on the strength of its weakest member.",
+  "A fool sees not the same tree that a wise man sees": "Different people see things differently depending on their perspective and wisdom.",
+  "A friend in need is a friend indeed": "A true friend is someone who helps you when you are in trouble.",
+  "A house is not a home": "A home is more than just a physical place; it is where love and comfort are found.",
+  "A leopard never changes its spots": "People cannot change their inherent nature or character.",
+  "A picture is worth a thousand words": "A single image can convey complex ideas more effectively than a verbal description.",
+  "A penny for your thoughts": "A way of asking what someone is thinking.",
+  "Actions have consequences": "What you do has an impact and can lead to positive or negative results.",
+  "All that glitters is not gold": "Things that appear valuable may not be.",
+  "An eye for an eye makes the whole world blind": "Revenge leads to more harm and doesn’t solve problems.",
+  "An idle mind is the devil's workshop": "When a person is not busy, they are more likely to get into trouble.",
+  "Beauty is in the eye of the beholder": "Different people have different opinions on what is beautiful.",
+  "Better safe than sorry": "It’s better to take precautions than to risk a bad outcome.",
+  "Better to be safe than sorry": "Taking the safe route prevents regret later.",
+  "Birds in the hand are worth more than two in the bush": "It’s better to have something now than risk losing it for something uncertain.",
+  "Blood is thicker than water": "Family bonds are stronger than other relationships.",
+  "By hook or by crook": "By any means necessary, whether fair or unfair.",
+  "Cleanliness is next to godliness": "Being clean is associated with being virtuous.",
+  "Curiosity killed the cat": "Being overly inquisitive can lead to trouble.",
+  "Don't count your chickens before they hatch": "Don’t assume success before it happens.",
+  "Don't put all your eggs in one basket": "Don’t risk everything on one opportunity.",
+  "Early bird catches the worm": "Those who start early have an advantage.",
+  "Easy come, easy go": "Things that are acquired easily can also be lost easily.",
+  "Empty vessels make the most noise": "People who know the least often talk the most.",
+  "Every dog has its day": "Everyone will experience success or good fortune at some point.",
+  "Every cloud has a silver lining": "There’s something good in every bad situation.",
+  "Experience is the best teacher": "We learn the most from our own experiences.",
+  "Failure is the key to success": "Failure teaches valuable lessons that lead to success.",
+  "Fortune favors the brave": "Those who take risks are often rewarded.",
+  "Give someone an inch and they’ll take a mile": "If you give someone a little, they may try to take more than you intended.",
+  "God helps those who help themselves": "Those who work hard are more likely to be helped by God or fate.",
+  "Good fences make good neighbors": "Setting clear boundaries leads to better relationships.",
+  "Haste makes waste": "Rushing things often leads to mistakes.",
+  "Honesty is the best policy": "Being truthful is the best course of action.",
+  "If it’s not broke, don’t fix it": "If something is working, don’t try to change it.",
+  "If the shoe fits, wear it": "If something applies to you, accept it.",
+  "If you can’t stand the heat, get out of the kitchen": "If you can’t handle the pressure, don’t get involved.",
+  "Ignorance is bliss": "Not knowing something can make you happier.",
+  "It is better to give than to receive": "Giving to others is more rewarding than receiving.",
+  "It takes two to tango": "Some situations require cooperation between two people.",
+  "Jack of all trades, master of none": "Someone who is skilled in many areas, but not an expert in any one.",
+  "Laughter is the best medicine": "Laughter has healing powers and is good for your health.",
+  "Let bygones be bygones": "Forgive and forget past wrongdoings.",
+  "Live and let live": "Let others live their life as they choose.",
+  "Look before you leap": "Think carefully before making a decision.",
+  "Make hay while the sun shines": "Take advantage of opportunities when they arise.",
+  "Money doesn’t grow on trees": "Money is not easy to come by, so it should be used wisely.",
+  "Necessity is the mother of invention": "People come up with creative solutions when they face a need.",
+  "No pain, no gain": "Hard work and effort are needed to achieve success.",
+  "One bad apple spoils the whole bunch": "One person’s bad behavior can negatively affect the whole group.",
+  "One step at a time": "Take things slowly and don’t rush.",
+  "People who live in glass houses shouldn’t throw stones": "Don’t criticize others if you have similar faults.",
+  "Practice makes perfect": "The more you practice, the better you become.",
+  "Rome wasn’t built in a day": "Great achievements take time and effort.",
+  "Silence is golden": "Sometimes it’s better to say nothing.",
+  "The best things in life are free": "The most important things in life cannot be bought with money.",
+  "The early bird catches the worm": "Those who act first have an advantage.",
+  "The grass is always greener on the other side": "People tend to think others have it better, but their situation may not be as perfect as it seems.",
+  "The pen is mightier than the sword": "Words are more effective than force in achieving goals.",
+  "There’s no place like home": "Home is the most comfortable and special place.",
+  "Time heals all wounds": "Emotional pain and problems get better with time.",
+  "To each their own": "Everyone has different tastes and preferences.",
+  "Too many cooks spoil the broth": "Too many people involved in one task can cause confusion and make it worse.",
+  "Two heads are better than one": "It’s easier to solve problems when two people work together.",
+  "Variety is the spice of life": "Life is more enjoyable when it involves different experiences.",
+  "What goes around comes around": "The way you treat others will eventually come back to you.",
+  "When the cat’s away, the mice will play": "When authority is absent, people often take advantage of the situation.",
+  "You can’t have your cake and eat it too": "You can’t enjoy two contradictory things at once.",
+  "You can’t judge a book by its cover": "Don’t judge something or someone based solely on appearance.",
+  "You reap what you sow": "Your actions will determine what you get in the future.",
+  "A fool and his money are soon parted": "People who are careless with money will quickly lose it.",
+  "A house divided against itself cannot stand": "If there is internal conflict, the group will fail.",
+  "A problem shared is a problem halved": "Sharing your problems makes them easier to manage.",
+  "Actions speak louder than words": "What you do is more significant than what you say.",
+  "All that glitters is not gold": "Not everything that looks good is truly valuable.",
+  "An ounce of prevention is worth a pound of cure": "Preventing a problem is easier than fixing it after it happens.",
+  "As you sow, so shall you reap": "You will get what you deserve based on your actions.",
+  "Beggars can’t be choosers": "When you are in need, you can’t afford to be picky.",
+  "Birds of a feather flock together": "People with similar interests tend to group together.",
+  "Clean your own doorstep before criticizing others": "Fix your own problems before judging others.",
+  "Do unto others as you would have them do unto you": "Treat others the way you want to be treated.",
+  "Don’t bite off more than you can chew": "Don’t take on more than you can handle.",
+  "Don’t judge a book by its cover": "Don’t judge someone or something based solely on their appearance.",
+  "Don’t put all your eggs in one basket": "Don’t risk everything on one opportunity.",
+  "A bad workman blames his tools": "A person who does poor work often blames external factors instead of their own ability.",
+  "A bird in the hand is worth two in the bush": "It's better to hold on to something you have than risk losing it by seeking something else.",
+  "A close mouth catches no flies": "Being quiet or discreet can avoid trouble.",
+  "A drowning man will clutch at a straw": "A person in desperate need will take any chance, no matter how small.",
+  "A fool is known by his speech, and a wise man by silence": "How you speak reveals your character.",
+  "A friend to all is a friend to none": "One who tries to please everyone ends up pleasing no one.",
+  "A great step is not without its risk": "Taking big actions or making major changes comes with risks.",
+  "A lie travels round the world while truth is putting its boots on": "Falsehoods often spread more quickly than the truth.",
+  "A little knowledge is a dangerous thing": "Knowing only a small amount about something can lead to mistakes.",
+  "A man is known by the company he keeps": "The people you associate with reflect your character.",
+  "A man who stands for nothing will fall for anything": "Without principles, a person will be easily swayed.",
+  "A penny saved is a penny earned": "Saving money is just as valuable as earning it.",
+  "A piece of bread is better than the best dish in the world": "Contentment with what you have is better than desiring more.",
+  "A rolling stone gathers no moss": "A person who is always moving or changing doesn’t settle down or accumulate responsibilities.",
+  "A strong man stands up for himself. A stronger man stands up for others": "Helping others is a sign of true strength.",
+  "Absence makes the heart grow fonder": "Being apart from someone makes you appreciate them more.",
+  "Actions speak louder than words": "What you do is more important than what you say.",
+  "All good things must come to an end": "Everything, no matter how good, will eventually stop.",
+  "All is fair in love and war": "In certain situations, any behavior is justified.",
+  "All's well that ends well": "If the outcome is good, the means to achieve it don’t matter.",
+  "Appearances are often deceiving": "What something seems to be may not be what it actually is.",
+  "As the twig is bent, so grows the tree": "Early influences shape a person's future.",
+  "Barking dogs seldom bite": "People who make a lot of noise are usually harmless.",
+  "Beauty is only skin deep": "Physical appearance doesn’t define a person’s worth.",
+  "Better an empty house than a bad tenant": "It’s better to have no one than to have someone who causes problems.",
+  "Better late than never": "It’s better to do something late than not at all.",
+  "Better to light a candle than curse the darkness": "It’s better to do something small to improve a bad situation than to complain about it.",
+  "Brevity is the soul of wit": "Being concise is the most effective form of communication.",
+  "Charity begins at home": "You should take care of your own family and responsibilities before helping others.",
+  "Cold hands, warm heart": "A person who seems distant or cold may be kindhearted.",
+  "Count your blessings": "Be grateful for what you have, not what you don’t.",
+  "Crime doesn't pay": "Engaging in criminal activities will eventually lead to negative consequences.",
+  "Don’t bite the hand that feeds you": "Don’t harm those who help you.",
+  "Don't burn your bridges behind you": "Don't destroy relationships or opportunities that may help you in the future.",
+  "Don't cry over spilled milk": "Don’t waste time worrying about things that cannot be undone.",
+  "Don’t let the bedbugs bite": "A good night’s sleep is important.",
+  "Don’t put the cart before the horse": "Don’t do things in the wrong order.",
+  "Don’t sweat the small stuff": "Don’t get stressed about minor problems.",
+  "Don’t throw the baby out with the bathwater": "Don’t discard something valuable while trying to get rid of something unwanted.",
+  "Each to his own": "Everyone has their own tastes and preferences.",
+  "Early to bed and early to rise makes a man healthy, wealthy, and wise": "Good habits lead to success.",
+  "Empty barrels make the most noise": "People who are not knowledgeable tend to talk the most.",
+  "Every rose has its thorn": "There is always something negative even in good situations.",
+  "Familiarity breeds contempt": "Being overly familiar with someone or something can lead to disrespect.",
+  "Good fences make good neighbors": "Setting clear boundaries leads to better relationships.",
+  "Good things come to those who wait": "Patience is often rewarded.",
+  "Great minds think alike": "People with similar intelligence or ideas often think in the same way.",
+  "He who laughs last, laughs best": "The final outcome of a situation is more important than the initial one.",
+  "He who pays the piper calls the tune": "The person who provides the money makes the decisions.",
+  "Hindsight is 20/20": "It’s easier to understand something after it has happened.",
+  "Honesty is the best policy": "Being truthful is the best approach in any situation.",
+  "Hope for the best, prepare for the worst": "It’s important to be optimistic but also ready for challenges.",
+  "If at first you don’t succeed, try, try again": "Persistence is key to success.",
+  "If you can’t beat them, join them": "If you can’t succeed against your rivals, you may as well work with them.",
+  "If you scratch my back, I’ll scratch yours": "If you help me, I’ll help you in return.",
+  "Ignorance is bliss": "Sometimes it’s better not to know certain things.",
+  "It’s always darkest before the dawn": "Things often seem worse before they improve.",
+  "It’s never too late to mend": "It’s always possible to improve or correct things.",
+  "Jack of all trades, master of none": "Someone who is good at many things but not an expert in any.",
+  "Keep your friends close, but your enemies closer": "It’s wise to be aware of your enemies' actions.",
+  "Laugh and the world laughs with you, weep and you weep alone": "Happiness is contagious, while sorrow often isolates people.",
+  "Let sleeping dogs lie": "Don’t disturb a situation that is currently calm.",
+  "Lions don’t lose sleep over the opinions of sheep": "Don’t worry about what others think, especially those less important.",
+  "Look after the pennies, and the pounds will look after themselves": "If you take care of the small things, the big things will follow.",
+  "Look before you leap": "Think carefully before taking action.",
+  "Love is blind": "When in love, a person may overlook the flaws of the object of their affection.",
+  "Make a mountain out of a molehill": "To exaggerate a small problem.",
+  "Make hay while the sun shines": "Take advantage of favorable conditions while they last.",
+  "Misery loves company": "People who are unhappy often want others to be unhappy too.",
+  "Necessity is the mother of invention": "When faced with a need, people will find ways to solve problems.",
+  "No man is an island": "No one can live entirely independently; we all need others.",
+  "No use crying over spilt milk": "Don’t waste time on things that can’t be undone.",
+  "Nothing ventured, nothing gained": "You have to take risks to achieve something.",
+  "Old habits die hard": "It is difficult to change old ways of doing things.",
+  "Once bitten, twice shy": "After having a bad experience, people are often more cautious in the future.",
+  "Opportunity knocks but once": "Opportunities are rare and should be seized when they appear.",
+  "Out of sight, out of mind": "When something is no longer visible or present, we tend to forget about it.",
+  "Patience is a virtue": "Being patient is a valuable quality.",
+  "People who live in glass houses should not throw stones": "Don’t criticize others if you have similar flaws.",
+  "Pride comes before a fall": "Arrogance often leads to failure.",
+  "Silence is golden": "Sometimes it is better to say nothing.",
+  "The early bird catches the worm": "Those who start early are more likely to succeed.",
+  "The grass is always greener on the other side": "People often think other situations are better, but they are not always.",
+  "The pen is mightier than the sword": "Words and communication are more powerful than force.",
+  "The proof of the pudding is in the eating": "You can only judge something after experiencing it.",
+  "There’s no time like the present": "Don’t wait for the perfect moment, take action now.",
+  "Time flies when you're having fun": "Time seems to pass more quickly when you are enjoying yourself.",
+  "To err is human, to forgive is divine": "Everyone makes mistakes, and forgiving others is a noble act.",
+  "Too many cooks spoil the broth": "Too many people trying to help can ruin a task.",
+  "Two wrongs don't make a right": "Revenge or retaliation does not solve problems.",
+  "What doesn’t kill you makes you stronger": "Difficult experiences make us tougher and more resilient.",
+  "What goes around comes around": "Your actions will eventually come back to you, for better or worse.",
+  "Where there's a will, there's a way": "If you are determined, you can find a way to do something.",
+  "When in Rome, do as the Romans do": "Adapt to the customs and behavior of the place you are in.",
+  "When the going gets tough, the tough get going": "Strong people act with determination in difficult situations.",
+  "You can't teach an old dog new tricks": "It's hard for people to change their habits or learn new things as they age.",
+  "A bad penny always turns up": "Something or someone unwanted or troublesome always reappears.",
+  "A bird never flew on one wing": "You need help from others to achieve something significant.",
+  "A chain is only as strong as its weakest link": "The strength of a group depends on the weakest member.",
+  "A fool and his money are soon parted": "People who are careless with money will lose it quickly.",
+  "A friend in need is a friend indeed": "A true friend helps you when you are in trouble.",
+  "A house divided against itself cannot stand": "Unity is essential for strength and success.",
+  "A leopard cannot change its spots": "A person cannot change their inherent nature.",
+  "A penny for your thoughts": "A way to ask what someone is thinking.",
+  "A place for everything, and everything in its place": "Things should be organized and orderly.",
+  "A problem shared is a problem halved": "Discussing your problems can make them easier to solve.",
+  "A silent tongue is a wise head": "Being quiet often shows wisdom.",
+  "A stitch in time saves nine": "Fixing a small problem early prevents it from becoming a bigger one.",
+  "Actions speak louder than words": "What people do is more important than what they say.",
+  "All cats are grey in the dark": "Appearances don’t matter when circumstances are the same.",
+  "All that glitters is not gold": "Not everything that looks valuable is valuable.",
+  "All things come to those who wait": "Patience leads to rewards.",
+  "April showers bring May flowers": "Hard times often lead to good things in the future.",
+  "As easy as pie": "Something very simple to do.",
+  "As you sow, so shall you reap": "You will get what you deserve based on your actions.",
+  "Beggars can't be choosers": "People who are in need cannot be picky.",
+  "Better safe than sorry": "It’s better to be cautious than to take risks.",
+  "Better the devil you know than the devil you don't": "It’s safer to deal with a known problem than an unknown one.",
+  "Blood is thicker than water": "Family ties are stronger than other relationships.",
+  "By the time the fool has learned the game, the players have dispersed": "It’s too late to learn when the opportunity has passed.",
+  "Can't see the forest for the trees": "Being too focused on details can prevent you from seeing the bigger picture.",
+  "Cheer up, the worst is yet to come": "Things are bad now, but they might get worse.",
+  "Children are the future": "The younger generation will shape the future.",
+  "Cleanliness is next to godliness": "Being clean and tidy is a sign of good character.",
+  "Clothes make the man": "What a person wears affects how they are perceived.",
+  "Curiosity killed the cat": "Asking too many questions or being overly inquisitive can lead to trouble.",
+  "Don't bite off more than you can chew": "Don’t take on more than you can handle.",
+  "Don't count your chickens before they hatch": "Don’t assume something will happen before it actually does.",
+  "Don't cut off your nose to spite your face": "Don’t harm yourself while trying to harm others.",
+  "Don't judge a book by its cover": "Don’t judge people or things based on their appearance.",
+  "Don't put all your eggs in one basket": "Don’t risk everything on a single venture.",
+  "Easy come, easy go": "Things that are easily gained are often easily lost.",
+  "Empty pockets never held anyone back. Only empty heads and empty hearts can do that": "Financial difficulties are not as limiting as lack of ambition or love.",
+  "Every dog has its day": "Everyone will have a moment of success or luck.",
+  "Every man has his price": "Everyone can be bribed or persuaded if the offer is right.",
+  "Faint heart never won fair lady": "You need to be bold to succeed, especially in matters of love.",
+  "Fortune favors the bold": "Taking risks can lead to great rewards.",
+  "Good things come in small packages": "Great things can come in small or unassuming forms.",
+  "Great minds think alike": "People with similar thoughts often come to the same conclusions.",
+  "Haste makes waste": "Acting too quickly can lead to mistakes.",
+  "He who hesitates is lost": "Not acting promptly can lead to missed opportunities.",
+  "He who laughs last laughs best": "The final outcome is more important than initial success or failure.",
+  "Honesty is the best policy": "It’s always best to tell the truth.",
+  "If the shoe fits, wear it": "If something applies to you, accept it.",
+  "If you want something done right, do it yourself": "You can’t always rely on others to do things properly.",
+  "Ignorance is bliss": "Not knowing about something can make you happier.",
+  "In for a penny, in for a pound": "Once you have started something, you must see it through.",
+  "It's never too late to mend": "You can always make changes or improvements.",
+  "It takes two to tango": "Certain actions or situations require the involvement of two people.",
+  "Laughter is the best medicine": "Humor can help relieve stress and improve health.",
+  "Let bygones be bygones": "Forget past conflicts and move forward.",
+  "Life is but a dream": "Life is fleeting and often not as real as it seems.",
+  "Look before you leap": "Think carefully before taking action.",
+  "Make a mountain out of a molehill": "Exaggerate the importance of something minor.",
+  "Many hands make light work": "The more people helping, the easier a task becomes.",
+  "Money can't buy happiness": "Material wealth does not guarantee emotional or personal fulfillment.",
+  "Money makes the world go round": "Money is a major driving force in life and society.",
+  "Necessity is the mother of invention": "People invent solutions when faced with needs.",
+  "No gain without pain": "You have to endure difficulties to achieve success.",
+  "No man is an island": "No one can live or work entirely alone.",
+  "One good turn deserves another": "If someone does something good for you, you should return the favor.",
+  "One man’s trash is another man’s treasure": "What one person discards may be valuable to someone else.",
+  "Opportunity knocks but once": "Chances are rare and should be seized when they arise.",
+  "Out of the frying pan and into the fire": "Moving from one bad situation to an even worse one.",
+  "Practice makes perfect": "The more you practice, the better you get.",
+  "Prevention is better than cure": "It’s better to stop problems before they happen.",
+  "Pride comes before a fall": "Being overly proud can lead to failure.",
+  "Rome wasn't built in a day": "Important things take time to develop.",
+  "Silence is golden": "Sometimes silence is more valuable than speaking.",
+  "The apple doesn’t fall far from the tree": "Children often resemble their parents.",
+  "The early bird catches the worm": "Those who act early have an advantage.",
+  "The grass is always greener on the other side": "People often think others have it better, but they don’t.",
+  "The pen is mightier than the sword": "Words have more power than violence.",
+  "The squeaky wheel gets the grease": "The person who complains the most gets the most attention.",
+  "Time is money": "Time is a valuable resource, just like money.",
+  "To err is human, to forgive is divine": "Everyone makes mistakes, and forgiveness is a noble quality.",
+  "Too many cooks spoil the broth": "Too many people trying to help can ruin the outcome.",
+  "United we stand, divided we fall": "People are stronger when they work together.",
+  "Variety is the spice of life": "Different experiences make life more interesting.",
+  "What goes around comes around": "Your actions will eventually come back to you.",
+  "What doesn’t kill you makes you stronger": "Challenges can make you more resilient.",
+  "When in Rome, do as the Romans do": "Adapt to the customs of the place you are in.",
+  "When the going gets tough, the tough get going": "Strong people act with determination in difficult situations.",
+  "Where there’s a will, there’s a way": "Determination can overcome obstacles.",
+  "You can’t make an omelette without breaking eggs": "You can’t achieve something without making sacrifices.",
+  "You can lead a horse to water, but you can’t make it drink": "You can offer someone an opportunity, but you can’t force them to take it.",
+  "You reap what you sow": "Your actions have consequences, good or bad.",
+  "A broken clock is right twice a day": "Even something that is usually wrong can occasionally be right.",
+  "A fool’s paradise is a wise man’s hell": "What may seem pleasant to an unwise person may be uncomfortable for a wise one.",
+  "A penny saved is a penny earned": "Saving money is just as valuable as earning it.",
+  "Absence makes the heart grow fonder": "Being apart from someone can make you appreciate them more.",
+  "Actions have consequences": "What you do will eventually have an impact, whether positive or negative.",
+  "An apple a day keeps the doctor away": "A healthy lifestyle can prevent illness.",
+  "An ounce of prevention is worth a pound of cure": "It’s easier to avoid problems than to solve them later.",
+  "Better late than never": "It’s better to do something late than to not do it at all.",
+  "Better the devil you know than the devil you don't": "It’s safer to stick with what you know than to take a risk with the unknown.",
+  "Blood is thicker than water": "Family bonds are stronger than other relationships.",
+  "Don't burn your bridges": "Don’t destroy your relationships or opportunities because you might need them later.",
+  "Don’t cry over spilt milk": "There’s no point in being upset about something that can’t be undone.",
+  "Don’t count your chickens before they hatch": "Don’t assume something will happen before it actually does.",
+  "Don’t put all your eggs in one basket": "Don’t risk everything on one venture.",
+  "Every cloud has a silver lining": "There’s always a positive aspect to a difficult situation.",
+  "Familiarity breeds contempt": "Being too familiar with someone or something can lead to a loss of respect.",
+  "Fortune favors the bold": "People who take risks are often rewarded.",
+  "Great minds think alike": "People who are intelligent often come to the same conclusions.",
+  "Haste makes waste": "Rushing often leads to mistakes.",
+  "He who hesitates is lost": "Delaying a decision can cause you to miss an opportunity.",
+  "Honesty is the best policy": "It’s always best to tell the truth.",
+  "Ignorance is bliss": "Not knowing something can make you happier.",
+  "In for a penny, in for a pound": "If you start something, you should be willing to finish it, no matter the cost.",
+  "It never rains but it pours": "Bad things often happen all at once.",
+  "Jack of all trades, master of none": "Someone who is good at many things but not an expert in any one thing.",
+  "Laughter is the best medicine": "Humor can help relieve stress and improve health.",
+  "Let sleeping dogs lie": "Don’t stir up trouble that’s already been settled.",
+  "Live and let live": "Don’t interfere in the lives of others, and let them live as they wish.",
+  "Look before you leap": "Think carefully before making decisions.",
+  "Many hands make light work": "The more people working together, the easier the task.",
+  "Misery loves company": "People who are unhappy often seek the company of others in the same situation.",
+  "No news is good news": "If you haven’t heard anything, it’s probably for the best.",
+  "Nothing ventured, nothing gained": "You have to take risks in order to achieve something.",
+  "Old habits die hard": "It’s difficult to break old patterns or behaviors.",
+  "One man’s meat is another man’s poison": "What is good for one person may not be good for another.",
+  "Out of sight, out of mind": "You tend to forget about things that you don’t see regularly.",
+  "Patience is a virtue": "Being patient is a valuable quality.",
+  "Practice makes perfect": "The more you practice something, the better you get at it.",
+  "Prevention is better than cure": "It’s better to stop problems before they happen.",
+  "Rome wasn’t built in a day": "Big things take time to achieve.",
+  "The apple doesn't fall far from the tree": "Children often resemble their parents in behavior or appearance.",
+  "The early bird catches the worm": "Those who start early are more likely to succeed.",
+  "The grass is always greener on the other side": "People often think others have it better than they do.",
+  "The more the merrier": "The more people involved, the more fun or success there will be.",
+  "The pot calling the kettle black": "Accusing someone of something that you are also guilty of.",
+  "The road to hell is paved with good intentions": "Even well-meaning actions can have negative consequences.",
+  "Time is money": "Time is a valuable resource.",
+  "Too many cooks spoil the broth": "Too many people trying to help can ruin the outcome.",
+  "What doesn't kill you makes you stronger": "Difficult experiences can make you more resilient.",
+  "What goes around comes around": "Your actions will eventually come back to you.",
+  "When in Rome, do as the Romans do": "Adapt to the customs of the place you're in.",
+  "Where there’s a will, there’s a way": "If you are determined, you can overcome obstacles.",
+  "You can't have your cake and eat it too": "You can’t have everything your way, sometimes you have to make choices.",
+  "You can lead a horse to water, but you can't make it drink": "You can offer someone an opportunity, but you can’t force them to take it.",
+  "You reap what you sow": "What you put into life is what you get out of it.",
+  "A closed mouth catches no flies": "It’s better to keep quiet than to speak out of turn.",
+  "A fool’s brain is in his mouth": "Fools talk without thinking.",
+  "A house divided cannot stand": "Without unity, a group or organization will fail.",
+  "A penny saved is a penny earned": "Saving money is as valuable as earning it.",
+  "A picture is worth a thousand words": "A visual representation can convey complex ideas more effectively than words.",
+  "A watched pot never boils": "Things seem to take longer when you are anxiously waiting for them.",
+  "Absence makes the heart grow fonder": "Being apart from someone can make you appreciate them more.",
+  "Actions speak louder than words": "What people do is more significant than what they say.",
+  "All is fair in love and war": "In some situations, you are allowed to use any means to achieve your goal.",
+  "All that glitters is not gold": "Not everything that appears valuable actually is.",
+  "Beauty is in the eye of the beholder": "What is beautiful to one person may not be to another.",
+  "Birds of a feather flock together": "People with similar interests or qualities tend to associate with each other.",
+  "Cleanliness is next to godliness": "Being clean is a sign of good character.",
+  "Curiosity killed the cat": "Inquisitive behavior can lead to trouble.",
+  "Don't bite the hand that feeds you": "Don’t harm those who help you.",
+  "Don't cry over spilt milk": "Don’t be upset about something that cannot be fixed.",
+  "Don't put all your eggs in one basket": "Don’t risk everything on a single venture.",
+  "Early to bed and early to rise makes a man healthy, wealthy, and wise": "Good habits of rest and productivity lead to success.",
+  "Even a broken clock is right twice a day": "Even someone who is wrong most of the time can occasionally be right.",
+  "Faint heart never won fair lady": "You need courage to succeed in love and life.",
+  "Familiarity breeds contempt": "Being too familiar with someone can lead to a loss of respect.",
+  "Give credit where credit is due": "Acknowledge and appreciate others' achievements.",
+  "Good things come to those who wait": "Patience is often rewarded.",
+  "Haste makes waste": "Rushing leads to mistakes.",
+  "He who laughs last laughs best": "The final outcome is more important than the initial success or failure.",
+  "He who runs after two hares will catch neither": "Trying to do two things at once may result in failure in both.",
+  "If you want something done right, do it yourself": "You can’t always rely on others to do things properly.",
+  "Ignorance is bliss": "Sometimes not knowing about something can make you happier.",
+  "In for a penny, in for a pound": "If you start something, you should see it through to the end.",
+  "It takes two to tango": "Certain situations require the involvement of two people.",
+  "It's never too late to mend": "You can always make changes or improvements."
+
+
+     };
+	 
+        // Function to populate the dropdown menu with words
+        function populateWordSelect() {
+            const wordSelect = document.getElementById('wordSelect');
+            const words = Object.keys(dictionary).sort(); // Sort words alphabetically
+
+            words.forEach(word => {
+                const option = document.createElement('option');
+                option.value = word;
+                option.textContent = word;
+                wordSelect.appendChild(option);
+            });
+        }
+
+        // Function to display the meaning and trigger text-to-speech
+        function showMeaningAndSpeak() {
+            const wordSelect = document.getElementById('wordSelect');
+            const word = wordSelect.value;
+
+            if (word) {
+                document.getElementById('result').textContent = `Proverb: ${word}`;
+                document.getElementById('meaning').textContent = `Meaning: ${dictionary[word]}`;
+                document.getElementById('ttsButton').style.display = 'inline-block';
+            } else {
+                document.getElementById('result').textContent = '';
+                document.getElementById('meaning').textContent = '';
+                document.getElementById('ttsButton').style.display = 'none';
+            }
+        }
+
+        // Function to read the word aloud using text-to-speech
+        function speakWord() {
+            const word = document.getElementById('result').textContent.replace('Word: ', '');
+            const speech = new SpeechSynthesisUtterance(word);
+            speech.lang = 'en-US'; // Set language to English
+            window.speechSynthesis.speak(speech);
+        }
+
+        // Initialize the dropdown menu with words
+        populateWordSelect();
+    </script>
+
+</body>
+</html>
+

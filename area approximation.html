@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area Under the Curve</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        input, select { width: 80%; padding: 10px; font-size: 18px; margin: 10px; }
+        button { padding: 10px 15px; font-size: 18px; cursor: pointer; margin: 10px; }
+        #result, #steps { font-size: 18px; text-align: left; display: inline-block; margin-top: 20px; max-width: 600px; }
+    </style>
+</head>
+<body>
+
+    <h1>📐 Area Under the Curve</h1>
+
+    <p>Enter a function(TERMS LIKE -x^2 , INPUT AS -1x^2) </p>
+    <input type="text" id="function" placeholder="e.g., 3x^2 + 5x - 4"><br>
+    <label>Lower Limit (a):</label> <input type="number" id="lowerLimit"><br>
+    <label>Upper Limit (b):</label> <input type="number" id="upperLimit"><br>
+    <label>Sub-Intervals (n):</label> <input type="number" id="subIntervals" value="4"><br>
+    <label>Method:</label>
+    <select id="method">
+        <option value="trapezium">Trapezium Rule</option>
+        <option value="midOrdinate">Mid-ordinate Rule</option>
+        
+    </select><br>
+    <button onclick="calculateArea()">Calculate</button>
+	
+
+
+    <h2 id="finalResult"></h2>
+    <div id="steps"></div>
+
+    <script>
+
+
+
+		
+        function parsePolynomial(polynomial) {
+    let terms = polynomial.match(/[+-]?\s*\d*x?\^?\d*/g);
+    let parsedTerms = [];
+
+    if (terms) {
+        terms.forEach(term => {
+            let cleanTerm = term.replace(/\s+/g, ''); // Remove spaces
+            let match = cleanTerm.match(/([+-]?\d*)x?\^?(\d*)/);
+
+            if (match) {
+                let coefficient = match[1] === '' || match[1] === '+' ? 1 :
+                                  match[1] === '-' ? -1 :
+                                  parseFloat(match[1]);
+
+                let exponent = match[2] === '' ? (cleanTerm.includes('x') ? 1 : 0) : parseInt(match[2]);
+
+                parsedTerms.push({ coefficient, exponent });
+            }
+        });
+    }
+    return parsedTerms;
+}
+
+function formatTerm(coefficient, exponent) {
+    if (coefficient === 0) return "";
+    let coeffStr = (coefficient === 1 && exponent !== 0) ? "" : 
+                   (coefficient === -1 && exponent !== 0) ? "-" : coefficient;
+    let exponentStr = exponent === 0 ? "" : exponent === 1 ? "x" : `x^${exponent}`;
+    return `${coeffStr}${exponentStr}`;
+}
+
+
+
+
+
+
+
+
+function integrate() {
+    let polynomial = document.getElementById("polynomial").value.trim();
+    let terms = parsePolynomial(polynomial);
+    let result = [];
+    let steps = "<b>Step-by-Step Integration:</b><br>";
+
+    terms.forEach(term => {
+        let newExp = term.exponent + 1;
+        let newCoeff = term.coefficient / newExp;
+        result.push({ coefficient: newCoeff, exponent: newExp });
+
+        steps += `∫(${formatTerm(term.coefficient, term.exponent)})dx = (${term.coefficient} / ${newExp})x^${newExp} = ${formatTerm(newCoeff, newExp)}<br>`;
+    });
+
+    let finalResult = result
+        .map(t => formatTerm(t.coefficient, t.exponent))
+        .filter(Boolean)
+        .join(" + ")
+        .replace(/\+\s*-/g, "- ");
+
+    document.getElementById("result").innerHTML = steps + "<br><b>Integral:</b> " + finalResult + " + C";
+
+
+
+
+
+
+
+
+
+
+		
+		
+		
+		
+        }
+
+        function definiteIntegration(func, a, b) {
+            let steps = `<b>Step-by-Step Definite Integration:</b><br>`;
+            let terms = parsePolynomial(func);
+            let integralExpr = terms.map(term => {
+                let newExp = term.exponent + 1;
+                let newCoeff = term.coefficient / newExp;
+                return formatTerm(newCoeff, newExp);
+            }).join(" + ");
+
+            steps += `∫(${func})dx = ${integralExpr} + C <br><br>`;
+
+            let F_a = integrateFunction(func, a);
+            let F_b = integrateFunction(func, b);
+
+            steps += `F(${b}) = ${F_b.toFixed(4)}<br>`;
+            steps += `F(${a}) = ${F_a.toFixed(4)}<br><br>`;
+
+            let finalArea = F_b - F_a;
+            steps += `Final Area: F(${b}) - F(${a}) = ${F_b.toFixed(4)} - ${F_a.toFixed(4)} = <b>${finalArea.toFixed(4)}</b>`;
+
+            document.getElementById("steps").innerHTML = steps;
+            return finalArea.toFixed(4);
+        }
+
+        function evaluateFunction(func, x) {
+            try {
+                func = func.replace(/(\d)([a-zA-Z])/g, "$1*$2"); 
+                func = func.replace(/\^/g, "**");
+                return Function("x", "return " + func)(x);
+            } catch (error) {
+                alert("Invalid function format! Please use correct syntax.");
+                return NaN;
+            }
+        }
+
+        function trapeziumRule(func, a, b, n) {
+            let h = (b - a) / n;
+            let sum = evaluateFunction(func, a) + evaluateFunction(func, b);
+            let steps = `<b>Step-by-Step Trapezium Rule:</b><br>h = (${b} - ${a}) / ${n} = ${h.toFixed(4)}<br>`;
+
+            for (let i = 1; i < n; i++) {
+                let x = a + i * h;
+                let fx = evaluateFunction(func, x);
+                sum += 2 * fx;
+                steps += `f(${x.toFixed(4)}) = ${fx.toFixed(4)}<br>`;
+            }
+
+            let area = (h / 2) * sum;
+            steps += `<br>Final Area: (h/2) × sum = (${h.toFixed(4)} / 2) × ${sum.toFixed(4)} = ${area.toFixed(4)}`;
+            document.getElementById("steps").innerHTML = steps;
+            return area.toFixed(4);
+        }
+
+        function midOrdinateRule(func, a, b, n) {
+            let h = (b - a) / n;
+            let sum = 0;
+            let steps = `<b>Step-by-Step Mid-ordinate Rule:</b><br>h = (${b} - ${a}) / ${n} = ${h.toFixed(4)}<br>`;
+
+            for (let i = 0; i < n; i++) {
+                let x = a + (i + 0.5) * h;
+                let fx = evaluateFunction(func, x);
+                sum += fx;
+                steps += `f(${x.toFixed(4)}) = ${fx.toFixed(4)}<br>`;
+            }
+
+            let area = h * sum;
+            steps += `<br>Final Area: h × sum = ${h.toFixed(4)} × ${sum.toFixed(4)} = ${area.toFixed(4)}`;
+            document.getElementById("steps").innerHTML = steps;
+            return area.toFixed(4);
+        }
+
+        function calculateArea() {
+            let func = document.getElementById("function").value.trim();
+            let a = parseFloat(document.getElementById("lowerLimit").value);
+            let b = parseFloat(document.getElementById("upperLimit").value);
+            let n = parseInt(document.getElementById("subIntervals").value);
+            let method = document.getElementById("method").value;
+
+            let result = method === "trapezium" ? trapeziumRule(func, a, b, n)
+                        : method === "midOrdinate" ? midOrdinateRule(func, a, b, n)
+                        : definiteIntegration(func, a, b);
+
+            document.getElementById("result").innerHTML = `<b>Calculated Area:</b> ${result}`;
+        }
+    </script>
+</body>
+</html>
+

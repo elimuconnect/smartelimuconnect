@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comprehensive Radioactivity Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f9f9ff; }
+    h2 { color: #2e8b57; }
+    label { margin-top: 10px; display: block; }
+    input { padding: 8px; width: 100%; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px; background: #2e8b57; color: white; width: 100%; font-size: 16px; border: none; }
+    #result { margin-top: 20px; padding: 15px; background: #eaffea; border-left: 4px solid #2e8b57; }
+    .step { margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<h2>Radioactivity Calculator</h2>
+
+<label>Initial Amount (N₀):</label>
+<input type="number" id="initial" placeholder="Leave blank if unknown" step="any">
+
+<label>Remaining Amount:</label>
+<input type="number" id="remaining" placeholder="Leave blank if unknown" step="any">
+
+<label>Elapsed Time (t):</label>
+<input type="number" id="time" placeholder="Leave blank if unknown" step="any">
+
+<label>Half-Life (T):</label>
+<input type="number" id="halflife" placeholder="Leave blank if unknown" step="any">
+
+<button onclick="calculate()">Calculate</button>
+
+<div id="result"></div>
+
+<script>
+
+function calculate() {
+  const N0 = parseFloat(document.getElementById("initial").value);
+  const R = parseFloat(document.getElementById("remaining").value);
+  const t = parseFloat(document.getElementById("time").value);
+  const T = parseFloat(document.getElementById("halflife").value);
+  const result = document.getElementById("result");
+  result.innerHTML = "";
+
+  let steps = "";
+
+  const known = [!isNaN(N0), !isNaN(R), !isNaN(t), !isNaN(T)].filter(Boolean).length;
+  if (known < 3) {
+    result.innerHTML = "❌ Please enter at least 3 known values.";
+    return;
+  }
+
+  if (!isNaN(N0) && !isNaN(R) && !isNaN(t)) {
+    const n = Math.log(R / N0) / Math.log(0.5);
+    const Tsolved = t / n;
+    steps += `<div class="step">✅ Calculating Half-Life (T):<br>
+              n = log(${R}/${N0}) / log(0.5) = ${n.toFixed(4).replace(/\.?0+$/, "")}<br>
+              T = t / n = ${t} / ${n.toFixed(4).replace(/\.?0+$/, "")} = <strong>${Tsolved.toFixed(4).replace(/\.?0+$/, "")}</strong></div>`;
+  }
+
+  else if (!isNaN(N0) && !isNaN(R) && !isNaN(T)) {
+    const n = Math.log(R / N0) / Math.log(0.5);
+    const tsolved = n * T;
+    steps += `<div class="step">✅ Calculating Elapsed Time (t):<br>
+              n = log(${R}/${N0}) / log(0.5) = ${n.toFixed(4).replace(/\.?0+$/, "")}<br>
+              t = n × T = ${n.toFixed(4).replace(/\.?0+$/, "")} × ${T} = <strong>${tsolved.toFixed(4).replace(/\.?0+$/, "")}</strong></div>`;
+  }
+
+  else if (!isNaN(R) && !isNaN(t) && !isNaN(T)) {
+    const n = t / T;
+    const N0solved = R / Math.pow(0.5, n);
+    steps += `<div class="step">✅ Calculating Initial Amount (N₀):<br>
+              n = t / T = ${t} / ${T} = ${n.toFixed(4).replace(/\.?0+$/, "")}<br>
+              N₀ = ${R} ÷ (1/2)^${n.toFixed(4).replace(/\.?0+$/, "")} = <strong>${N0solved.toFixed(4).replace(/\.?0+$/, "")}</strong></div>`;
+  }
+
+  else if (!isNaN(N0) && !isNaN(t) && !isNaN(T)) {
+    const n = t / T;
+    const Rsolved = N0 * Math.pow(0.5, n);
+    steps += `<div class="step">✅ Calculating Remaining Amount:<br>
+              n = t / T = ${t} / ${T} = ${n.toFixed(4).replace(/\.?0+$/, "")}<br>
+              Remaining = ${N0} × (1/2)^${n.toFixed(4).replace(/\.?0+$/, "")} = <strong>${Rsolved.toFixed(4).replace(/\.?0+$/, "")}</strong></div>`;
+  }
+
+  result.innerHTML = steps;
+}
+</script>
+
+</body>
+</html>
+

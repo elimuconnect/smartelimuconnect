@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Reactions Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        select {
+            padding: 10px;
+            margin: 5px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Chemistry Reactions Tool </h1>
+
+    <label for="categorySelect"><strong>Select Reaction Category:</strong></label>
+    <select id="categorySelect">
+        <option value="" disabled selected>-- Choose a category --</option>
+    </select>
+
+    <label for="reactionSelect"><strong>Select a Reaction:</strong></label>
+    <select id="reactionSelect" disabled>
+        <option value="" disabled selected>-- Select a category first --</option>
+    </select>
+
+    <div id="result"></div>
+
+    <script>
+
+		
+        const reactions = {
+            "Acid-Base": {
+        "General Equation": {
+            "equation": "Acid + Base → Salt + Water",
+            "explanation": "An acid reacts with a base to form a salt and water in a neutralization reaction."
+        },
+        "HCl + NaOH": {
+            "equation": "HCl(aq) + NaOH(aq) → NaCl(aq) + H₂O(l)",
+            "explanation": "Hydrochloric acid reacts with sodium hydroxide to form sodium chloride (salt) and water."
+        },
+        "H₂SO₄ + NaOH": {
+            "equation": "H₂SO₄(aq) + 2NaOH(aq) → Na₂SO₄(aq) + 2H₂O(l)",
+            "explanation": "Sulfuric acid reacts with sodium hydroxide to form sodium sulfate and water."
+        },
+        "H₂SO₄ + KOH": {
+            "equation": "H₂SO₄(aq) + 2KOH(aq) → K₂SO₄(aq) + 2H₂O(l)",
+            "explanation": "Sulfuric acid reacts with potassium hydroxide to form potassium sulfate and water."
+        },
+        "HNO₃ + NaOH": {
+            "equation": "HNO₃(aq) + NaOH(aq) → NaNO₃(aq) + H₂O(l)",
+            "explanation": "Nitric acid reacts with sodium hydroxide to form sodium nitrate and water."
+        },
+        "HNO₃ + KOH": {
+            "equation": "HNO₃(aq) + KOH(aq) → KNO₃(aq) + H₂O(l)",
+            "explanation": "Nitric acid reacts with potassium hydroxide to form potassium nitrate and water."
+        },
+        "CH₃COOH + NaOH": {
+            "equation": "CH₃COOH(aq) + NaOH(aq) → CH₃COONa(aq) + H₂O(l)",
+            "explanation": "Acetic acid (vinegar) reacts with sodium hydroxide to form sodium acetate and water."
+        },
+        "CH₃COOH + KOH": {
+            "equation": "CH₃COOH(aq) + KOH(aq) → CH₃COOK(aq) + H₂O(l)",
+            "explanation": "Acetic acid reacts with potassium hydroxide to form potassium acetate and water."
+        },
+        "H₂CO₃ + NaOH": {
+            "equation": "H₂CO₃(aq) + 2NaOH(aq) → Na₂CO₃(aq) + 2H₂O(l)",
+            "explanation": "Carbonic acid reacts with sodium hydroxide to form sodium carbonate and water."
+        },
+        "H₂CO₃ + KOH": {
+            "equation": "H₂CO₃(aq) + 2KOH(aq) → K₂CO₃(aq) + 2H₂O(l)",
+            "explanation": "Carbonic acid reacts with potassium hydroxide to form potassium carbonate and water."
+        },
+        "H₃PO₄ + NaOH": {
+            "equation": "H₃PO₄(aq) + 3NaOH(aq) → Na₃PO₄(aq) + 3H₂O(l)",
+            "explanation": "Phosphoric acid reacts with sodium hydroxide to form sodium phosphate and water."
+        },
+        "H₃PO₄ + KOH": {
+            "equation": "H₃PO₄(aq) + 3KOH(aq) → K₃PO₄(aq) + 3H₂O(l)",
+            "explanation": "Phosphoric acid reacts with potassium hydroxide to form potassium phosphate and water."
+        }
+            },
+            "Acid-Metal": {
+        "General Equation": {
+            "equation": "Acid + Metal → Salt + Hydrogen gas",
+            "explanation": "Metals react with acids to form a salt and release hydrogen gas."
+        },
+        "HCl + Zn": {
+            "equation": "Zn(s) + 2HCl(aq) → ZnCl₂(aq) + H₂(g)",
+            "explanation": "Zinc reacts with hydrochloric acid to form zinc chloride and hydrogen gas."
+        },
+        "HCl + Mg": {
+            "equation": "Mg(s) + 2HCl(aq) → MgCl₂(aq) + H₂(g)",
+            "explanation": "Magnesium reacts with hydrochloric acid to form magnesium chloride and hydrogen gas."
+        },
+        "HCl + Fe": {
+            "equation": "Fe(s) + 2HCl(aq) → FeCl₂(aq) + H₂(g)",
+            "explanation": "Iron reacts with hydrochloric acid to form iron(II) chloride and hydrogen gas."
+        },
+        "H₂SO₄ + Zn": {
+            "equation": "Zn(s) + H₂SO₄(aq) → ZnSO₄(aq) + H₂(g)",
+            "explanation": "Zinc reacts with sulfuric acid to form zinc sulfate and hydrogen gas."
+        },
+        "H₂SO₄ + Mg": {
+            "equation": "Mg(s) + H₂SO₄(aq) → MgSO₄(aq) + H₂(g)",
+            "explanation": "Magnesium reacts with sulfuric acid to form magnesium sulfate and hydrogen gas."
+        },
+        "H₂SO₄ + Fe": {
+            "equation": "Fe(s) + H₂SO₄(aq) → FeSO₄(aq) + H₂(g)",
+            "explanation": "Iron reacts with sulfuric acid to form iron(II) sulfate and hydrogen gas."
+        },
+        "HNO₃ + Zn": {
+            "equation": "Zn(s) + 2HNO₃(aq) → Zn(NO₃)₂(aq) + H₂(g)",
+            "explanation": "Zinc reacts with nitric acid to form zinc nitrate and hydrogen gas."
+        },
+        "HNO₃ + Mg": {
+            "equation": "Mg(s) + 2HNO₃(aq) → Mg(NO₃)₂(aq) + H₂(g)",
+            "explanation": "Magnesium reacts with nitric acid to form magnesium nitrate and hydrogen gas."
+        },
+        "HNO₃ + Fe": {
+            "equation": "Fe(s) + 2HNO₃(aq) → Fe(NO₃)₂(aq) + H₂(g)",
+            "explanation": "Iron reacts with nitric acid to form iron(II) nitrate and hydrogen gas."
+        },
+        "HCl + Al": {
+            "equation": "2Al(s) + 6HCl(aq) → 2AlCl₃(aq) + 3H₂(g)",
+            "explanation": "Aluminum reacts with hydrochloric acid to form aluminum chloride and hydrogen gas."
+        },
+        "H₂SO₄ + Al": {
+            "equation": "2Al(s) + 3H₂SO₄(aq) → Al₂(SO₄)₃(aq) + 3H₂(g)",
+            "explanation": "Aluminum reacts with sulfuric acid to form aluminum sulfate and hydrogen gas."
+        },
+        "HNO₃ + Al": {
+            "equation": "Al(s) + 6HNO₃(aq) → Al(NO₃)₃(aq) + 3H₂(g)",
+            "explanation": "Aluminum reacts with nitric acid to form aluminum nitrate and hydrogen gas."
+        }
+            },
+             "Acid-Carbonate & Hydrogen Carbonate": {
+        "General Equation (Carbonates)": {
+            "equation": "Acid + Carbonate → Salt + Water + CO₂",
+            "explanation": "An acid reacts with a carbonate to form a salt, water, and carbon dioxide gas."
+        },
+        "General Equation (Hydrogen Carbonates)": {
+            "equation": "Acid + Hydrogen Carbonate → Salt + Water + CO₂",
+            "explanation": "An acid reacts with a hydrogen carbonate (bicarbonate) to form a salt, water, and carbon dioxide gas."
+        },
+        "HCl + Na₂CO₃": {
+            "equation": "2HCl(aq) + Na₂CO₃(s) → 2NaCl(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Hydrochloric acid reacts with sodium carbonate to produce sodium chloride, water, and carbon dioxide."
+        },
+        "HCl + CaCO₃": {
+            "equation": "2HCl(aq) + CaCO₃(s) → CaCl₂(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Hydrochloric acid reacts with calcium carbonate (limestone) to form calcium chloride, water, and carbon dioxide."
+        },
+        "HCl + MgCO₃": {
+            "equation": "2HCl(aq) + MgCO₃(s) → MgCl₂(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Hydrochloric acid reacts with magnesium carbonate to form magnesium chloride, water, and carbon dioxide."
+        },
+        "H₂SO₄ + Na₂CO₃": {
+            "equation": "H₂SO₄(aq) + Na₂CO₃(s) → Na₂SO₄(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Sulfuric acid reacts with sodium carbonate to form sodium sulfate, water, and carbon dioxide."
+        },
+        "H₂SO₄ + CaCO₃": {
+            "equation": "H₂SO₄(aq) + CaCO₃(s) → CaSO₄(s) + H₂O(l) + CO₂(g)",
+            "explanation": "Sulfuric acid reacts with calcium carbonate to form calcium sulfate, water, and carbon dioxide."
+        },
+        "HNO₃ + Na₂CO₃": {
+            "equation": "2HNO₃(aq) + Na₂CO₃(s) → 2NaNO₃(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Nitric acid reacts with sodium carbonate to form sodium nitrate, water, and carbon dioxide."
+        },
+        "HNO₃ + CaCO₃": {
+            "equation": "2HNO₃(aq) + CaCO₃(s) → Ca(NO₃)₂(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Nitric acid reacts with calcium carbonate to form calcium nitrate, water, and carbon dioxide."
+        },
+        "HCl + NaHCO₃": {
+            "equation": "HCl(aq) + NaHCO₃(s) → NaCl(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Hydrochloric acid reacts with sodium bicarbonate (baking soda) to form sodium chloride, water, and carbon dioxide."
+        },
+        "HCl + KHCO₃": {
+            "equation": "HCl(aq) + KHCO₃(s) → KCl(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Hydrochloric acid reacts with potassium bicarbonate to form potassium chloride, water, and carbon dioxide."
+        },
+        "H₂SO₄ + NaHCO₃": {
+            "equation": "H₂SO₄(aq) + 2NaHCO₃(s) → Na₂SO₄(aq) + 2H₂O(l) + 2CO₂(g)",
+            "explanation": "Sulfuric acid reacts with sodium bicarbonate to form sodium sulfate, water, and carbon dioxide."
+        },
+        "H₂SO₄ + KHCO₃": {
+            "equation": "H₂SO₄(aq) + 2KHCO₃(s) → K₂SO₄(aq) + 2H₂O(l) + 2CO₂(g)",
+            "explanation": "Sulfuric acid reacts with potassium bicarbonate to form potassium sulfate, water, and carbon dioxide."
+        },
+        "HNO₃ + NaHCO₃": {
+            "equation": "HNO₃(aq) + NaHCO₃(s) → NaNO₃(aq) + H₂O(l) + CO₂(g)",
+            "explanation": "Nitric acid reacts with sodium bicarbonate to form sodium nitrate, water, and carbon dioxide."
+        },
+         "HNO₃ + KHCO₃": {
+        "equation": "HNO₃(aq) + KHCO₃(s) → KNO₃(aq) + H₂O(l) + CO₂(g)",
+        "explanation": "Nitric acid reacts with potassium bicarbonate to form potassium nitrate, water, and carbon dioxide."
+    }
+	   
+    },
+	"Combustion of fuels": {
+        "General Equation": {
+            "equation": "Fuel + O₂ → CO₂ + H₂O",
+            "explanation": "Combustion occurs when a fuel reacts with oxygen to form carbon dioxide and water."
+        },
+        "Complete Combustion of Methane": {
+            "equation": "CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(g)",
+            "explanation": "Methane (natural gas) undergoes complete combustion with oxygen to form carbon dioxide and water vapor."
+        },
+        "Complete Combustion of Ethane": {
+            "equation": "2C₂H₆(g) + 7O₂(g) → 4CO₂(g) + 6H₂O(g)",
+            "explanation": "Ethane burns completely with oxygen to produce carbon dioxide and water vapor."
+        },
+        "Complete Combustion of Propane": {
+            "equation": "C₃H₈(g) + 5O₂(g) → 3CO₂(g) + 4H₂O(g)",
+            "explanation": "Propane burns completely in oxygen to form carbon dioxide and water vapor."
+        },
+        "Complete Combustion of Butane": {
+            "equation": "2C₄H₁₀(g) + 13O₂(g) → 8CO₂(g) + 10H₂O(g)",
+            "explanation": "Butane undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Complete Combustion of Pentane": {
+            "equation": "C₅H₁₂(g) + 8O₂(g) → 5CO₂(g) + 6H₂O(g)",
+            "explanation": "Pentane undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Complete Combustion of Hexane": {
+            "equation": "C₆H₁₄(g) + 19O₂(g) → 6CO₂(g) + 7H₂O(g)",
+            "explanation": "Hexane undergoes complete combustion to produce carbon dioxide and water."
+        },
+        "Complete Combustion of Heptane": {
+            "equation": "C₇H₁₆(g) + 11O₂(g) → 7CO₂(g) + 8H₂O(g)",
+            "explanation": "Heptane undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Complete Combustion of Octane": {
+            "equation": "2C₈H₁₈(g) + 25O₂(g) → 16CO₂(g) + 18H₂O(g)",
+            "explanation": "Octane undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Complete Combustion of Nonane": {
+            "equation": "C₉H₁₈(g) + 14O₂(g) → 9CO₂(g) + 10H₂O(g)",
+            "explanation": "Nonane undergoes complete combustion to produce carbon dioxide and water."
+        },
+        "Complete Combustion of Decane": {
+            "equation": "2C₁₀H₂₂(g) + 31O₂(g) → 20CO₂(g) + 22H₂O(g)",
+            "explanation": "Decane undergoes complete combustion to produce carbon dioxide and water."
+        },
+        "Combustion of Hydrogen": {
+            "equation": "2H₂(g) + O₂(g) → 2H₂O(g)",
+            "explanation": "Hydrogen gas combusts with oxygen to form water vapor."
+        },
+        "Combustion of Carbon": {
+            "equation": "C(s) + O₂(g) → CO₂(g)",
+            "explanation": "Carbon reacts with oxygen to produce carbon dioxide in complete combustion."
+        },
+        "Combustion of Alcohol (Ethanol)": {
+            "equation": "C₂H₅OH(l) + 3O₂(g) → 2CO₂(g) + 3H₂O(g)",
+            "explanation": "Ethanol (alcohol) undergoes combustion to produce carbon dioxide and water vapor."
+        },
+        "Combustion of Alcohol (Methanol)": {
+            "equation": "2CH₃OH(l) + 3O₂(g) → 2CO₂(g) + 4H₂O(g)",
+            "explanation": "Methanol undergoes combustion to form carbon dioxide and water vapor."
+        },
+        "Combustion of Alcohol (Propanol)": {
+            "equation": "C₃H₇OH(l) + 5O₂(g) → 3CO₂(g) + 4H₂O(g)",
+            "explanation": "Propanol burns completely in oxygen to produce carbon dioxide and water vapor."
+        },
+        "Combustion of Alcohol (Butanol)": {
+            "equation": "2C₄H₉OH(l) + 13O₂(g) → 8CO₂(g) + 10H₂O(g)",
+            "explanation": "Butanol undergoes complete combustion to form carbon dioxide and water vapor."
+        },
+        "Combustion of Alcohol (Pentanol)": {
+            "equation": "2C₅H₁₁OH(l) + 15O₂(g) → 10CO₂(g) + 12H₂O(g)",
+            "explanation": "Pentanol burns completely in oxygen to form carbon dioxide and water."
+        },
+        "Incomplete Combustion of Methane": {
+            "equation": "2CH₄(g) + 3O₂(g) → 2CO(g) + 4H₂O(g)",
+            "explanation": "In an oxygen-limited environment, methane combusts incompletely, producing carbon monoxide and water vapor."
+        },
+        "Incomplete Combustion of Ethane": {
+            "equation": "2C₂H₆(g) + 5O₂(g) → 4CO(g) + 6H₂O(g)",
+            "explanation": "Ethane undergoes incomplete combustion to form carbon monoxide and water vapor."
+        },
+        "Incomplete Combustion of Propane": {
+            "equation": "C₃H₈(g) + 3O₂(g) → 2CO(g) + 4H₂O(g)",
+            "explanation": "Propane undergoes incomplete combustion, producing carbon monoxide and water vapor."
+        },
+        "Incomplete Combustion of Butane": {
+            "equation": "2C₄H₁₀(g) + 9O₂(g) → 4CO(g) + 10H₂O(g)",
+            "explanation": "Butane undergoes incomplete combustion to form carbon monoxide and water."
+        },
+        "Incomplete Combustion of Pentane": {
+            "equation": "C₅H₁₂(g) + 5O₂(g) → 3CO(g) + 4H₂O(g)",
+            "explanation": "Pentane undergoes incomplete combustion to form carbon monoxide and water."
+        },
+        "Incomplete Combustion of Hexane": {
+            "equation": "C₆H₁₄(g) + 7O₂(g) → 4CO(g) + 6H₂O(g)",
+            "explanation": "Hexane undergoes incomplete combustion to produce carbon monoxide and water."
+        },
+        "Incomplete Combustion of Heptane": {
+            "equation": "C₇H₁₆(g) + 8O₂(g) → 5CO(g) + 7H₂O(g)",
+            "explanation": "Heptane undergoes incomplete combustion to form carbon monoxide and water."
+        },
+        "Incomplete Combustion of Octane": {
+            "equation": "2C₈H₁₈(g) + 11O₂(g) → 7CO(g) + 10H₂O(g)",
+            "explanation": "Octane undergoes incomplete combustion to produce carbon monoxide and water."
+        },
+        "Incomplete Combustion of Nonane": {
+            "equation": "C₉H₁₈(g) + 12O₂(g) → 8CO(g) + 9H₂O(g)",
+            "explanation": "Nonane undergoes incomplete combustion, producing carbon monoxide and water."
+        },
+        "Incomplete Combustion of Decane": {
+            "equation": "2C₁₀H₂₂(g) + 15O₂(g) → 10CO(g) + 11H₂O(g)",
+            "explanation": "Decane undergoes incomplete combustion to produce carbon monoxide and water."
+        },
+        "Combustion of Propene": {
+            "equation": "C₃H₆(g) + 5O₂(g) → 3CO₂(g) + 4H₂O(g)",
+            "explanation": "Propene undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Combustion of Butene": {
+            "equation": "C₄H₈(g) + 6O₂(g) → 4CO₂(g) + 6H₂O(g)",
+            "explanation": "Butene undergoes complete combustion to produce carbon dioxide and water."
+        },
+        "Combustion of Ethene": {
+            "equation": "C₂H₄(g) + 3O₂(g) → 2CO₂(g) + 2H₂O(g)",
+            "explanation": "Ethene undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Combustion of Methanol": {
+            "equation": "2CH₃OH(l) + 3O₂(g) → 2CO₂(g) + 4H₂O(g)",
+            "explanation": "Methanol undergoes combustion to form carbon dioxide and water vapor."
+        },
+        "Combustion of Propanol": {
+            "equation": "C₃H₇OH(l) + 5O₂(g) → 3CO₂(g) + 4H₂O(g)",
+            "explanation": "Propanol burns completely to produce carbon dioxide and water."
+        },
+        "Combustion of Butanol": {
+            "equation": "2C₄H₉OH(l) + 13O₂(g) → 8CO₂(g) + 10H₂O(g)",
+            "explanation": "Butanol undergoes complete combustion to form carbon dioxide and water."
+        },
+        "Combustion of Acetylene": {
+            "equation": "2C₂H₂(g) + 5O₂(g) → 4CO₂(g) + 2H₂O(g)",
+            "explanation": "Acetylene burns completely with oxygen to form carbon dioxide and water."
+        }
+		},
+		
+    "Combustion metals/non metals": {
+        
+            "Combustion of Sodium": {
+                "equation": "2Na(s) + O₂(g) → 2NaCl(s)",
+                "explanation": "Sodium burns in oxygen to form sodium oxide"
+            },
+            "Combustion of Magnesium": {
+                "equation": "2Mg(s) + O₂(g) → 2MgO(s)",
+                "explanation": "Magnesium burns with a bright white flame to form magnesium oxide."
+            },
+            "Combustion of Aluminum": {
+                "equation": "4Al(s) + 3O₂(g) → 2Al₂O₃(s)",
+                "explanation": "Aluminum burns in oxygen to form aluminum oxide, a white powder."
+            },
+            "Combustion of Zinc": {
+                "equation": "2Zn(s) + O₂(g) → 2ZnO(s)",
+                "explanation": "Zinc burns with a blue-green flame in oxygen to produce zinc oxide, a white solid."
+            },
+            "Combustion of Iron": {
+                "equation": "3Fe(s) + 4O₂(g) → 2Fe₂O₃(s)",
+                "explanation": "Iron burns with a yellow-orange flame to form iron(III) oxide, commonly known as rust."
+            },
+            "Combustion of Copper": {
+                "equation": "2Cu(s) + O₂(g) → 2CuO(s)",
+                "explanation": "Copper reacts with oxygen to form copper(II) oxide, a black solid."
+            },
+            "Combustion of Lithium": {
+                "equation": "2Li(s) + O₂(g) → 2Li₂O(s)",
+                "explanation": "Lithium burns with a red flame to form lithium oxide."
+            },
+            "Combustion of Potassium": {
+                "equation": "2K(s) + O₂(g) → 2KCl(s)",
+                "explanation": "Potassium burns in oxygen to produce potassium oxide"
+            },
+            "Combustion of Calcium": {
+                "equation": "2Ca(s) + O₂(g) → 2CaO(s)",
+                "explanation": "Calcium burns in oxygen to form calcium oxide, a white solid."
+            },
+            "Combustion of Titanium": {
+                "equation": "Ti(s) + O₂(g) → TiO₂(s)",
+                "explanation": "Titanium burns in oxygen to form titanium dioxide, a white powder."
+            },
+        
+            "Combustion of Sulfur": {
+                "equation": "S(s) + O₂(g) → SO₂(g)",
+                "explanation": "Sulfur burns in oxygen to produce sulfur dioxide, a colorless gas with a pungent odor."
+            },
+            "Combustion of Phosphorus": {
+                "equation": "4P(s) + 5O₂(g) → 2P₄O₁₀(s)",
+                "explanation": "Phosphorus burns with a bright white light to form tetraphosphorus decoxide (P₄O₁₀)."
+            },
+            "Combustion of Carbon (Graphite)": {
+                "equation": "C(s) + O₂(g) → CO₂(g)",
+                "explanation": "Carbon (graphite) reacts with oxygen to form carbon dioxide, producing a faint blue flame."
+            },
+            "Combustion of Iodine": {
+                "equation": "2I₂(s) + 5O₂(g) → 2I₂O₅(s)",
+                "explanation": "Iodine burns in oxygen to form iodine pentoxide (I₂O₅), a white solid."
+            },
+            "Combustion of Chlorine": {
+                "equation": "2Cl₂(g) + O₂(g) → 2Cl₂O(g)",
+                "explanation": "Chlorine reacts with oxygen to produce chlorine monoxide (Cl₂O), a yellow-green gas."
+            },
+            "Combustion of Nitrogen (at high temperature)": {
+                "equation": "N₂(g) + O₂(g) → 2NO(g)",
+                "explanation": "Nitrogen can react with oxygen at high temperatures to form nitrogen monoxide (NO)."
+            },
+            "Combustion of Hydrogen": {
+                "equation": "2H₂(g) + O₂(g) → 2H₂O(g)",
+                "explanation": "Hydrogen gas combusts with oxygen to form water vapor, releasing energy and a blue flame."
+            },
+			"Combustion of Chromium": {
+            "equation": "2Cr(s) + 3O₂(g) → 2CrO₃(s)",
+            "explanation": "Chromium burns in oxygen to form chromium trioxide, a red-orange solid."
+        },
+        "Combustion of Vanadium": {
+            "equation": "4V(s) + 5O₂(g) → 2V₂O₅(s)",
+            "explanation": "Vanadium reacts with oxygen to form vanadium pentoxide, a yellow solid."
+        },
+        "Combustion of Manganese": {
+            "equation": "2Mn(s) + O₂(g) → 2MnO(s)",
+            "explanation": "Manganese burns in oxygen to form manganese(II) oxide, a brownish solid."
+        },
+        "Combustion of Cobalt": {
+            "equation": "2Co(s) + O₂(g) → 2CoO(s)",
+            "explanation": "Cobalt burns in oxygen to form cobalt(II) oxide, a black solid."
+        },
+        "Combustion of Nickel": {
+            "equation": "2Ni(s) + O₂(g) → 2NiO(s)",
+            "explanation": "Nickel reacts with oxygen to form nickel oxide, a greenish solid."
+        },
+        "Combustion of Barium": {
+            "equation": "2Ba(s) + O₂(g) → 2BaO(s)",
+            "explanation": "Barium burns in oxygen to form barium oxide, a white solid."
+       
+       
+        },
+        "Combustion of Nitrogen Dioxide": {
+            "equation": "2NO(g) + O₂(g) → 2NO₂(g)",
+            "explanation": "Nitrogen (II)xide (NO) reacts with oxygen to form nitrogen (IV)oxide , a brown gas."
+      
+        },
+        "Combustion of Xenon": {
+            "equation": "Xe(g) + O₂(g) → XeO₃(g)",
+            "explanation": "Xenon reacts with oxygen to form xenon trioxide, a colorless solid."
+        },
+        "Combustion of Bromine": {
+            "equation": "2Br₂(g) + 3O₂(g) → 2Br₂O₃(g)",
+            "explanation": "Bromine burns in oxygen to form bromine trioxide, a reddish-brown gas."
+        }
+        },
+		
+		"Direct Synthesis Reactions": {
+        "Synthesis of Water": {
+            "equation": "2H₂(g) + O₂(g) → 2H₂O(g)",
+            "explanation": "Hydrogen reacts with oxygen to form water."
+        },
+        "Synthesis of Ammonia": {
+            "equation": "N₂(g) + 3H₂(g) → 2NH₃(g)",
+            "explanation": "Nitrogen reacts with hydrogen to form ammonia."
+        },
+        "Synthesis of Magnesium Oxide": {
+            "equation": "2Mg(s) + O₂(g) → 2MgO(s)",
+            "explanation": "Magnesium reacts with oxygen to form magnesium oxide."
+        },
+        "Synthesis of Sodium Chloride": {
+            "equation": "2Na(s) + Cl₂(g) → 2NaCl(s)",
+            "explanation": "Sodium reacts with chlorine to form sodium chloride."
+        },
+        "Synthesis of Calcium Carbonate": {
+            "equation": "CaO(s) + CO₂(g) → CaCO₃(s)",
+            "explanation": "Calcium oxide reacts with carbon dioxide to form calcium carbonate."
+        },
+        "Synthesis of Silicon Dioxide": {
+            "equation": "Si(s) + O₂(g) → SiO₂(s)",
+            "explanation": "Silicon reacts with oxygen to form silicon dioxide."
+        },
+        "Synthesis of Iron Oxide": {
+            "equation": "3Fe(s) + 2O₂(g) → Fe₃O₄(s)",
+            "explanation": "Iron reacts with oxygen to form iron(III) oxide."
+        },
+        "Synthesis of Water (Deuterium)": {
+            "equation": "2D₂(g) + O₂(g) → 2D₂O(l)",
+            "explanation": "Deuterium reacts with oxygen to form heavy water."
+        },
+        "Synthesis of Potassium Bromide": {
+            "equation": "2K(s) + Br₂(g) → 2KBr(s)",
+            "explanation": "Potassium reacts with bromine to form potassium bromide."
+        },
+        "Synthesis of Nitrogen Trichloride": {
+            "equation": "N₂(g) + 3Cl₂(g) → 2NCl₃(g)",
+            "explanation": "Nitrogen reacts with chlorine to form nitrogen trichloride."
+        },
+        "Synthesis of Carbon Monoxide": {
+            "equation": "C(s) + O₂(g) → CO(g)",
+            "explanation": "Carbon reacts with oxygen to form carbon monoxide."
+        },
+        "Synthesis of Phosphorus Pentachloride": {
+            "equation": "2P(s) + 5Cl₂(g) → 2PCl₅(s)",
+            "explanation": "Phosphorus reacts with chlorine to form phosphorus pentachloride."
+        },
+        "Synthesis of Aluminum Oxide": {
+            "equation": "4Al(s) + 3O₂(g) → 2Al₂O₃(s)",
+            "explanation": "Aluminum reacts with oxygen to form aluminum oxide."
+        },
+        "Synthesis of Copper(I) Oxide": {
+            "equation": "4Cu(s) + O₂(g) → 2Cu₂O(s)",
+            "explanation": "Copper reacts with oxygen to form copper(I) oxide."
+        },
+        "Synthesis of Sulfur Dioxide": {
+            "equation": "S(s) + O₂(g) → SO₂(g)",
+            "explanation": "Sulfur reacts with oxygen to form sulfur dioxide."
+        },
+        "Synthesis of Potassium Chlorate": {
+            "equation": "2KCl(s) + 3O₂(g) → 2KClO₃(s)",
+            "explanation": "Potassium chloride reacts with oxygen to form potassium chlorate."
+        },
+        "Synthesis of Nitric Oxide": {
+            "equation": "N₂(g) + O₂(g) → 2NO(g)",
+            "explanation": "Nitrogen reacts with oxygen to form nitric oxide."
+        },
+        "Synthesis of Sodium Oxide": {
+            "equation": "4Na(s) + O₂(g) → 2Na₂O(s)",
+            "explanation": "Sodium reacts with oxygen to form sodium oxide."
+        },
+        "Synthesis of Barium Sulfate": {
+            "equation": "BaO(s) + SO₂(g) → BaSO₄(s)",
+            "explanation": "Barium oxide reacts with sulfur dioxide to form barium sulfate."
+        },
+        "Synthesis of Lithium Fluoride": {
+            "equation": "2Li(s) + F₂(g) → 2LiF(s)",
+            "explanation": "Lithium reacts with fluorine to form lithium fluoride."
+        }
+		},
+		 "Decomposition Reactions": {
+        "Decomposition of Water": {
+            "equation": "2H₂O(l) → 2H₂(g) + O₂(g)",
+            "explanation": "Water decomposes into hydrogen and oxygen gases when electricity is passed through it."
+        },
+        "Decomposition of Sodium Bicarbonate": {
+            "equation": "2NaHCO₃(s) → Na₂CO₃(s) + CO₂(g) + H₂O(g)",
+            "explanation": "Sodium bicarbonate decomposes upon heating to produce sodium carbonate, carbon dioxide, and water."
+        },
+        "Decomposition of Calcium Carbonate": {
+            "equation": "CaCO₃(s) → CaO(s) + CO₂(g)",
+            "explanation": "Calcium carbonate decomposes upon heating to form calcium oxide and carbon dioxide."
+        },
+        "Decomposition of Potassium Chlorate": {
+            "equation": "2KClO₃(s) → 2KCl(s) + 3O₂(g)",
+            "explanation": "Potassium chlorate decomposes to form potassium chloride and oxygen gas when heated."
+        },
+        "Decomposition of Ammonium Dichromate": {
+            "equation": "(NH₄)₂Cr₂O₇(s) → Cr₂O₃(s) + 4H₂O(g) + N₂(g)",
+            "explanation": "Ammonium dichromate decomposes to form chromium(III) oxide, water, and nitrogen gas."
+        },
+        "Decomposition of Hydrogen Peroxide": {
+            "equation": "2H₂O₂(aq) → 2H₂O(l) + O₂(g)",
+            "explanation": "Hydrogen peroxide decomposes to form water and oxygen gas."
+        },
+        "Decomposition of Lead(II) Nitrate": {
+            "equation": "2Pb(NO₃)₂(s) → 2PbO(s) + 4NO₂(g) + O₂(g)",
+            "explanation": "Lead(II) nitrate decomposes upon heating to form lead(II) oxide, nitrogen dioxide, and oxygen."
+        },
+        "Decomposition of Silver Carbonate": {
+            "equation": "Ag₂CO₃(s) → 2Ag(s) + CO₂(g) + O₂(g)",
+            "explanation": "Silver carbonate decomposes upon heating to form silver, carbon dioxide, and oxygen."
+        },
+        "Decomposition of Magnesium Carbonate": {
+            "equation": "MgCO₃(s) → MgO(s) + CO₂(g)",
+            "explanation": "Magnesium carbonate decomposes upon heating to form magnesium oxide and carbon dioxide."
+        },
+        "Decomposition of Copper(II) Carbonate": {
+            "equation": "CuCO₃(s) → CuO(s) + CO₂(g)",
+            "explanation": "Copper(II) carbonate decomposes upon heating to form copper(II) oxide and carbon dioxide."
+        },
+        "Decomposition of Sodium Chloride": {
+            "equation": "2NaCl(s) → 2Na(s) + Cl₂(g)",
+            "explanation": "Sodium chloride decomposes upon electrolysis to form sodium metal and chlorine gas."
+        },
+        "Decomposition of Potassium Permanganate": {
+            "equation": "2KMnO₄(s) → K₂MnO₄(s) + MnO₂(s) + O₂(g)",
+            "explanation": "Potassium permanganate decomposes upon heating to form potassium manganate, manganese dioxide, and oxygen."
+        },
+        "Decomposition of Sodium Nitrite": {
+            "equation": "2NaNO₂(s) → 2NaNO₃(s) + N₂(g)",
+            "explanation": "Sodium nitrite decomposes upon heating to form sodium nitrate and nitrogen gas."
+        },
+        "Decomposition of Aluminum Oxide": {
+            "equation": "2Al₂O₃(s) → 4Al(s) + 3O₂(g)",
+            "explanation": "Aluminum oxide decomposes by electrolysis to form aluminum and oxygen."
+        },
+        "Decomposition of Calcium Hydroxide": {
+            "equation": "Ca(OH)₂(s) → CaO(s) + H₂O(g)",
+            "explanation": "Calcium hydroxide decomposes upon heating to form calcium oxide and water vapor."
+        },
+        "Decomposition of Potassium Nitrate": {
+            "equation": "2KNO₃(s) → 2KNO₂(s) + O₂(g)",
+            "explanation": "Potassium nitrate decomposes upon heating to form potassium nitrite and oxygen."
+        },
+        "Decomposition of Zinc Carbonate": {
+            "equation": "ZnCO₃(s) → ZnO(s) + CO₂(g)",
+            "explanation": "Zinc carbonate decomposes upon heating to form zinc oxide and carbon dioxide."
+        },
+        "Decomposition of Sodium Oxalate": {
+            "equation": "Na₂C₂O₄(s) → Na₂CO₃(s) + CO(g)",
+            "explanation": "Sodium oxalate decomposes upon heating to form sodium carbonate and carbon monoxide."
+        },
+        "Decomposition of Barium Peroxide": {
+            "equation": "BaO₂(s) → BaO(s) + O₂(g)",
+            "explanation": "Barium peroxide decomposes upon heating to form barium oxide and oxygen."
+        },
+        "Decomposition of Sodium Thiosulfate": {
+            "equation": "Na₂S₂O₃(s) → Na₂SO₃(s) + SO₂(g)",
+            "explanation": "Sodium thiosulfate decomposes to form sodium sulfite and sulfur dioxide."
+        }
+		},
+		"Displacement Reactions": {
+        "Displacement of Copper from Copper(II) Sulfate by Zinc": {
+            "equation": "Zn(s) + CuSO₄(aq) → ZnSO₄(aq) + Cu(s)",
+            "explanation": "Zinc displaces copper from copper(II) sulfate solution to form zinc sulfate and copper metal."
+        },
+        "Displacement of Iron from Iron(III) Chloride by Zinc": {
+            "equation": "Zn(s) + FeCl₃(aq) → ZnCl₂(aq) + Fe(s)",
+            "explanation": "Zinc displaces iron from iron(III) chloride solution to form zinc chloride and iron metal."
+        },
+        "Displacement of Hydrogen from Hydrochloric Acid by Zinc": {
+            "equation": "Zn(s) + 2HCl(aq) → ZnCl₂(aq) + H₂(g)",
+            "explanation": "Zinc displaces hydrogen from hydrochloric acid, producing zinc chloride and hydrogen gas."
+        },
+        "Displacement of Hydrogen from Hydrochloric Acid by Magnesium": {
+            "equation": "Mg(s) + 2HCl(aq) → MgCl₂(aq) + H₂(g)",
+            "explanation": "Magnesium displaces hydrogen from hydrochloric acid, producing magnesium chloride and hydrogen gas."
+        },
+        "Displacement of Hydrogen from Sulfuric Acid by Iron": {
+            "equation": "Fe(s) + H₂SO₄(aq) → FeSO₄(aq) + H₂(g)",
+            "explanation": "Iron displaces hydrogen from sulfuric acid to form iron(II) sulfate and hydrogen gas."
+        },
+        "Displacement of Copper from Copper(II) Nitrate by Iron": {
+            "equation": "Fe(s) + Cu(NO₃)₂(aq) → Fe(NO₃)₂(aq) + Cu(s)",
+            "explanation": "Iron displaces copper from copper(II) nitrate solution to form iron(II) nitrate and copper metal."
+        },
+        "Displacement of Chlorine by Potassium Iodide": {
+            "equation": "2KI(aq) + Cl₂(g) → 2KCl(aq) + I₂(s)",
+            "explanation": "Potassium iodide displaces chlorine from chlorine gas to form potassium chloride and iodine."
+        },
+        "Displacement of Copper from Copper(II) Chloride by Aluminum": {
+            "equation": "2Al(s) + 3CuCl₂(aq) → 2AlCl₃(aq) + 3Cu(s)",
+            "explanation": "Aluminum displaces copper from copper(II) chloride solution to form aluminum chloride and copper metal."
+        },
+        "Displacement of Zinc from Zinc Sulfate by Copper": {
+            "equation": "Cu(s) + ZnSO₄(aq) → CuSO₄(aq) + Zn(s)",
+            "explanation": "Copper displaces zinc from zinc sulfate solution, forming copper(II) sulfate and zinc metal."
+        },
+        "Displacement of Hydrogen from Acids by Calcium": {
+            "equation": "Ca(s) + 2HCl(aq) → CaCl₂(aq) + H₂(g)",
+            "explanation": "Calcium displaces hydrogen from hydrochloric acid, producing calcium chloride and hydrogen gas."
+        },
+        "Displacement of Bromine from Sodium Bromide by Chlorine": {
+            "equation": "Cl₂(g) + 2NaBr(aq) → 2NaCl(aq) + Br₂(g)",
+            "explanation": "Chlorine displaces bromine from sodium bromide solution to form sodium chloride and bromine gas."
+        },
+        "Displacement of Magnesium from Magnesium Sulfate by Zinc": {
+            "equation": "Zn(s) + MgSO₄(aq) → ZnSO₄(aq) + Mg(s)",
+            "explanation": "Zinc displaces magnesium from magnesium sulfate solution to form zinc sulfate and magnesium metal."
+        },
+        "Displacement of Lead from Lead(II) Nitrate by Copper": {
+            "equation": "Cu(s) + Pb(NO₃)₂(aq) → Cu(NO₃)₂(aq) + Pb(s)",
+            "explanation": "Copper displaces lead from lead(II) nitrate solution to form copper(II) nitrate and lead metal."
+        },
+        "Displacement of Chlorine from Sodium Chloride by Bromine": {
+            "equation": "Br₂(g) + 2NaCl(aq) → 2NaBr(aq) + Cl₂(g)",
+            "explanation": "Bromine displaces chlorine from sodium chloride solution to form sodium bromide and chlorine gas."
+        },
+        "Displacement of Hydrogen from Hydrochloric Acid by Aluminum": {
+            "equation": "2Al(s) + 6HCl(aq) → 2AlCl₃(aq) + 3H₂(g)",
+            "explanation": "Aluminum displaces hydrogen from hydrochloric acid, producing aluminum chloride and hydrogen gas."
+        },
+        "Displacement of Copper from Copper(II) Chloride by Magnesium": {
+            "equation": "Mg(s) + CuCl₂(aq) → MgCl₂(aq) + Cu(s)",
+            "explanation": "Magnesium displaces copper from copper(II) chloride solution to form magnesium chloride and copper metal."
+        },
+        "Displacement of Silver from Silver Nitrate by Copper": {
+            "equation": "Cu(s) + 2AgNO₃(aq) → Cu(NO₃)₂(aq) + 2Ag(s)",
+            "explanation": "Copper displaces silver from silver nitrate solution to form copper(II) nitrate and silver metal."
+        },
+        "Displacement of Hydrogen from Sulfuric Acid by Magnesium": {
+            "equation": "Mg(s) + H₂SO₄(aq) → MgSO₄(aq) + H₂(g)",
+            "explanation": "Magnesium displaces hydrogen from sulfuric acid to form magnesium sulfate and hydrogen gas."
+        },
+        "Displacement of Copper from Copper(II) Sulfate by Iron": {
+            "equation": "Fe(s) + CuSO₄(aq) → FeSO₄(aq) + Cu(s)",
+            "explanation": "Iron displaces copper from copper(II) sulfate solution to form iron(II) sulfate and copper metal."
+        },
+        "Displacement of Chlorine from Sodium Chloride by Iodine": {
+            "equation": "I₂(s) + 2NaCl(aq) → 2NaI(aq) + Cl₂(g)",
+            "explanation": "Iodine displaces chlorine from sodium chloride solution to form sodium iodide and chlorine gas."
+        },
+        "Displacement of Zinc from Zinc Chloride by Magnesium": {
+            "equation": "Mg(s) + ZnCl₂(aq) → MgCl₂(aq) + Zn(s)",
+            "explanation": "Magnesium displaces zinc from zinc chloride solution to form magnesium chloride and zinc metal."
+        }
+		},
+		
+		 "Double Displacement/Double Decomposition Reactions": {
+        "Reaction between Barium Chloride and Sodium Sulfate": {
+            "equation": "BaCl₂(aq) + Na₂SO₄(aq) → BaSO₄(s) + 2NaCl(aq)",
+            "explanation": "Barium chloride reacts with sodium sulfate to form barium sulfate, a white precipitate, and sodium chloride in solution."
+        },
+        "Reaction between Silver Nitrate and Sodium Chloride": {
+            "equation": "AgNO₃(aq) + NaCl(aq) → AgCl(s) + NaNO₃(aq)",
+            "explanation": "Silver nitrate reacts with sodium chloride to form silver chloride, a white precipitate, and sodium nitrate in solution."
+        },
+        "Reaction between Potassium Sulfate and Barium Nitrate": {
+            "equation": "K₂SO₄(aq) + Ba(NO₃)₂(aq) → BaSO₄(s) + 2KNO₃(aq)",
+            "explanation": "Potassium sulfate reacts with barium nitrate to form barium sulfate, a white precipitate, and potassium nitrate in solution."
+        },
+        "Reaction between Sodium Hydroxide and Hydrochloric Acid": {
+            "equation": "NaOH(aq) + HCl(aq) → NaCl(aq) + H₂O(l)",
+            "explanation": "Sodium hydroxide reacts with hydrochloric acid to form sodium chloride in solution and water."
+        },
+        "Reaction between Calcium Chloride and Sodium Carbonate": {
+            "equation": "CaCl₂(aq) + Na₂CO₃(aq) → CaCO₃(s) + 2NaCl(aq)",
+            "explanation": "Calcium chloride reacts with sodium carbonate to form calcium carbonate, a white precipitate, and sodium chloride in solution."
+        },
+        "Reaction between Lead(II) Nitrate and Potassium Iodide": {
+            "equation": "Pb(NO₃)₂(aq) + 2KI(aq) → PbI₂(s) + 2KNO₃(aq)",
+            "explanation": "Lead(II) nitrate reacts with potassium iodide to form lead(II) iodide, a yellow precipitate, and potassium nitrate in solution."
+        },
+        "Reaction between Sodium Phosphate and Calcium Nitrate": {
+            "equation": "2Na₃PO₄(aq) + 3Ca(NO₃)₂(aq) → Ca₃(PO₄)₂(s) + 6NaNO₃(aq)",
+            "explanation": "Sodium phosphate reacts with calcium nitrate to form calcium phosphate, a white precipitate, and sodium nitrate in solution."
+        },
+        "Reaction between Magnesium Sulfate and Sodium Hydroxide": {
+            "equation": "MgSO₄(aq) + 2NaOH(aq) → Mg(OH)₂(s) + Na₂SO₄(aq)",
+            "explanation": "Magnesium sulfate reacts with sodium hydroxide to form magnesium hydroxide, a white precipitate, and sodium sulfate in solution."
+        },
+        "Reaction between Ammonium Chloride and Sodium Hydroxide": {
+            "equation": "NH₄Cl(aq) + NaOH(aq) → NaCl(aq) + NH₃(g) + H₂O(l)",
+            "explanation": "Ammonium chloride reacts with sodium hydroxide to form sodium chloride in solution, ammonia gas, and water."
+        },
+        "Reaction between Iron(III) Chloride and Sodium Hydroxide": {
+            "equation": "FeCl₃(aq) + 3NaOH(aq) → Fe(OH)₃(s) + 3NaCl(aq)",
+            "explanation": "Iron(III) chloride reacts with sodium hydroxide to form iron(III) hydroxide, a rusty brown precipitate, and sodium chloride in solution."
+        },
+        "Reaction between Copper(II) Sulfate and Sodium Phosphate": {
+            "equation": "CuSO₄(aq) + Na₃PO₄(aq) → Cu₃(PO₄)₂(s) + 3NaSO₄(aq)",
+            "explanation": "Copper(II) sulfate reacts with sodium phosphate to form copper phosphate, a blue precipitate, and sodium sulfate in solution."
+        },
+        "Reaction between Sodium Sulfate and Barium Chloride": {
+            "equation": "Na₂SO₄(aq) + BaCl₂(aq) → BaSO₄(s) + 2NaCl(aq)",
+            "explanation": "Sodium sulfate reacts with barium chloride to form barium sulfate, a white precipitate, and sodium chloride in solution."
+        },
+        "Reaction between Potassium Nitrate and Lead(II) Iodide": {
+            "equation": "2KNO₃(aq) + PbI₂(aq) → 2KI(aq) + Pb(NO₃)₂(aq)",
+            "explanation": "Potassium nitrate reacts with lead(II) iodide in a double displacement reaction."
+        },
+        "Reaction between Sodium Acetate and Hydrochloric Acid": {
+            "equation": "CH₃COONa(aq) + HCl(aq) → CH₃COOH(aq) + NaCl(aq)",
+            "explanation": "Sodium acetate reacts with hydrochloric acid to form acetic acid and sodium chloride."
+        },
+        "Reaction between Sodium Sulfide and Hydrochloric Acid": {
+            "equation": "Na₂S(aq) + 2HCl(aq) → 2NaCl(aq) + H₂S(g)",
+            "explanation": "Sodium sulfide reacts with hydrochloric acid to produce hydrogen sulfide gas and sodium chloride in solution."
+        },
+        "Reaction between Potassium Sulfate and Barium Chloride": {
+            "equation": "K₂SO₄(aq) + BaCl₂(aq) → BaSO₄(s) + 2KCl(aq)",
+            "explanation": "Potassium sulfate reacts with barium chloride to form barium sulfate, a white precipitate, and potassium chloride in solution."
+        },
+        "Reaction between Silver Nitrate and Potassium Bromide": {
+            "equation": "AgNO₃(aq) + KBr(aq) → AgBr(s) + KNO₃(aq)",
+            "explanation": "Silver nitrate reacts with potassium bromide to form silver bromide, a yellow precipitate, and potassium nitrate in solution."
+        },
+        "Reaction between Calcium Hydroxide and Sodium Carbonate": {
+            "equation": "Ca(OH)₂(aq) + Na₂CO₃(aq) → CaCO₃(s) + 2NaOH(aq)",
+            "explanation": "Calcium hydroxide reacts with sodium carbonate to form calcium carbonate, a white precipitate, and sodium hydroxide in solution."
+        },
+        "Reaction between Calcium Chloride and Sodium Phosphate": {
+            "equation": "3CaCl₂(aq) + 2Na₃PO₄(aq) → Ca₃(PO₄)₂(s) + 6NaCl(aq)",
+            "explanation": "Calcium chloride reacts with sodium phosphate to form calcium phosphate, a white precipitate, and sodium chloride in solution."
+        }
+		},
+		 "Redox Reactions": {
+        "Reaction between Zinc and Copper(II) Sulfate": {
+            "equation": "Zn(s) + CuSO₄(aq) → ZnSO₄(aq) + Cu(s)",
+            "explanation": "Zinc displaces copper from copper sulfate, with zinc undergoing oxidation and copper(II) ion being reduced."
+        },
+        "Reaction between Iron and Copper(II) Sulfate": {
+            "equation": "Fe(s) + CuSO₄(aq) → FeSO₄(aq) + Cu(s)",
+            "explanation": "Iron displaces copper from copper sulfate, with iron undergoing oxidation and copper(II) ion being reduced."
+        },
+        "Reaction between Hydrogen and Oxygen": {
+            "equation": "2H₂(g) + O₂(g) → 2H₂O(l)",
+            "explanation": "Hydrogen is oxidized to H₂O, while oxygen is reduced to H₂O in a combustion reaction."
+        },
+        "Reaction between Sodium and Chlorine": {
+            "equation": "2Na(s) + Cl₂(g) → 2NaCl(s)",
+            "explanation": "Sodium is oxidized to sodium ions, and chlorine is reduced to chloride ions."
+        },
+        "Reaction between Potassium and Water": {
+            "equation": "2K(s) + 2H₂O(l) → 2KOH(aq) + H₂(g)",
+            "explanation": "Potassium is oxidized to K⁺ and hydrogen is reduced to H₂ in this reaction with water."
+        },
+        "Reaction between Magnesium and Oxygen": {
+            "equation": "2Mg(s) + O₂(g) → 2MgO(s)",
+            "explanation": "Magnesium is oxidized to Mg²⁺, while oxygen is reduced to O²⁻ in the formation of magnesium oxide."
+        },
+        "Reaction between Hydrogen Peroxide and Manganese Dioxide": {
+            "equation": "2H₂O₂(aq) → 2H₂O(l) + O₂(g)",
+            "explanation": "Hydrogen peroxide is decomposed into water and oxygen with manganese dioxide as a catalyst, where oxygen is reduced."
+        },
+        "Reaction between Copper and Oxygen": {
+            "equation": "2Cu(s) + O₂(g) → 2CuO(s)",
+            "explanation": "Copper is oxidized to copper(II) ions and oxygen is reduced to oxide ions to form copper(II) oxide."
+        },
+        "Reaction between Sodium and Sulfur": {
+            "equation": "2Na(s) + S(s) → Na₂S(s)",
+            "explanation": "Sodium is oxidized to sodium ions, while sulfur is reduced to sulfide ions in the formation of sodium sulfide."
+        },
+        "Reaction between Potassium and Iodine": {
+            "equation": "2K(s) + I₂(s) → 2KI(s)",
+            "explanation": "Potassium is oxidized to K⁺ and iodine is reduced to iodide ions to form potassium iodide."
+        },
+        "Reaction between Iron and Oxygen": {
+            "equation": "4Fe(s) + 3O₂(g) → 2Fe₂O₃(s)",
+            "explanation": "Iron is oxidized to Fe³⁺ and oxygen is reduced to O²⁻ in the formation of iron(III) oxide, or rust."
+        },
+        "Reaction between Hydrogen and Chlorine": {
+            "equation": "H₂(g) + Cl₂(g) → 2HCl(g)",
+            "explanation": "Hydrogen is oxidized to H⁺ and chlorine is reduced to Cl⁻ in the formation of hydrogen chloride gas."
+        },
+        "Reaction between Sodium and Water": {
+            "equation": "2Na(s) + 2H₂O(l) → 2NaOH(aq) + H₂(g)",
+            "explanation": "Sodium is oxidized to sodium ions and water is reduced to hydrogen gas in this reaction."
+        },
+        "Reaction between Lead(II) Oxide and Hydrogen": {
+            "equation": "PbO(s) + H₂(g) → Pb(s) + H₂O(l)",
+            "explanation": "Lead(II) oxide is reduced to lead metal while hydrogen is oxidized to water."
+        },
+        "Reaction between Zinc and Hydrochloric Acid": {
+            "equation": "Zn(s) + 2HCl(aq) → ZnCl₂(aq) + H₂(g)",
+            "explanation": "Zinc is oxidized to zinc ions, and hydrogen ions from hydrochloric acid are reduced to hydrogen gas."
+        },
+        "Reaction between Silver and Copper(I) Oxide": {
+            "equation": "2Ag(s) + Cu₂O(s) → 2Ag₂O(s) + Cu(s)",
+            "explanation": "Silver is oxidized to silver(I) ions, and copper(I) oxide is reduced to copper metal."
+        },
+        "Reaction between Potassium Chlorate and Manganese Dioxide": {
+            "equation": "2KClO₃(aq) → 2KCl(s) + 3O₂(g)",
+            "explanation": "Potassium chlorate decomposes into potassium chloride and oxygen gas, with manganese dioxide acting as a catalyst."
+        },
+        "Reaction between Potassium Permanganate and Oxalic Acid": {
+            "equation": "2KMnO₄(aq) + 5H₂C₂O₄(aq) + 6H⁺(aq) → 2Mn²⁺(aq) + 10CO₂(g) + 8H₂O(l) + 2K⁺(aq)",
+            "explanation": "Potassium permanganate is reduced to Mn²⁺, while oxalic acid is oxidized to carbon dioxide."
+        },
+        "Reaction between Chlorine and Potassium Bromide": {
+            "equation": "Cl₂(g) + 2KBr(aq) → 2KCl(aq) + Br₂(aq)",
+            "explanation": "Chlorine displaces bromine from potassium bromide, with chlorine being reduced to chloride and bromine being oxidized to bromine gas."
+        },
+        "Reaction between Hydrogen Peroxide and Potassium Iodide": {
+            "equation": "H₂O₂(aq) + 2KI(aq) → 2H₂O(l) + I₂(aq) + 2KOH(aq)",
+            "explanation": "Hydrogen peroxide is reduced to water, and iodine is oxidized to iodine gas."
+        }
+		},
+		"Electrolysis Reactions": {
+        "Electrolysis of Water": {
+            "equation": "2H₂O(l) → 2H₂(g) + O₂(g)",
+            "explanation": "Electrolysis of water splits water into hydrogen gas at the cathode and oxygen gas at the anode."
+        },
+        "Electrolysis of Sodium Chloride": {
+            "equation": "2NaCl(l) → 2Na(s) + Cl₂(g)",
+            "explanation": "Electrolysis of molten sodium chloride produces sodium metal at the cathode and chlorine gas at the anode."
+        },
+        "Electrolysis of Copper(II) Sulfate": {
+            "equation": "CuSO₄(aq) → Cu(s) + SO₄²⁻(aq)",
+            "explanation": "During electrolysis of copper(II) sulfate, copper metal is deposited at the cathode, while sulfate ions are left in solution."
+        },
+        "Electrolysis of Potassium Iodide": {
+            "equation": "2KI(aq) → 2K(s) + I₂(g)",
+            "explanation": "Potassium iodide is electrolyzed to produce potassium metal at the cathode and iodine gas at the anode."
+        },
+        "Electrolysis of Copper(II) Chloride": {
+            "equation": "CuCl₂(aq) → Cu(s) + Cl₂(g)",
+            "explanation": "Copper(II) chloride is electrolyzed to produce copper metal at the cathode and chlorine gas at the anode."
+        },
+        "Electrolysis of Aluminum Oxide": {
+            "equation": "2Al₂O₃(l) → 4Al(s) + 3O₂(g)",
+            "explanation": "Aluminum oxide is electrolyzed in molten form to produce aluminum metal at the cathode and oxygen gas at the anode."
+        },
+        "Electrolysis of Lead(II) Bromide": {
+            "equation": "PbBr₂(l) → Pb(s) + Br₂(g)",
+            "explanation": "Lead(II) bromide undergoes electrolysis to form lead metal at the cathode and bromine gas at the anode."
+        },
+        "Electrolysis of Sodium Sulfate": {
+            "equation": "2Na₂SO₄(aq) → 4Na(s) + O₂(g) + 2SO₄²⁻(aq)",
+            "explanation": "Electrolysis of sodium sulfate results in sodium metal at the cathode and oxygen gas at the anode."
+        },
+        "Electrolysis of Water with Acidic Solution": {
+            "equation": "2H₂O(l) → 2H₂(g) + O₂(g)",
+            "explanation": "Electrolysis of water in an acidic solution produces hydrogen gas at the cathode and oxygen gas at the anode."
+        },
+        "Electrolysis of Potassium Chloride": {
+            "equation": "2KCl(l) → 2K(s) + Cl₂(g)",
+            "explanation": "Potassium chloride is electrolyzed to form potassium metal at the cathode and chlorine gas at the anode."
+        },
+        "Electrolysis of Silver Nitrate": {
+            "equation": "AgNO₃(aq) → Ag(s) + NO₃⁻(aq)",
+            "explanation": "During electrolysis of silver nitrate, silver metal is deposited at the cathode and nitrate ions remain in solution."
+        },
+        "Electrolysis of Sodium Carbonate": {
+            "equation": "Na₂CO₃(l) → 2Na(s) + CO₂(g)",
+            "explanation": "Sodium carbonate is electrolyzed to produce sodium metal at the cathode and carbon dioxide gas at the anode."
+        },
+        "Electrolysis of Potassium Permanganate": {
+            "equation": "2KMnO₄(aq) → 2KOH(aq) + MnO₂(s) + O₂(g)",
+            "explanation": "Electrolysis of potassium permanganate produces potassium hydroxide, manganese dioxide, and oxygen gas."
+        },
+        "Electrolysis of Nickel(II) Sulfate": {
+            "equation": "NiSO₄(aq) → Ni(s) + SO₄²⁻(aq)",
+            "explanation": "Nickel(II) sulfate undergoes electrolysis to deposit nickel metal at the cathode."
+        },
+        "Electrolysis of Iron(III) Chloride": {
+            "equation": "FeCl₃(aq) → Fe(s) + Cl₂(g)",
+            "explanation": "Electrolysis of iron(III) chloride produces iron metal at the cathode and chlorine gas at the anode."
+        },
+        "Electrolysis of Potassium Cyanide": {
+            "equation": "2KCN(aq) → 2K(s) + C₂N₂(g)",
+            "explanation": "Potassium cyanide is electrolyzed to produce potassium metal and cyanogen gas."
+        },
+        "Electrolysis of Sodium Hydroxide": {
+            "equation": "2NaOH(aq) → 2Na(s) + H₂(g) + O₂(g)",
+            "explanation": "Sodium hydroxide undergoes electrolysis to produce sodium metal at the cathode, hydrogen gas at the cathode, and oxygen gas at the anode."
+        },
+        "Electrolysis of Barium Nitrate": {
+            "equation": "Ba(NO₃)₂(aq) → Ba(s) + O₂(g)",
+            "explanation": "Barium nitrate undergoes electrolysis to produce barium metal at the cathode and oxygen gas at the anode."
+        },
+        "Electrolysis of Magnesium Sulfate": {
+            "equation": "MgSO₄(aq) → Mg(s) + SO₄²⁻(aq)",
+            "explanation": "Magnesium sulfate is electrolyzed to produce magnesium metal at the cathode."
+        },
+        "Electrolysis of Calcium Chloride": {
+            "equation": "CaCl₂(l) → Ca(s) + Cl₂(g)",
+            "explanation": "Calcium chloride undergoes electrolysis to produce calcium metal at the cathode and chlorine gas at the anode."
+        }
+		},
+		 "Hydration Reactions": {
+        "Hydration of Ethene": {
+            "equation": "C₂H₄(g) + H₂O(g) → C₂H₅OH(l)",
+            "explanation": "Ethene reacts with water in the presence of an acid catalyst to form ethanol."
+        },
+        "Hydration of Propene": {
+            "equation": "C₃H₆(g) + H₂O(g) → C₃H₇OH(l)",
+            "explanation": "Propene reacts with water in the presence of an acid catalyst to form propanol."
+        },
+        "Hydration of Butene": {
+            "equation": "C₄H₈(g) + H₂O(g) → C₄H₉OH(l)",
+            "explanation": "Butene reacts with water to form butanol under acidic conditions."
+        },
+        "Hydration of Cyclohexene": {
+            "equation": "C₆H₁₀(g) + H₂O(g) → C₆H₁₁OH(l)",
+            "explanation": "Cyclohexene undergoes hydration to form cyclohexanol in the presence of an acid catalyst."
+        },
+        "Hydration of Isobutene": {
+            "equation": "C₄H₈(g) + H₂O(g) → C₄H₉OH(l)",
+            "explanation": "Isobutene reacts with water to form isobutanol under acidic conditions."
+        },
+        "Hydration of Acetylene": {
+            "equation": "C₂H₂(g) + H₂O(g) → C₂H₄OH(l)",
+            "explanation": "Acetylene reacts with water in the presence of a catalyst to form ethanol."
+        },
+        "Hydration of 1-Butene": {
+            "equation": "C₄H₈(g) + H₂O(g) → C₄H₉OH(l)",
+            "explanation": "1-Butene reacts with water to form butanol under acidic conditions."
+        },
+        "Hydration of 2-Butene": {
+            "equation": "C₄H₈(g) + H₂O(g) → C₄H₉OH(l)",
+            "explanation": "2-Butene reacts with water to form butanol under acidic conditions."
+        },
+        "Hydration of 1-Pentene": {
+            "equation": "C₅H₁₀(g) + H₂O(g) → C₅H₁₁OH(l)",
+            "explanation": "1-Pentene reacts with water to form pentanol under acidic conditions."
+        },
+        "Hydration of 2-Pentene": {
+            "equation": "C₅H₁₀(g) + H₂O(g) → C₅H₁₁OH(l)",
+            "explanation": "2-Pentene reacts with water to form pentanol under acidic conditions."
+        },
+        "Hydration of Styrene": {
+            "equation": "C₆H₅CH=CH₂(g) + H₂O(g) → C₆H₅CH₂CH₂OH(l)",
+            "explanation": "Styrene reacts with water to form phenylethanol in the presence of an acid catalyst."
+        },
+        "Hydration of 1-Octene": {
+            "equation": "C₈H₁₆(g) + H₂O(g) → C₈H₁₇OH(l)",
+            "explanation": "1-Octene reacts with water to form octanol under acidic conditions."
+        },
+        "Hydration of 2-Octene": {
+            "equation": "C₈H₁₆(g) + H₂O(g) → C₈H₁₇OH(l)",
+            "explanation": "2-Octene reacts with water to form octanol under acidic conditions."
+        },
+        "Hydration of 3-Octene": {
+            "equation": "C₈H₁₆(g) + H₂O(g) → C₈H₁₇OH(l)",
+            "explanation": "3-Octene reacts with water to form octanol under acidic conditions."
+        },
+        "Hydration of 1-Decene": {
+            "equation": "C₁₀H₂₀(g) + H₂O(g) → C₁₀H₂₁OH(l)",
+            "explanation": "1-Decene reacts with water to form decanol under acidic conditions."
+        },
+        "Hydration of 2-Decene": {
+            "equation": "C₁₀H₂₀(g) + H₂O(g) → C₁₀H₂₁OH(l)",
+            "explanation": "2-Decene reacts with water to form decanol under acidic conditions."
+        },
+        "Hydration of 1-Dodecene": {
+            "equation": "C₁₂H₂₄(g) + H₂O(g) → C₁₂H₂₅OH(l)",
+            "explanation": "1-Dodecene reacts with water to form dodecanol under acidic conditions."
+        },
+        "Hydration of 1-Hexene": {
+            "equation": "C₆H₁₂(g) + H₂O(g) → C₆H₁₃OH(l)",
+            "explanation": "1-Hexene reacts with water to form hexanol under acidic conditions."
+        },
+        "Hydration of 2-Hexene": {
+            "equation": "C₆H₁₂(g) + H₂O(g) → C₆H₁₃OH(l)",
+            "explanation": "2-Hexene reacts with water to form hexanol under acidic conditions."
+        },
+        "Hydration of Isopropene": {
+            "equation": "C₃H₆(g) + H₂O(g) → C₃H₇OH(l)",
+            "explanation": "Isopropene reacts with water to form isopropanol under acidic conditions."
+        },
+        "Hydration of 1-Undecene": {
+            "equation": "C₁₁H₂₂(g) + H₂O(g) → C₁₁H₂₃OH(l)",
+            "explanation": "1-Undecene reacts with water to form undecanol under acidic conditions."
+        }
+		},
+		"Polymerization Reactions": {
+        "Polymerization of Ethene (Ethylene)": {
+            "equation": "nC₂H₄ → (C₂H₄)n",
+            "explanation": "Ethene polymerizes to form polyethylene, a common plastic used in packaging and containers."
+        },
+        "Polymerization of Propene": {
+            "equation": "nC₃H₆ → (C₃H₆)n",
+            "explanation": "Propene polymerizes to form polypropylene, a widely used plastic in various consumer products."
+        },
+        "Polymerization of Tetrafluoroethylene": {
+            "equation": "nC₂HF₄ → (C₂HF₄)n",
+            "explanation": "Tetrafluoroethylene polymerizes to form polytetrafluoroethylene (PTFE), commonly known as Teflon."
+        },
+        "Polymerization of Vinyl Chloride": {
+            "equation": "nC₂H₃Cl → (C₂H₃Cl)n",
+            "explanation": "Vinyl chloride polymerizes to form polyvinyl chloride (PVC), used in pipes, flooring, and synthetic leather."
+        },
+        "Polymerization of Styrene": {
+            "equation": "nC₆H₅CH=CH₂ → (C₆H₅CH=CH₂)n",
+            "explanation": "Styrene polymerizes to form polystyrene, a plastic used in packaging, insulation, and disposable cutlery."
+        },
+        "Polymerization of Butadiene": {
+            "equation": "nC₄H₆ → (C₄H₆)n",
+            "explanation": "Butadiene polymerizes to form polybutadiene, used in the production of synthetic rubber."
+        },
+        "Polymerization of Acrylonitrile": {
+            "equation": "nC₃H₃N → (C₃H₃N)n",
+            "explanation": "Acrylonitrile polymerizes to form polyacrylonitrile, a polymer used in fibers and textiles."
+        },
+        "Polymerization of Methyl Methacrylate": {
+            "equation": "nC₅H₈O₂ → (C₅H₈O₂)n",
+            "explanation": "Methyl methacrylate polymerizes to form polymethyl methacrylate (PMMA), also known as acrylic or acrylic glass."
+        },
+        "Polymerization of Vinyl Acetate": {
+            "equation": "nC₄H₆O₂ → (C₄H₆O₂)n",
+            "explanation": "Vinyl acetate polymerizes to form polyvinyl acetate (PVA), used in adhesives and paints."
+        },
+        "Polymerization of Isoprene": {
+            "equation": "nC₅H₈ → (C₅H₈)n",
+            "explanation": "Isoprene polymerizes to form polyisoprene, the main component of natural rubber."
+        },
+        "Polymerization of Caprolactam": {
+            "equation": "nC₆H₁₃NO → (C₆H₁₃NO)n",
+            "explanation": "Caprolactam polymerizes to form nylon 6, used in fibers, textiles, and engineering plastics."
+        },
+        "Polymerization of Epichlorohydrin": {
+            "equation": "nC₃H₅ClO → (C₃H₅ClO)n",
+            "explanation": "Epichlorohydrin polymerizes to form epoxy resins, used in coatings, adhesives, and composite materials."
+        },
+        "Polymerization of Ethylene Oxide": {
+            "equation": "nC₂H₄O → (C₂H₄O)n",
+            "explanation": "Ethylene oxide polymerizes to form polyethylene glycol (PEG), used in pharmaceuticals and cosmetics."
+        },
+        "Polymerization of 1,3-Dioxolane": {
+            "equation": "nC₃H₆O₂ → (C₃H₆O₂)n",
+            "explanation": "1,3-Dioxolane polymerizes to form poly(dioxolane), used in synthetic rubber and coatings."
+        },
+        "Polymerization of Thiophene": {
+            "equation": "nC₄H₄S → (C₄H₄S)n",
+            "explanation": "Thiophene polymerizes to form polythiophene, a conductive polymer used in organic electronics."
+        },
+        "Polymerization of Phenylacetic Acid": {
+            "equation": "nC₈H₈O₂ → (C₈H₈O₂)n",
+            "explanation": "Phenylacetic acid polymerizes to form polyphenylacetic acid, a polymer used in the synthesis of bioactive compounds."
+        },
+        "Polymerization of Dodecyl Acrylate": {
+            "equation": "nC₁₄H₂₆O₂ → (C₁₄H₂₆O₂)n",
+            "explanation": "Dodecyl acrylate polymerizes to form poly(dodecyl acrylate), used in coatings and adhesives."
+        },
+        "Polymerization of 2-Phenylethanol": {
+            "equation": "nC₆H₅CH₂CH₂OH → (C₆H₅CH₂CH₂OH)n",
+            "explanation": "2-Phenylethanol polymerizes to form a polymer used in fragrances and personal care products."
+        },
+        "Polymerization of N-Vinyl Pyrrolidone": {
+            "equation": "nC₆H₉NO → (C₆H₉NO)n",
+            "explanation": "N-Vinyl pyrrolidone polymerizes to form polyvinylpyrrolidone (PVP), used in pharmaceuticals and cosmetics."
+        },
+        "Polymerization of Toluene Diisocyanate": {
+            "equation": "nC₆H₆N₂O₂ → (C₆H₆N₂O₂)n",
+            "explanation": "Toluene diisocyanate polymerizes to form polyurethane, used in foams, coatings, and adhesives."
+        },
+        "Polymerization of 1,4-Butanediol": {
+            "equation": "nC₄H₁₀O₂ → (C₄H₁₀O₂)n",
+            "explanation": "1,4-Butanediol polymerizes to form polybutylene terephthalate (PBT), used in engineering plastics."
+        }
+		},
+		"Substitution Reactions": {
+        "Chlorination of Methane": {
+            "equation": "CH₄ + Cl₂ → CH₃Cl + HCl",
+            "explanation": "Methane reacts with chlorine in the presence of light to form chloromethane and hydrogen chloride."
+        },
+        "Bromination of Methane": {
+            "equation": "CH₄ + Br₂ → CH₃Br + HBr",
+            "explanation": "Methane reacts with bromine in the presence of light to form bromo-methane and hydrogen bromide."
+        },
+        "Chlorination of Ethane": {
+            "equation": "C₂H₆ + Cl₂ → C₂H₅Cl + HCl",
+            "explanation": "Ethane reacts with chlorine in the presence of light to form chloroethane and hydrogen chloride."
+        },
+        "Bromination of Ethane": {
+            "equation": "C₂H₆ + Br₂ → C₂H₅Br + HBr",
+            "explanation": "Ethane reacts with bromine in the presence of light to form bromoethane and hydrogen bromide."
+        },
+        "Chlorination of Benzene": {
+            "equation": "C₆H₆ + Cl₂ → C₆H₅Cl + HCl",
+            "explanation": "Benzene reacts with chlorine in the presence of aluminum chloride (AlCl₃) to form chlorobenzene and hydrogen chloride."
+        },
+        "Bromination of Benzene": {
+            "equation": "C₆H₆ + Br₂ → C₆H₅Br + HBr",
+            "explanation": "Benzene reacts with bromine in the presence of iron (Fe) as a catalyst to form bromobenzene and hydrogen bromide."
+        },
+        "Nitration of Benzene": {
+            "equation": "C₆H₆ + HNO₃ → C₆H₅NO₂ + H₂O",
+            "explanation": "Benzene reacts with nitric acid in the presence of sulfuric acid to form nitrobenzene and water."
+        },
+        "Sulfonation of Benzene": {
+            "equation": "C₆H₆ + H₂SO₄ → C₆H₅SO₃H + H₂O",
+            "explanation": "Benzene reacts with sulfuric acid to form benzenesulfonic acid and water."
+        },
+        "Methylation of Benzene": {
+            "equation": "C₆H₆ + CH₃Cl → C₆H₅CH₃ + HCl",
+            "explanation": "Benzene reacts with methyl chloride in the presence of aluminum chloride (AlCl₃) to form toluene and hydrogen chloride."
+        },
+        "Friedel–Crafts Alkylation of Benzene": {
+            "equation": "C₆H₆ + RCl → C₆H₅R + HCl",
+            "explanation": "Benzene reacts with an alkyl halide (RCl) in the presence of aluminum chloride (AlCl₃) to form alkylated benzene."
+        },
+        "Fluorination of Benzene": {
+            "equation": "C₆H₆ + F₂ → C₆H₅F + HF",
+            "explanation": "Benzene reacts with fluorine in the presence of a catalyst to form fluorobenzene and hydrogen fluoride."
+        },
+        "Chlorination of Acetylene": {
+            "equation": "C₂H₂ + Cl₂ → C₂H₂Cl₂",
+            "explanation": "Acetylene reacts with chlorine to form 1,1-dichloroethene."
+        },
+        "Bromination of Acetylene": {
+            "equation": "C₂H₂ + Br₂ → C₂H₂Br₂",
+            "explanation": "Acetylene reacts with bromine to form 1,1-dibromoethene."
+        },
+        "Iodination of Methane": {
+            "equation": "CH₄ + I₂ → CH₃I + HI",
+            "explanation": "Methane reacts with iodine in the presence of light to form methyl iodide and hydrogen iodide."
+        },
+        "Substitution of Chlorine in Ethyl Chloride": {
+            "equation": "C₂H₅Cl + NaOH → C₂H₅OH + NaCl",
+            "explanation": "Ethyl chloride reacts with sodium hydroxide to form ethanol and sodium chloride."
+        },
+        "Bromination of Ethene": {
+            "equation": "C₂H₄ + Br₂ → C₂H₄Br₂",
+            "explanation": "Ethene reacts with bromine to form 1,2-dibromoethane."
+        },
+        "Iodination of Propane": {
+            "equation": "C₃H₈ + I₂ → C₃H₇I + HI",
+            "explanation": "Propane reacts with iodine in the presence of light to form iodo-propane and hydrogen iodide."
+        },
+        "Substitution of Fluorine in Fluorobenzene": {
+            "equation": "C₆H₅F + Cl₂ → C₆H₅Cl + HF",
+            "explanation": "Fluorobenzene reacts with chlorine to form chlorobenzene and hydrogen fluoride."
+        },
+        "Substitution of Bromine in Bromobenzene": {
+            "equation": "C₆H₅Br + NaOH → C₆H₆ + NaBr",
+            "explanation": "Bromobenzene reacts with sodium hydroxide to form benzene and sodium bromide."
+        }
+		},
+		 "Additional Reactions": {
+        "Combustion of Butane": {
+            "equation": "2C₄H₁₀ + 13O₂ → 8CO₂ + 10H₂O",
+            "explanation": "Butane combusts in excess oxygen to produce carbon dioxide and water."
+        },
+        "Synthesis of Ammonia": {
+            "equation": "N₂(g) + 3H₂(g) → 2NH₃(g)",
+            "explanation": "Nitrogen gas reacts with hydrogen gas in the Haber process to form ammonia."
+        },
+        "Decomposition of Calcium Carbonate": {
+            "equation": "CaCO₃(s) → CaO(s) + CO₂(g)",
+            "explanation": "Calcium carbonate decomposes upon heating to produce calcium oxide and carbon dioxide."
+        },
+        "Electrolysis of Water": {
+            "equation": "2H₂O(l) → 2H₂(g) + O₂(g)",
+            "explanation": "Water undergoes electrolysis to produce hydrogen gas and oxygen gas."
+        },
+        "Decomposition of Potassium Chlorate": {
+            "equation": "2KClO₃(s) → 2KCl(s) + 3O₂(g)",
+            "explanation": "Potassium chlorate decomposes upon heating to produce potassium chloride and oxygen gas."
+        },
+        "Addition of Hydrogen to Ethene": {
+            "equation": "C₂H₄ + H₂ → C₂H₆",
+            "explanation": "Ethene undergoes hydrogenation to form ethane in the presence of a catalyst."
+        },
+        "Friedel–Crafts Alkylation of Toluene": {
+            "equation": "C₆H₅CH₃ + CH₃Cl → C₆H₅C₂H₅ + HCl",
+            "explanation": "Toluene reacts with methyl chloride in the presence of aluminum chloride to form xylene."
+        },
+        "Neutralization of Hydrochloric Acid with Sodium Hydroxide": {
+            "equation": "HCl(aq) + NaOH(aq) → NaCl(aq) + H₂O(l)",
+            "explanation": "Hydrochloric acid reacts with sodium hydroxide to form sodium chloride and water."
+        },
+        "Thermal Decomposition of Ammonium Dichromate": {
+            "equation": "(NH₄)₂Cr₂O₇ → Cr₂O₃ + 4H₂O + N₂",
+            "explanation": "Ammonium dichromate decomposes when heated to form chromium(III) oxide, water, and nitrogen gas."
+        },
+        "Substitution of Bromine in Toluene": {
+            "equation": "C₆H₅CH₃ + Br₂ → C₆H₅CH₂Br + HBr",
+            "explanation": "Toluene reacts with bromine to form bromotoluene and hydrogen bromide."
+        },
+        "Electrolysis of Sodium Chloride Solution": {
+            "equation": "2NaCl(aq) → 2Na(s) + Cl₂(g)",
+            "explanation": "Sodium chloride undergoes electrolysis to produce sodium metal and chlorine gas."
+        },
+        "Combustion of Propane": {
+            "equation": "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O",
+            "explanation": "Propane burns in oxygen to form carbon dioxide and water."
+        },
+        "Hydration of Ethene": {
+            "equation": "C₂H₄ + H₂O → C₂H₅OH",
+            "explanation": "Ethene reacts with water in the presence of a catalyst to form ethanol."
+        },
+        "Polymerization of Ethene": {
+            "equation": "nC₂H₄ → (C₂H₄)n",
+            "explanation": "Ethene undergoes polymerization to form polyethylene."
+        },
+        "Oxidation of Ethanol": {
+            "equation": "C₂H₅OH + O₂ → CH₃COOH + H₂O",
+            "explanation": "Ethanol is oxidized in the presence of oxygen to form acetic acid and water."
+        },
+        "Reduction of Copper(II) Oxide": {
+            "equation": "CuO + H₂ → Cu + H₂O",
+            "explanation": "Copper(II) oxide is reduced by hydrogen to form copper and water."
+        },
+        "Addition of Bromine to Cyclohexene": {
+            "equation": "C₆H₁₀ + Br₂ → C₆H₁₀Br₂",
+            "explanation": "Cyclohexene reacts with bromine to form 1,2-dibromocyclohexane."
+        },
+        "Decomposition of Hydrogen Peroxide": {
+            "equation": "2H₂O₂ → 2H₂O + O₂",
+            "explanation": "Hydrogen peroxide decomposes into water and oxygen gas."
+        },
+        "Combustion of Methanol": {
+            "equation": "2CH₃OH + 3O₂ → 2CO₂ + 4H₂O",
+            "explanation": "Methanol burns in oxygen to produce carbon dioxide and water."
+        },
+        "Reaction of Sodium with Water": {
+            "equation": "2Na + 2H₂O → 2NaOH + H₂",
+            "explanation": "Sodium reacts with water to produce sodium hydroxide and hydrogen gas."
+        },
+        "Dehydration of Ethanol": {
+            "equation": "C₂H₅OH → C₂H₄ + H₂O",
+            "explanation": "Ethanol undergoes dehydration to form ethene and water."
+        },
+        "Chlorination of Methane": {
+            "equation": "CH₄ + Cl₂ → CH₃Cl + HCl",
+            "explanation": "Methane reacts with chlorine in the presence of UV light to form chloromethane and hydrogen chloride."
+        }
+		},
+		"Complex Ion Reactions": {
+        "Formation of [Fe(CN)₆]³⁻": {
+            "equation": "Fe³⁺(aq) + 6CN⁻(aq) → [Fe(CN)₆]³⁻(aq)",
+            "explanation": "Iron(III) ions react with cyanide ions to form the hexacyanoferrate(III) complex ion."
+        },
+        "Formation of [Cu(NH₃)₄]²⁺": {
+            "equation": "Cu²⁺(aq) + 4NH₃(aq) → [Cu(NH₃)₄]²⁺(aq)",
+            "explanation": "Copper(II) ions react with ammonia to form the tetraammine copper(II) complex ion."
+        },
+        "Formation of [Ag(NH₃)₂]⁺": {
+            "equation": "Ag⁺(aq) + 2NH₃(aq) → [Ag(NH₃)₂]⁺(aq)",
+            "explanation": "Silver(I) ions react with ammonia to form the diamminesilver(I) complex ion."
+        },
+        "Formation of [CuCl₄]²⁻": {
+            "equation": "Cu²⁺(aq) + 4Cl⁻(aq) → [CuCl₄]²⁻(aq)",
+            "explanation": "Copper(II) ions react with chloride ions to form the tetrachlorocuprate(II) complex ion."
+        },
+        "Formation of [Fe(CO)₅]": {
+            "equation": "Fe(CO)₅(g) → Fe(s) + 5CO(g)",
+            "explanation": "Iron reacts with carbon monoxide to form the iron pentacarbonyl complex."
+        },
+        "Formation of [Co(NH₃)₆]³⁺": {
+            "equation": "Co³⁺(aq) + 6NH₃(aq) → [Co(NH₃)₆]³⁺(aq)",
+            "explanation": "Cobalt(III) ions react with ammonia to form the hexaamminecobalt(III) complex ion."
+        },
+        "Formation of [NiCl₄]²⁻": {
+            "equation": "Ni²⁺(aq) + 4Cl⁻(aq) → [NiCl₄]²⁻(aq)",
+            "explanation": "Nickel(II) ions react with chloride ions to form the tetrachloronickelate(II) complex ion."
+        },
+        "Formation of [Cr(H₂O)₆]³⁺": {
+            "equation": "Cr³⁺(aq) + 6H₂O(l) → [Cr(H₂O)₆]³⁺(aq)",
+            "explanation": "Chromium(III) ions react with water molecules to form the hexaaquachromium(III) complex ion."
+        },
+        "Formation of [CuCl₄]²⁻ from CuCl₂": {
+            "equation": "CuCl₂(aq) + 2Cl⁻(aq) → [CuCl₄]²⁻(aq)",
+            "explanation": "Copper(II) chloride reacts with chloride ions to form the tetrachlorocuprate(II) complex ion."
+        },
+        "Formation of [MnO₄]⁻": {
+            "equation": "Mn²⁺(aq) + 4OH⁻(aq) → [MnO₄]⁻(aq) + 2H₂O(l)",
+            "explanation": "Manganese(II) ions react with hydroxide ions to form the permanganate ion."
+        },
+        "Formation of [CoCl₄]²⁻": {
+            "equation": "Co²⁺(aq) + 4Cl⁻(aq) → [CoCl₄]²⁻(aq)",
+            "explanation": "Cobalt(II) ions react with chloride ions to form the tetrachlorocobalt(II) complex ion."
+        },
+        "Formation of [Fe(H₂O)₆]²⁺": {
+            "equation": "Fe²⁺(aq) + 6H₂O(l) → [Fe(H₂O)₆]²⁺(aq)",
+            "explanation": "Iron(II) ions react with water molecules to form the hexaaquairon(II) complex ion."
+        },
+        "Formation of [Cr(OH)₆]³⁻": {
+            "equation": "Cr³⁺(aq) + 6OH⁻(aq) → [Cr(OH)₆]³⁻(aq)",
+            "explanation": "Chromium(III) ions react with hydroxide ions to form the hexahydroxychromium(III) complex ion."
+        },
+        "Formation of [Ni(NH₃)₆]²⁺": {
+            "equation": "Ni²⁺(aq) + 6NH₃(aq) → [Ni(NH₃)₆]²⁺(aq)",
+            "explanation": "Nickel(II) ions react with ammonia to form the hexamminenickel(II) complex ion."
+        },
+        "Formation of [Fe(CO)₄]²⁻": {
+            "equation": "Fe(CO)₄²⁻ → Fe²⁺(aq) + 4CO(g)",
+            "explanation": "Iron carbonyl decomposes in solution to form the iron complex and carbon monoxide."
+        },
+        "Formation of [Cu(H₂O)₄]²⁺": {
+            "equation": "Cu²⁺(aq) + 4H₂O(l) → [Cu(H₂O)₄]²⁺(aq)",
+            "explanation": "Copper(II) ions react with water to form the aquacopper(II) complex ion."
+        },
+        "Formation of [TiCl₆]²⁻": {
+            "equation": "TiCl₄(aq) + 2Cl⁻(aq) → [TiCl₆]²⁻(aq)",
+            "explanation": "Titanium tetrachloride reacts with chloride ions to form the hexachlorotitanate(IV) complex ion."
+        },
+        "Formation of [Al(OH)₄]⁻": {
+            "equation": "Al³⁺(aq) + 4OH⁻(aq) → [Al(OH)₄]⁻(aq)",
+            "explanation": "Aluminum ions react with hydroxide ions to form the tetrahydroxyaluminate(III) complex ion."
+        },
+        "Formation of [Ni(CO)₄]": {
+            "equation": "Ni²⁺(aq) + 4CO(g) → [Ni(CO)₄](s)",
+            "explanation": "Nickel(II) ions react with carbon monoxide to form the nickel tetracarbonyl complex."
+        },
+        "Formation of [Zn(OH)₄]²⁻": {
+            "equation": "Zn²⁺(aq) + 4OH⁻(aq) → [Zn(OH)₄]²⁻(aq)",
+            "explanation": "Zinc(II) ions react with hydroxide ions to form the tetrahydroxozincate(II) complex ion."
+        },
+        "Formation of [Ag(CN)₂]⁻": {
+            "equation": "Ag⁺(aq) + 2CN⁻(aq) → [Ag(CN)₂]⁻(aq)",
+            "explanation": "Silver(I) ions react with cyanide ions to form the dicyanoargentate(I) complex ion."
+        }
+		},
+		 "Precipitation Reactions": {
+        "Formation of AgCl": {
+            "equation": "AgNO₃(aq) + NaCl(aq) → AgCl(s) + NaNO₃(aq)",
+            "explanation": "When silver nitrate reacts with sodium chloride, silver chloride precipitates as a white solid."
+        },
+        "Formation of BaSO₄": {
+            "equation": "BaCl₂(aq) + Na₂SO₄(aq) → BaSO₄(s) + 2NaCl(aq)",
+            "explanation": "When barium chloride reacts with sodium sulfate, barium sulfate precipitates as a white solid."
+        },
+        "Formation of PbI₂": {
+            "equation": "Pb(NO₃)₂(aq) + 2NaI(aq) → PbI₂(s) + 2NaNO₃(aq)",
+            "explanation": "When lead(II) nitrate reacts with sodium iodide, lead(II) iodide precipitates as a yellow solid."
+        },
+        "Formation of CaCO₃": {
+            "equation": "CaCl₂(aq) + Na₂CO₃(aq) → CaCO₃(s) + 2NaCl(aq)",
+            "explanation": "When calcium chloride reacts with sodium carbonate, calcium carbonate precipitates as a white solid."
+        },
+        "Formation of Ag₂SO₄": {
+            "equation": "2AgNO₃(aq) + Na₂SO₄(aq) → Ag₂SO₄(s) + 2NaNO₃(aq)",
+            "explanation": "When silver nitrate reacts with sodium sulfate, silver sulfate precipitates as a white solid."
+        },
+        "Formation of CuSO₄": {
+            "equation": "CuCl₂(aq) + Na₂SO₄(aq) → CuSO₄(s) + 2NaCl(aq)",
+            "explanation": "When copper(II) chloride reacts with sodium sulfate, copper(II) sulfate precipitates as a blue solid."
+        },
+        "Formation of Fe(OH)₂": {
+            "equation": "FeSO₄(aq) + 2NaOH(aq) → Fe(OH)₂(s) + Na₂SO₄(aq)",
+            "explanation": "When iron(II) sulfate reacts with sodium hydroxide, iron(II) hydroxide precipitates as a green solid."
+        },
+        "Formation of Fe(OH)₃": {
+            "equation": "FeCl₃(aq) + 3NaOH(aq) → Fe(OH)₃(s) + 3NaCl(aq)",
+            "explanation": "When iron(III) chloride reacts with sodium hydroxide, iron(III) hydroxide precipitates as a brown solid."
+        },
+        "Formation of Mg(OH)₂": {
+            "equation": "MgCl₂(aq) + 2NaOH(aq) → Mg(OH)₂(s) + 2NaCl(aq)",
+            "explanation": "When magnesium chloride reacts with sodium hydroxide, magnesium hydroxide precipitates as a white solid."
+        },
+        "Formation of ZnS": {
+            "equation": "ZnCl₂(aq) + H₂S(aq) → ZnS(s) + 2HCl(aq)",
+            "explanation": "When zinc chloride reacts with hydrogen sulfide, zinc sulfide precipitates as a white solid."
+        },
+        "Formation of Ag₂CrO₄": {
+            "equation": "2AgNO₃(aq) + Na₂CrO₄(aq) → Ag₂CrO₄(s) + 2NaNO₃(aq)",
+            "explanation": "When silver nitrate reacts with sodium chromate, silver chromate precipitates as a red solid."
+        },
+        "Formation of BaCrO₄": {
+            "equation": "BaCl₂(aq) + Na₂CrO₄(aq) → BaCrO₄(s) + 2NaCl(aq)",
+            "explanation": "When barium chloride reacts with sodium chromate, barium chromate precipitates as a yellow solid."
+        },
+        "Formation of Ag₃PO₄": {
+            "equation": "3AgNO₃(aq) + Na₃PO₄(aq) → Ag₃PO₄(s) + 3NaNO₃(aq)",
+            "explanation": "When silver nitrate reacts with sodium phosphate, silver phosphate precipitates as a yellow solid."
+        },
+        "Formation of Cu(OH)₂": {
+            "equation": "CuSO₄(aq) + 2NaOH(aq) → Cu(OH)₂(s) + Na₂SO₄(aq)",
+            "explanation": "When copper(II) sulfate reacts with sodium hydroxide, copper(II) hydroxide precipitates as a blue solid."
+        },
+        "Formation of PbSO₄": {
+            "equation": "Pb(NO₃)₂(aq) + Na₂SO₄(aq) → PbSO₄(s) + 2NaNO₃(aq)",
+            "explanation": "When lead(II) nitrate reacts with sodium sulfate, lead(II) sulfate precipitates as a white solid."
+        },
+        "Formation of AgBr": {
+            "equation": "AgNO₃(aq) + NaBr(aq) → AgBr(s) + NaNO₃(aq)",
+            "explanation": "When silver nitrate reacts with sodium bromide, silver bromide precipitates as a pale yellow solid."
+        },
+        "Formation of PbCl₂": {
+            "equation": "Pb(NO₃)₂(aq) + 2NaCl(aq) → PbCl₂(s) + 2NaNO₃(aq)",
+            "explanation": "When lead(II) nitrate reacts with sodium chloride, lead(II) chloride precipitates as a white solid."
+        },
+        "Formation of Al(OH)₃": {
+            "equation": "AlCl₃(aq) + 3NaOH(aq) → Al(OH)₃(s) + 3NaCl(aq)",
+            "explanation": "When aluminum chloride reacts with sodium hydroxide, aluminum hydroxide precipitates as a white solid."
+        },
+        "Formation of Hg₂Cl₂": {
+            "equation": "HgCl₂(aq) + HgCl₂(aq) → Hg₂Cl₂(s)",
+            "explanation": "When mercury(II) chloride reacts with mercury(II) chloride, mercurous chloride precipitates as a white solid."
+        }
+		},
+		 "Photochemical Reactions": {
+        "Formation of Ozone from Oxygen": {
+            "equation": "O₂(g) + uv → 2O(g)",
+            "explanation": "In the presence of ultraviolet light (hv), oxygen molecules dissociate to form individual oxygen atoms, which can then recombine to form ozone (O₃)."
+        },
+        "Decomposition of Nitrogen Dioxide": {
+            "equation": "2NO₂(g) + uv → 2NO(g) + O₂(g)",
+            "explanation": "When exposed to light, nitrogen dioxide dissociates into nitrogen monoxide and oxygen molecules."
+        },
+        "Formation of Hydroxyl Radical from Water": {
+            "equation": "H₂O(l) + uv → H•(aq) + OH•(aq)",
+            "explanation": "Water molecules can dissociate under ultraviolet light to form hydroxyl radicals (OH•) and hydrogen atoms (H•)."
+        },
+        "Formation of Hydrogen and Iodine from Hydrogen Iodide": {
+            "equation": "2HI(g) + uv → H₂(g) + I₂(g)",
+            "explanation": "Hydrogen iodide undergoes photodissociation in the presence of light to form hydrogen and iodine gases."
+        },
+        "Photoisomerization of Butadiene": {
+            "equation": "C₄H₆ + uv → C₄H₆*",
+            "explanation": "Butadiene absorbs light energy and undergoes a change in molecular structure, forming an excited state."
+        },
+        "Photosynthesis": {
+            "equation": "6CO₂(g) + 6H₂O(l) + light → C₆H₁₂O₆(aq) + 6O₂(g)",
+            "explanation": "In the presence of sunlight, plants convert carbon dioxide and water into glucose and oxygen through the process of photosynthesis."
+        },
+        "Decomposition of Acetone": {
+            "equation": "(CH₃)₂CO + uv → CH₃• + CH₃CO•",
+            "explanation": "Acetone decomposes under ultraviolet light to form methyl (CH₃•) and acetyl (CH₃CO•) radicals."
+        },
+        "Photodissociation of Water": {
+            "equation": "H₂O + uv → H• + OH•",
+            "explanation": "Water can dissociate into hydrogen and hydroxyl radicals under the influence of ultraviolet light."
+        },
+        "Formation of Chlorine from Chlorine Gas": {
+            "equation": "Cl₂(g) + uv → 2Cl•(g)",
+            "explanation": "Chlorine molecules dissociate into chlorine atoms in the presence of ultraviolet light."
+        },
+        "Photochemical Reduction of Nitrogen Oxide": {
+            "equation": "NO₂(g) + uv → NO(g) + O(g)",
+            "explanation": "Nitrogen dioxide absorbs light energy and dissociates into nitrogen monoxide and an oxygen atom."
+        }
+		},
+       
+};
+
+        const categorySelect = document.getElementById("categorySelect");
+        const reactionSelect = document.getElementById("reactionSelect");
+        const resultDiv = document.getElementById("result");
+
+        // Populate the categories dropdown
+        for (let category in reactions) {
+            let option = document.createElement("option");
+            option.value = category;
+            option.textContent = category;
+            categorySelect.appendChild(option);
+        }
+
+        // Update reactions dropdown based on selected category
+        categorySelect.addEventListener("change", function () {
+            reactionSelect.innerHTML = '<option value="" disabled selected>-- Choose a reaction --</option>';
+            reactionSelect.disabled = false;
+            resultDiv.innerHTML = ""; // Clear previous result
+
+            let selectedCategory = categorySelect.value;
+            for (let reaction in reactions[selectedCategory]) {
+                let option = document.createElement("option");
+                option.value = reaction;
+                option.textContent = reaction;
+                reactionSelect.appendChild(option);
+            }
+        });
+
+        // Automatically show reaction details when a reaction is selected
+        reactionSelect.addEventListener("change", function () {
+            const selectedCategory = categorySelect.value;
+            const selectedReaction = reactionSelect.value;
+
+            if (selectedCategory && selectedReaction) {
+                const { equation, explanation } = reactions[selectedCategory][selectedReaction];
+                resultDiv.innerHTML = `
+                    <strong>Equation:</strong> ${equation} <br>
+                    <strong>Explanation:</strong> ${explanation}
+                `;
+            }
+        });
+    </script>
+
+</body>
+</html>
+

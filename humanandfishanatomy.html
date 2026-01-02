@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Anatomy Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background-color: #0073e6;
+            color: white;
+            padding: 20px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .dropdown-container {
+            margin: 20px;
+        }
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 10px;
+        }
+        img {
+            max-width: 600px;
+            width: 100%;
+            margin: 20px auto;
+            border: 2px solid #0073e6;
+            border-radius: 8px;
+        }
+        #info-box {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            text-align: left;
+        }
+        #info-box h2 {
+            margin: 0 0 10px;
+            color: #0073e6;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Interactive Human Anatomy Explorer</h1>
+        <p>Select an organ to explore its parts and functions!</p>
+    </header>
+
+    <main>
+        <!-- Dropdowns -->
+        <div class="dropdown-container">
+            <label for="organ-select">Choose an organ:</label>
+            <select id="organ-select" onchange="displayOrgan()">
+                <option value="" selected disabled>Select an organ</option>
+                <option value="brain">human-Brain</option>
+                <option value="heart">human-Heart</option>
+                <option value="lungs">human-Lungs</option>
+                <option value="liver">human-Liver</option>
+                <option value="stomach">human-Stomach</option>
+				<option value="kidney">human-kidney</option>
+				<option value="eye">human-eye</option>
+				<option value="ear">human-ear</option>
+				<option value="skin">human-skin</option>
+				<option value="otherorgans">human-other organs</option>
+				<option value="respiratory">fish-Respiratory System</option>
+                <option value="digestive">fish-Digestive System</option>
+                <option value="circulatory">fish-Circulatory System</option>
+                <option value="nervous">fish-Nervous System</option>
+                <option value="integumentary">fish-integumentary system</option>
+				<option value="reproductive">fish-reproductive system</option>
+				<option value="excretory">fish-excretory system</option>
+				<option value="immune">fish-immune system</option>
+				<option value="electric">fish-sensory and electric system</option>
+            </select>
+        </div>
+
+        <div id="organ-image-container" style="display: none;">
+            <!-- Image will be displayed here -->
+            <img id="organ-image" alt="Organ Image" onclick="displayParts()">
+        </div>
+
+        <div id="parts-dropdown-container" style="display: none;">
+            <label for="part-select">Choose a part:</label>
+            <select id="part-select" onchange="displayPartFunction()">
+                <option value="" selected disabled>Select a part</option>
+            </select>
+        </div>
+
+        <div id="info-box" style="display: none;">
+            <!-- Information about the organ/part will appear here -->
+            <h2>Organ/Part Information</h2>
+            <p id="info-text">Select an organ to begin.</p>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2024 Interactive Anatomy Explorer | Public Domain Resources Used</p>
+    </footer>
+
+    <script>
+
+        // Data for organs and their parts
+        const organData = {
+            brain: {
+                image: "https://cdn.pixabay.com/photo/2017/01/31/18/46/brain-2026346_640.png",
+                parts: [
+                    { part: "Cerebrum", function: "Responsible for higher brain functions such as thought and action." },
+                    { part: "Cerebellum", function: "Coordinates voluntary movements like posture, balance, and coordination." },
+                    { part: "Brainstem", function: "Controls basic body functions such as breathing, heartbeat, and blood pressure." },
+					 { part: "Cerebrum", function: "Responsible for higher brain functions such as thought, reasoning, and voluntary movement." },
+    { part: "Cerebellum", function: "Coordinates voluntary movements such as posture, balance, and coordination." },
+    { part: "Brainstem", function: "Controls basic body functions such as breathing, heartbeat, and blood pressure." },
+    { part: "Frontal Lobe", function: "Involved in decision making, problem solving, and control of purposeful behaviors." },
+    { part: "Parietal Lobe", function: "Processes sensory information related to touch, temperature, and body position." },
+    { part: "Occipital Lobe", function: "Responsible for processing visual information." },
+    { part: "Temporal Lobe", function: "Processes auditory information and is involved in memory, speech, and language comprehension." },
+    { part: "Thalamus", function: "Relays sensory and motor signals to the cerebral cortex." },
+    { part: "Hypothalamus", function: "Regulates body temperature, hunger, thirst, and circadian rhythms." },
+    { part: "Medulla Oblongata", function: "Regulates vital functions like heartbeat, breathing, and blood pressure." },
+    { part: "Pons", function: "Relays signals between the cerebrum and cerebellum, and regulates sleep and breathing." },
+    { part: "Corpus Callosum", function: "Connects the left and right cerebral hemispheres and facilitates communication between them." },
+    { part: "Pituitary Gland", function: "Secretes hormones that regulate processes such as growth, metabolism, and reproduction." },
+    { part: "Hippocampus", function: "Involved in the formation of new memories and is also associated with learning and emotions." },
+    { part: "Amygdala", function: "Plays a key role in processing emotions, such as fear, anger, and pleasure." },
+    { part: "Basal Ganglia", function: "Involved in controlling motor movements, habits, and learning." },
+    { part: "Ventricles", function: "Cavities within the brain that contain cerebrospinal fluid (CSF), which cushions the brain and spinal cord." },
+    { part: "Choroid Plexus", function: "Produces cerebrospinal fluid (CSF) within the ventricles of the brain." },
+    { part: "Reticular Formation", function: "Regulates sleep-wake cycles, consciousness, and arousal." },
+    { part: "Prefrontal Cortex", function: "Involved in complex cognitive behavior, personality expression, decision making, and moderating social behavior." },
+    { part: "Postcentral Gyrus", function: "Receives sensory information from the body, such as touch, temperature, and pain." },
+    { part: "Cingulate Cortex", function: "Regulates emotions, processing pain, and decision making." },
+    { part: "Wernicke's Area", function: "Associated with language comprehension." },
+    { part: "Broca's Area", function: "Involved in speech production." },
+    { part: "Angular Gyrus", function: "Involved in language, number processing, and spatial cognition." },
+    { part: "Superior Colliculus", function: "Involved in processing visual information and coordinating eye movements." },
+    { part: "Inferior Colliculus", function: "Processes auditory information and is involved in hearing." },
+    { part: "Retina (Optic Nerve)", function: "Transmits visual information from the retina to the brain." },
+    { part: "Olfactory Bulb", function: "Processes smells and sends information to the brain." },
+    { part: "Optic Chiasm", function: "Where the optic nerves cross and transmit visual information to the visual cortex." },
+    { part: "Medial Geniculate Nucleus", function: "Relays auditory signals from the ear to the auditory cortex." },
+    { part: "Limbic System", function: "Involved in emotions, motivation, and memory." },
+    { part: "Dorsolateral Prefrontal Cortex", function: "Involved in executive functions like working memory, cognitive flexibility, and planning." },
+    { part: "Motor Cortex", function: "Controls voluntary movements of the body." },
+    { part: "Somatosensory Cortex", function: "Processes sensations from the body such as touch, temperature, and pain." },
+    { part: "Spinal Cord", function: "Transmits signals between the brain and the rest of the body, controlling reflexes and motor functions." },
+    { part: "Pineal Gland", function: "Secretes melatonin, which regulates sleep-wake cycles." },
+    { part: "Medullary Pyramid", function: "Contains motor fibers that carry voluntary motor commands from the brain to the spinal cord." },
+    { part: "Pyramidal Tract", function: "Carries motor signals from the brain to the spinal cord to control muscle movements." },
+    { part: "Cerebellar Peduncles", function: "Transmit signals between the cerebellum and other parts of the brain." },
+    { part: "Foramen Magnum", function: "The opening in the skull through which the spinal cord passes." },
+    { part: "Corpus Striatum", function: "Part of the basal ganglia, involved in motor control and learning." }
+                ]
+            },
+            heart: {
+                image: "https://cdn.pixabay.com/photo/2013/07/12/13/50/heart-147389_1280.png",
+                parts: [
+                    { part: "Atrium", function: "Receives blood returning to the heart from the body and lungs." },
+                    { part: "Ventricle", function: "Pumps blood out of the heart to the lungs and rest of the body." },
+                    { part: "Valves", function: "Ensure that blood flows in the right direction through the heart." },
+					{ part: "Atria", function: "The two upper chambers (left and right) that receive blood coming into the heart." },
+    { part: "Ventricles", function: "The two lower chambers (left and right) that pump blood out of the heart to the lungs and the rest of the body." },
+    { part: "Left Atrium", function: "Receives oxygen-rich blood from the lungs through the pulmonary veins." },
+    { part: "Right Atrium", function: "Receives deoxygenated blood from the body through the superior and inferior vena cava." },
+    { part: "Left Ventricle", function: "Pumps oxygenated blood to the body through the aorta." },
+    { part: "Right Ventricle", function: "Pumps deoxygenated blood to the lungs through the pulmonary artery." },
+    { part: "Tricuspid Valve", function: "Prevents backflow of blood from the right ventricle into the right atrium." },
+    { part: "Bicuspid (Mitral) Valve", function: "Prevents backflow of blood from the left ventricle into the left atrium." },
+    { part: "Pulmonary Valve", function: "Prevents backflow of blood from the pulmonary artery into the right ventricle." },
+    { part: "Aortic Valve", function: "Prevents backflow of blood from the aorta into the left ventricle." },
+    { part: "Aorta", function: "The main artery that carries oxygenated blood from the left ventricle to the body." },
+    { part: "Pulmonary Artery", function: "Carries deoxygenated blood from the right ventricle to the lungs." },
+    { part: "Pulmonary Veins", function: "Carries oxygenated blood from the lungs to the left atrium." },
+    { part: "Superior Vena Cava", function: "Carries deoxygenated blood from the upper body to the right atrium." },
+    { part: "Inferior Vena Cava", function: "Carries deoxygenated blood from the lower body to the right atrium." },
+    { part: "Coronary Arteries", function: "Supply oxygenated blood to the heart muscle itself." },
+    { part: "Coronary Veins", function: "Carry deoxygenated blood from the heart muscle back to the right atrium." },
+    { part: "Septum", function: "The wall that separates the left and right sides of the heart, preventing mixing of oxygenated and deoxygenated blood." },
+    { part: "Endocardium", function: "The inner lining of the heart chambers, providing a smooth surface for blood flow." },
+    { part: "Myocardium", function: "The thick, muscular middle layer of the heart responsible for contracting and pumping blood." },
+    { part: "Epicardium", function: "The outer layer of the heart, which serves as a protective layer and contains blood vessels that supply the heart." },
+    { part: "Pericardium", function: "The membrane surrounding the heart that provides protection and reduces friction during heartbeats." },
+    { part: "Chordae Tendineae", function: "Fibrous cords that attach the valves to the heart muscles and prevent them from inverting." },
+    { part: "Papillary Muscles", function: "Muscles in the ventricles that help control the movement of the heart valves." },
+    { part: "Bundle of His", function: "A collection of heart muscle cells that transmits electrical impulses from the atria to the ventricles." },
+    { part: "Right Bundle Branch", function: "Part of the conduction system that carries electrical impulses to the right ventricle." },
+    { part: "Left Bundle Branch", function: "Part of the conduction system that carries electrical impulses to the left ventricle." },
+    { part: "Purkinje Fibers", function: "Distribute the electrical impulse to the ventricular muscle cells to ensure coordinated contraction." },
+    { part: "Sinoatrial (SA) Node", function: "The heart's natural pacemaker, initiating the electrical impulses that regulate the heart's rhythm." },
+    { part: "Atrioventricular (AV) Node", function: "Delays electrical impulses from the atria to the ventricles, ensuring the atria contract before the ventricles." },
+    { part: "Cardiac Conduction System", function: "The system that coordinates the heart's electrical impulses, ensuring proper contraction and rhythm." },
+	
+                ]
+            },
+            lungs: {
+                image: "https://cdn.pixabay.com/photo/2012/04/25/00/58/health-41508_640.png",
+                parts: [
+                    { part: "Bronchi", function: "Airways that lead from the trachea to the lungs." },
+                    { part: "Alveoli", function: "Tiny air sacs where gas exchange occurs." },
+                    { part: "Pleura", function: "Membrane that encloses the lungs and reduces friction during breathing." },
+					{ part: "Trachea", function: "The windpipe that conducts air from the upper respiratory tract to the bronchi." },
+    { part: "Bronchi", function: "The two main airways that branch off from the trachea and lead into each lung." },
+    { part: "Bronchioles", function: "Smaller airways that branch from the bronchi and distribute air to the alveoli." },
+    { part: "Alveoli", function: "Tiny air sacs where the exchange of oxygen and carbon dioxide takes place between the lungs and blood." },
+    { part: "Lobes", function: "The lungs are divided into lobes; the right lung has three lobes, while the left lung has two." },
+    { part: "Pleura", function: "The double-layered membrane surrounding the lungs, reducing friction during breathing." },
+    { part: "Diaphragm", function: "The large muscle below the lungs that contracts and relaxes to facilitate breathing by changing lung volume." },
+    { part: "Pulmonary Arteries", function: "Carry deoxygenated blood from the heart to the lungs for oxygenation." },
+    { part: "Pulmonary Veins", function: "Carry oxygenated blood from the lungs back to the heart." },
+    { part: "Respiratory Membrane", function: "The thin barrier between the alveoli and blood vessels, where gas exchange occurs." },
+    { part: "Lung Tissue", function: "The spongy, elastic tissue that forms the lungs and allows them to expand and contract." },
+    { part: "Intercostal Muscles", function: "Muscles located between the ribs that help expand and contract the chest cavity during breathing." },
+    { part: "Carina", function: "The ridge at the bottom of the trachea where it divides into the left and right bronchi." },
+    { part: "Mucociliary Escalator", function: "A mechanism in the trachea and bronchi that helps remove mucus and trapped particles from the airways." },
+    { part: "Visceral Pleura", function: "The inner layer of the pleura that covers the lungs and is in direct contact with lung tissue." },
+    { part: "Parietal Pleura", function: "The outer layer of the pleura that lines the chest wall and diaphragm." },
+    { part: "Tidal Volume", function: "The amount of air inhaled and exhaled with each breath during normal breathing." },
+    { part: "Respiratory Zone", function: "The region of the lungs, including the alveoli, where gas exchange takes place." },
+    { part: "Conducting Zone", function: "The part of the respiratory system that includes the trachea, bronchi, and bronchioles, which transport air to the respiratory zone." },
+    { part: "Lung Base", function: "The bottom portion of the lung, which rests on the diaphragm." },
+    { part: "Lung Apex", function: "The top portion of the lung, located near the collarbone." },
+    { part: "Pulmonary Capillaries", function: "Tiny blood vessels surrounding the alveoli where oxygen and carbon dioxide are exchanged." }
+                ]
+            },
+            liver: {
+                image: "https://cdn.pixabay.com/photo/2021/10/09/12/38/liver-6694043_640.png",
+                parts: [
+                    { part: "Lobes", function: "Four sections responsible for filtering blood and producing bile." },
+                    { part: "Bile Duct", function: "Carries bile from the liver to the small intestine." },
+                    { part: "Portal Vein", function: "Supplies the liver with blood rich in nutrients from the digestive organs." },
+					{ part: "Lobes", function: "The liver is divided into four lobes (left, right, caudate, and quadrate) that perform various functions like detoxification, protein synthesis, and bile production." },
+    { part: "Hepatic Artery", function: "Carries oxygenated blood from the heart to the liver to supply it with oxygen for metabolic processes." },
+    { part: "Portal Vein", function: "Carries nutrient-rich blood from the gastrointestinal tract to the liver, allowing the liver to process and detoxify substances." },
+    { part: "Hepatic Veins", function: "Drain deoxygenated blood from the liver and return it to the inferior vena cava to be circulated back to the heart." },
+    { part: "Bile Ducts", function: "Transport bile from the liver to the gallbladder for storage and to the small intestine for digestion." },
+    { part: "Hepatocytes", function: "The main functional cells of the liver that are responsible for metabolic processes, protein synthesis, and detoxification." },
+    { part: "Sinusoids", function: "Specialized capillaries in the liver that allow blood to flow through and mix with bile, facilitating the exchange of nutrients and waste products." },
+    { part: "Kupffer Cells", function: "Specialized macrophages in the liver that are responsible for breaking down red blood cells and removing pathogens from the blood." },
+    { part: "Liver Capsule", function: "A tough membrane that surrounds the liver and provides structural support and protection." },
+    { part: "Gallbladder", function: "Stores and concentrates bile produced by the liver and releases it into the small intestine to aid in digestion, particularly of fats." },
+    { part: "Central Vein", function: "A vein located at the center of each liver lobule that collects blood from the sinusoids and channels it into the hepatic veins." },
+    { part: "Liver Lobule", function: "The functional unit of the liver, consisting of hepatocytes arranged around a central vein, involved in detoxification and metabolism." },
+    { part: "Bile", function: "A digestive fluid produced by the liver that helps emulsify fats, aiding in their digestion and absorption in the small intestine." },
+    { part: "Endoplasmic Reticulum", function: "In hepatocytes, the rough and smooth ER are involved in protein synthesis, lipid metabolism, and detoxification." },
+    { part: "Glycogen", function: "Stored in the liver and released as glucose when needed to regulate blood sugar levels." },
+    { part: "Vitamin Storage", function: "The liver stores fat-soluble vitamins (A, D, E, and K) and releases them as needed to maintain body functions." },
+    { part: "Detoxification", function: "The liver breaks down toxins, drugs, and alcohol, rendering them harmless or preparing them for excretion." },
+    { part: "Plasma Protein Production", function: "The liver synthesizes vital proteins such as albumin, clotting factors, and enzymes that are essential for blood circulation and immune function." }
+     ]
+    },
+    
+    stomach: {
+        image: "https://cdn.pixabay.com/photo/2012/04/25/01/39/diagram-41638_640.png",
+        parts: [
+            { part: "Fundus", function: "Stores undigested food and gases released during digestion." },
+            { part: "Pylorus", function: "Regulates the passage of digested food into the small intestine." },
+            { part: "Gastric Wall", function: "Contains muscles and glands that secrete enzymes and acids for digestion." },
+            { part: "Body", function: "The main, central region of the stomach that is involved in the churning and digestion of food." },
+            { part: "Pyloric Sphincter", function: "A ring of muscle that controls the flow of partially digested food from the stomach to the small intestine." },
+            { part: "Cardia", function: "The region where the esophagus connects to the stomach and prevents acid reflux." },
+            { part: "Rugae", function: "The folds in the stomach lining that allow it to expand when food enters and aid in mechanical digestion." },
+            { part: "Gastric Mucosa", function: "The mucous membrane lining the stomach that protects it from the acidic environment and aids in digestion." },
+            { part: "Gastric Glands", function: "Produce gastric juices, including hydrochloric acid and digestive enzymes, to break down food." },
+            { part: "Parietal Cells", function: "Cells in the gastric glands that secrete hydrochloric acid, aiding in food digestion and killing bacteria." },
+            { part: "Chief Cells", function: "Cells in the gastric glands that produce pepsinogen, which is converted into pepsin to break down proteins." },
+            { part: "Mucous Cells", function: "Cells that secrete mucus to protect the stomach lining from the harsh acidic environment." },
+            { part: "Gastric Pit", function: "Small openings in the stomach lining that lead to the gastric glands, where digestive juices are secreted." },
+            { part: "Stomach Wall", function: "The muscular outer layer of the stomach that contracts to mix food and digestive enzymes." },
+            { part: "Greater Curvature", function: "The larger, outer curve of the stomach that provides attachment points for muscles and blood vessels." },
+            { part: "Lesser Curvature", function: "The smaller, inner curve of the stomach where the stomach is connected to the liver." },
+            { part: "Antrum", function: "The lower part of the stomach that grinds food and mixes it with digestive juices." },
+            { part: "Chyme", function: "The semi-liquid substance formed when food is mixed with gastric juices and is ready for further digestion in the small intestine." },
+            { part: "Gastric Lymphatics", function: "Lymphatic vessels that drain waste and excess fluids from the stomach tissue into the lymphatic system." }
+        ]
+    },
+
+    kidney: {
+        image: "https://cdn.pixabay.com/photo/2017/03/28/21/28/kidney-2183443_640.jpg",
+        parts: [
+            { part: "Cortex", function: "The outer layer of the kidney that contains the nephrons responsible for filtering blood." },
+            { part: "Medulla", function: "The inner part of the kidney that contains the renal pyramids and is involved in urine formation." },
+            { part: "Nephron", function: "The functional unit of the kidney responsible for filtering blood and producing urine." },
+            { part: "Renal Pelvis", function: "A funnel-shaped cavity that collects urine from the renal calyces and transports it to the ureter." },
+			{ part: "Cortex", function: "The outer layer of the kidney that contains the nephrons responsible for filtering blood." },
+    { part: "Medulla", function: "The inner part of the kidney that contains the renal pyramids and is involved in urine formation." },
+    { part: "Nephron", function: "The functional unit of the kidney responsible for filtering blood and producing urine." },
+    { part: "Renal Pelvis", function: "A funnel-shaped cavity that collects urine from the renal calyces and transports it to the ureter." },
+    { part: "Renal Pyramids", function: "Cone-shaped structures in the medulla of the kidney that help in the concentration of urine." },
+    { part: "Renal Columns", function: "Tissue between the renal pyramids that contains blood vessels and parts of nephrons." },
+    { part: "Ureter", function: "A tube that transports urine from the renal pelvis to the urinary bladder." },
+    { part: "Glomerulus", function: "A network of capillaries located at the beginning of each nephron that filters blood." },
+    { part: "Bowman's Capsule", function: "The cup-like structure that surrounds the glomerulus and collects the filtered fluid from the blood." },
+    { part: "Proximal Convoluted Tubule", function: "The part of the nephron that reabsorbs water, ions, and nutrients from the filtrate." },
+    { part: "Loop of Henle", function: "A U-shaped portion of the nephron that concentrates urine by reabsorbing water and salts." },
+    { part: "Distal Convoluted Tubule", function: "The part of the nephron that further refines the filtrate by regulating sodium, potassium, and pH levels." },
+    { part: "Collecting Duct", function: "The tube that carries urine from the nephrons to the renal pelvis, where it is collected and transported to the ureter." },
+    { part: "Arcuate Artery", function: "Arteries that run along the boundary between the renal cortex and medulla, supplying blood to the kidneys." },
+    { part: "Interlobular Arteries", function: "Arteries that branch from the arcuate arteries and supply blood to the renal cortex." },
+    { part: "Peritubular Capillaries", function: "Small blood vessels that surround the proximal and distal convoluted tubules, involved in nutrient and waste exchange." },
+    { part: "Vasa Recta", function: "A network of blood vessels that surround the loop of Henle and are involved in maintaining the kidney's concentration gradient." },
+    { part: "Renal Vein", function: "A vessel that drains deoxygenated blood from the kidney and returns it to the inferior vena cava." }
+        ]
+    },
+	
+	   eye: {
+        image: "https://cdn.pixabay.com/photo/2018/03/13/02/43/eye-3221498_640.jpg",
+        parts: [
+		{ part: "Cornea", function: "The clear, dome-shaped outer layer of the eye that helps focus light entering the eye." },
+    { part: "Pupil", function: "The circular opening in the center of the iris that controls the amount of light entering the eye." },
+    { part: "Iris", function: "The colored part of the eye that controls the size of the pupil and regulates the amount of light entering the eye." },
+    { part: "Lens", function: "A transparent, flexible structure behind the pupil that focuses light onto the retina." },
+    { part: "Retina", function: "The light-sensitive layer at the back of the eye that converts light into electrical signals sent to the brain." },
+    { part: "Optic Nerve", function: "The nerve that transmits visual information from the retina to the brain for processing." },
+    { part: "Macula", function: "The central part of the retina responsible for sharp, detailed central vision." },
+    { part: "Fovea", function: "A small depression in the retina, located in the macula, responsible for the sharpest vision." },
+    { part: "Sclera", function: "The white, outer layer of the eye that provides structure and protects the inner components." },
+    { part: "Choroid", function: "The layer of blood vessels between the retina and sclera that supplies nutrients and oxygen to the retina." },
+    { part: "Aqueous Humor", function: "A clear fluid that fills the front part of the eye, providing nutrients and maintaining intraocular pressure." },
+    { part: "Vitreous Humor", function: "The gel-like substance filling the space between the lens and retina, helping maintain the eye's shape." },
+    { part: "Ciliary Body", function: "A ring of muscle tissue that controls the shape of the lens and produces aqueous humor." },
+    { part: "Conjunctiva", function: "A thin, transparent membrane that covers the front surface of the eye and the inner surface of the eyelids, providing protection." },
+    { part: "Eyelids", function: "The movable covers that protect the eye from dust, light, and injury, and help distribute tears across the surface of the eye." },
+    { part: "Lacrimal Gland", function: "The gland that produces tears to lubricate and protect the surface of the eye." },
+    { part: "Tear Ducts", function: "Small tubes that drain tears from the eye into the nose, maintaining eye moisture." },
+    { part: "Corneal Epithelium", function: "The outermost layer of the cornea, providing a barrier against dirt, germs, and other particles." },
+    { part: "Optic Disc", function: "The region where the optic nerve enters the retina, often referred to as the 'blind spot' because it lacks photoreceptor cells." }
+ ]
+    },
+	ear: {
+        image: "https://cdn.pixabay.com/photo/2013/07/12/14/16/inner-ear-148132_640.png",
+        parts: [
+		{ part: "Outer Ear (Pinna)", function: "Collects sound waves and directs them into the ear canal." },
+{ part: "Ear Canal (External Acoustic Meatus)", function: "Transmits sound from the outer ear to the eardrum." },
+{ part: "Eardrum (Tympanic Membrane)", function: "Vibrates in response to sound waves, transmitting these vibrations to the middle ear." },
+{ part: "Ossicles (Malleus, Incus, Stapes)", function: "Tiny bones in the middle ear that amplify and transmit sound vibrations from the eardrum to the inner ear." },
+{ part: "Malleus (Hammer)", function: "Attached to the eardrum and transmits vibrations to the incus." },
+{ part: "Incus (Anvil)", function: "Receives vibrations from the malleus and passes them to the stapes." },
+{ part: "Stapes (Stirrup)", function: "Transmits vibrations from the incus to the oval window of the cochlea." },
+{ part: "Oval Window", function: "The membrane-covered opening that separates the middle ear from the inner ear, transmitting vibrations to the cochlea." },
+{ part: "Cochlea", function: "A spiral-shaped structure in the inner ear that converts sound vibrations into electrical signals that the brain can interpret as sound." },
+{ part: "Semicircular Canals", function: "Part of the vestibular system, responsible for maintaining balance and detecting rotational movements of the head." },
+{ part: "Vestibule", function: "Helps with balance by detecting linear movements and changes in head position relative to gravity." },
+{ part: "Auditory Nerve (Cochlear Nerve)", function: "Carries electrical signals from the cochlea to the brain, where they are processed as sound." },
+{ part: "Eustachian Tube", function: "Connects the middle ear to the throat and helps to equalize pressure in the middle ear." },
+{ part: "Tympanic Cavity", function: "The air-filled space in the middle ear where the ossicles are located and vibrations are transmitted to the cochlea." },
+{ part: "Round Window", function: "A membrane-covered opening that allows for pressure relief within the cochlea, aiding in the hearing process." }
+]
+ },
+     skin: {
+        image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl6JNLYEb_4xgJ8diX_OW88kSq0G_kvV9fRVZ4CVHHz_9TnZe3&s",
+        parts: [
+		{ part: "Epidermis", function: "The outermost layer of skin, providing a barrier to protect the body from the environment." },
+{ part: "Dermis", function: "The inner layer of skin, containing blood vessels, hair follicles, and connective tissue that supports and nourishes the epidermis." },
+{ part: "Hypodermis (Subcutaneous layer)", function: "The deepest layer of skin, composed of fat and connective tissue, which insulates the body and absorbs shocks." },
+{ part: "Sweat Glands", function: "Produce sweat to help regulate body temperature and eliminate waste products." },
+{ part: "Sebaceous Glands", function: "Produce sebum (oil) that lubricates and protects the skin and hair." },
+{ part: "Hair Follicles", function: "Structures that anchor hair to the skin and produce hair." },
+{ part: "Nerve Endings", function: "Detect sensations such as touch, pain, and temperature." },
+{ part: "Melanocytes", function: "Cells that produce melanin, the pigment responsible for skin color and protection against UV radiation." },
+{ part: "Arrector Pili Muscles", function: "Small muscles attached to hair follicles that cause hairs to stand up when contracted (goosebumps)." },
+{ part: "Capillaries", function: "Small blood vessels that deliver oxygen and nutrients to the skin and help regulate temperature." },
+{ part: "Stratum Corneum", function: "The outermost layer of the epidermis, made up of dead skin cells that provide a waterproof barrier." },
+{ part: "Stratum Lucidum", function: "A thin, clear layer of dead skin cells found only in areas of thick skin, such as palms and soles." },
+{ part: "Stratum Granulosum", function: "A layer where cells begin to die and form a waterproof barrier." },
+{ part: "Stratum Spinosum", function: "Contains keratinocytes that provide strength and flexibility to the skin." },
+{ part: "Stratum Basale (Stratum Germinativum)", function: "The deepest layer of the epidermis, where new skin cells are generated." },
+{ part: "Keratinocytes", function: "Cells in the epidermis that produce keratin, a protein that strengthens and waterproofs the skin." },
+{ part: "Langerhans Cells", function: "Immune cells in the skin that detect and fight pathogens." },
+{ part: "Merkel Cells", function: "Sensory cells that detect light touch and pressure." },
+{ part: "Collagen Fibers", function: "Fibers in the dermis that provide structure, strength, and elasticity to the skin." },
+{ part: "Elastin Fibers", function: "Fibers in the dermis that allow the skin to stretch and return to its original shape." },
+{ part: "Blood Vessels", function: "Supply the skin with oxygen and nutrients and help regulate temperature." },
+{ part: "Fibroblasts", function: "Cells in the dermis that produce collagen and elastin, contributing to skin's strength and elasticity." },
+{ part: "Lymphatic Vessels", function: "Transport immune cells and excess fluids away from tissues to help protect the skin from infection." },
+{ part: "Vellus Hair", function: "Fine, light hair that covers most of the body and helps with sensory perception." },
+{ part: "Terminal Hair", function: "Thicker, darker hair found on the scalp, face, and body." },
+{ part: "Papillary Dermis", function: "The upper layer of the dermis that contains capillaries and sensory receptors, providing nutrients to the epidermis." },
+{ part: "Reticular Dermis", function: "The deeper layer of the dermis that provides strength and elasticity to the skin." },
+{ part: "Pacinian Corpuscles", function: "Pressure receptors in the skin that detect deep pressure and vibration." },
+{ part: "Meissner's Corpuscles", function: "Receptors in the skin that detect light touch and texture." },
+{ part: "Ruffini Endings", function: "Receptors that detect skin stretch and joint movement." },
+{ part: "Merkel Discs", function: "Receptors in the skin that detect steady pressure and texture." },
+{ part: "Nail Bed", function: "The skin beneath the nail that supplies nutrients to the growing nail." },
+{ part: "Cuticle", function: "The thin layer of skin at the base of the nail that protects the nail matrix." },
+{ part: "Nail Matrix", function: "The tissue beneath the base of the nail responsible for nail growth." },
+{ part: "Nail Plate", function: "The hard, visible part of the nail that protects the fingertip." }
+]
+	},
+
+     otherorgans: {
+        image: "https://cdn.pixabay.com/photo/2012/04/25/01/03/digestive-41529_640.png",
+        parts: [
+{ part: "Small Intestine", function: "Absorbs nutrients from digested food." },
+{ part: "Duodenum", function: "The first section of the small intestine where most chemical digestion occurs." },
+{ part: "Jejunum", function: "The middle section of the small intestine where nutrient absorption occurs." },
+{ part: "Ileum", function: "The final section of the small intestine where remaining nutrients are absorbed." },
+{ part: "Large Intestine", function: "Absorbs water and salts from the material that has not been digested as food, forming solid waste." },
+{ part: "Cecum", function: "The beginning of the large intestine that receives undigested food from the ileum." },
+{ part: "Colon", function: "The longest part of the large intestine, responsible for absorbing water and electrolytes, and forming feces." },
+{ part: "Rectum", function: "The final section of the large intestine, storing feces until they are excreted through the anus." },
+{ part: "Pancreas", function: "Produces digestive enzymes and hormones like insulin that regulate blood sugar levels." },
+{ part: "Exocrine Pancreas", function: "Secretes digestive enzymes into the small intestine to help break down food." },
+{ part: "Endocrine Pancreas", function: "Produces hormones like insulin and glucagon that regulate blood sugar levels." },
+{ part: "Bladder", function: "Stores urine produced by the kidneys before it is excreted from the body." },
+{ part: "Ureter", function: "Tubes that carry urine from the kidneys to the bladder." },
+{ part: "Urethra", function: "The tube through which urine is expelled from the bladder to the outside of the body." },
+{ part: "Esophagus", function: "Transports food and liquids from the mouth to the stomach." },
+{ part: "Upper Esophagus", function: "The upper portion of the esophagus that connects to the throat and facilitates the movement of food." },
+{ part: "Lower Esophagus", function: "The lower portion of the esophagus that connects to the stomach and moves food into the stomach." },
+{ part: "Spleen", function: "Filters blood, removes old red blood cells, and supports the immune system." },
+{ part: "Red Pulp", function: "Contains blood vessels that filter and remove old red blood cells in the spleen." },
+{ part: "White Pulp", function: "Contains lymphatic tissue involved in immune responses and the production of white blood cells in the spleen." },
+{ part: "Gallbladder", function: "Stores and concentrates bile from the liver, releasing it into the small intestine to aid in fat digestion." },
+{ part: "Cystic Duct", function: "Carries bile from the gallbladder to the common bile duct." },
+{ part: "Common Bile Duct", function: "Transports bile from the gallbladder and liver to the small intestine." },
+{ part: "Reproductive Organs (Male)", function: "Produce sperm and facilitate reproduction." },
+{ part: "Testes", function: "Produce sperm and testosterone in males." },
+{ part: "Epididymis", function: "Stores and matures sperm after it is produced in the testes." },
+{ part: "Vas Deferens", function: "Transports mature sperm from the epididymis to the urethra." },
+{ part: "Seminal Vesicles", function: "Produce a fluid that nourishes and protects sperm." },
+{ part: "Prostate Gland", function: "Produces a fluid that nourishes sperm and helps in the expulsion of semen." },
+{ part: "Penis", function: "The organ used for sexual intercourse and excretion of urine." },
+{ part: "Reproductive Organs (Female)", function: "Produce eggs, facilitate reproduction, and support the development of offspring." },
+{ part: "Ovaries", function: "Produce eggs (ova) and hormones like estrogen and progesterone in females." },
+{ part: "Fallopian Tubes", function: "Carry eggs from the ovaries to the uterus and are the site of fertilization." },
+{ part: "Uterus", function: "Houses and nourishes the developing fetus during pregnancy." },
+{ part: "Cervix", function: "The lower part of the uterus that connects to the vagina, allowing the passage of menstrual blood and facilitating childbirth." },
+{ part: "Vagina", function: "The muscular tube that connects the uterus to the external genitalia, involved in sexual intercourse and childbirth." },
+{ part: "Bone Marrow", function: "Produces red blood cells, white blood cells, and platelets." },
+{ part: "Red Bone Marrow", function: "Produces red blood cells, white blood cells, and platelets." },
+{ part: "Yellow Bone Marrow", function: "Stores fat and can be converted to red marrow if needed for blood cell production." },
+{ part: "Thyroid Gland", function: "Produces hormones that regulate metabolism, energy, and growth." },
+{ part: "Thyroid Follicles", function: "Small sacs in the thyroid gland that produce thyroid hormones like thyroxine (T4) and triiodothyronine (T3)." },
+{ part: "Parathyroid Glands", function: "Produce parathyroid hormone, which regulates calcium levels in the blood." },
+{ part: "Pituitary Gland", function: "Produces hormones that regulate other glands and vital body functions, including growth and reproduction." },
+{ part: "Anterior Pituitary", function: "Produces hormones like growth hormone, ACTH, and TSH that regulate other endocrine glands." },
+{ part: "Posterior Pituitary", function: "Stores and releases hormones like oxytocin and vasopressin produced by the hypothalamus." },
+{ part: "Adrenal Glands", function: "Produce hormones like adrenaline and cortisol, which help the body respond to stress and regulate metabolism." },
+{ part: "Adrenal Cortex", function: "Produces steroid hormones such as cortisol, aldosterone, and sex hormones." },
+{ part: "Adrenal Medulla", function: "Produces adrenaline and noradrenaline in response to stress." },
+{ part: "Lymph Nodes", function: "Filter lymph and help in the immune response." },
+{ part: "Thymus", function: "Produces and trains T-cells, essential components of the immune system." },
+{ part: "Cortex (Thymus)", function: "Where immature T-cells mature and are educated to distinguish between self and non-self." },
+{ part: "Medulla (Thymus)", function: "Contains mature T-cells and assists in their release into the bloodstream." },
+{ part: "Liver", function: "Produces bile, detoxifies harmful substances, and processes nutrients from the digestive system." },
+{ part: "Hepatic Lobules", function: "Structural units of the liver where bile is produced and blood is filtered." },
+{ part: "Hepatic Artery", function: "Carries oxygenated blood to the liver." },
+{ part: "Portal Vein", function: "Carries nutrient-rich blood from the digestive organs to the liver." },
+{ part: "Liver Cells (Hepatocytes)", function: "Main cells responsible for producing bile, metabolizing fats, and detoxifying substances." }
+]
+
+	},
+	respiratory: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png", 
+                parts: [
+                     {"part": "Gills", "function": "Extract oxygen from water and expel carbon dioxide." },
+    { "part": "Gill Rakers", "function": "Filter debris and prevent particles from entering the gills." },
+    { "part": "Gill Filaments", "function": "Provide a large surface area for gas exchange." },
+    { "part": "Operculum", "function": "Protects the gills and aids in water flow over them." },
+    { "part": "Buccal Cavity", "function": "Helps pump water over the gills during breathing." },
+    { "part": "Lamellae", "function": "Thin structures on gill filaments that facilitate oxygen and carbon dioxide exchange." }
+                ]
+            },
+            digestive: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+                    { "part": "Mouth", "function": "Intakes food and water." },
+    { "part": "Pharynx", "function": "Passes food from the mouth to the esophagus and plays a role in respiration." },
+    { "part": "Esophagus", "function": "Transfers food from the mouth to the stomach." },
+    { "part": "Stomach", "function": "Breaks down food using digestive enzymes and acids." },
+    { "part": "Intestine", "function": "Absorbs nutrients from digested food and facilitates waste passage." },
+    { "part": "Liver", "function": "Produces bile, stores energy, and detoxifies substances in the blood." },
+    { "part": "Gallbladder", "function": "Stores bile produced by the liver for digestion of fats." },
+    { "part": "Pancreas", "function": "Secretes digestive enzymes to aid in breaking down food." },
+    { "part": "Pyloric Caeca", "function": "Aids in digestion and absorption of nutrients by secreting digestive enzymes." },
+    { "part": "Anus", "function": "Expels undigested waste from the digestive system." }
+                ]
+            },
+            circulatory: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+                    { "part": "Heart", "function": "Pumps deoxygenated blood to the gills for oxygenation." },
+    { "part": "Atrium", "function": "Receives blood from the body and pumps it into the ventricle." },
+    { "part": "Ventricle", "function": "Pumps blood to the gills for oxygenation." },
+    { "part": "Bulbus Arteriosus", "function": "Maintains steady blood flow into the gill capillaries." },
+    { "part": "Afferent Branchial Arteries", "function": "Carry deoxygenated blood from the heart to the gills." },
+    { "part": "Efferent Branchial Arteries", "function": "Carry oxygenated blood from the gills to the rest of the body." },
+    { "part": "Dorsal Aorta", "function": "Distributes oxygenated blood from the gills to various organs and tissues." },
+    { "part": "Veins", "function": "Return deoxygenated blood from the body back to the heart." },
+    { "part": "Capillaries", "function": "Facilitate the exchange of gases, nutrients, and waste between blood and tissues." },
+    { "part": "Sinus Venosus", "function": "Collects deoxygenated blood returning from the body before it enters the atrium." }
+                ]
+            },
+            nervous: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+                    { "part": "Brain", "function": "Processes sensory information and controls bodily functions and behaviors." },
+    { "part": "Olfactory Bulbs", "function": "Detect and process smells from the environment." },
+    { "part": "Optic Lobes", "function": "Process visual information." },
+    { "part": "Cerebellum", "function": "Coordinates movement and balance." },
+    { "part": "Medulla Oblongata", "function": "Controls involuntary actions like respiration and circulation." },
+    { "part": "Spinal Cord", "function": "Transmits signals between the brain and the rest of the body." },
+    { "part": "Peripheral Nerves", "function": "Carry sensory and motor signals to and from the spinal cord and brain." },
+    { "part": "Lateral Line System", "function": "Detects water vibrations and movement, aiding in navigation and predator avoidance." },
+    { "part": "Autonomic Nervous System", "function": "Regulates involuntary functions like heart rate and digestion." },
+    { "part": "Cranial Nerves", "function": "Connect the brain to sensory organs and control facial movements and functions." }
+                ]
+            },
+            skeletal: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+                    { "part": "Skull", "function": "Protects the brain and sensory organs such as eyes and olfactory bulbs." },
+    { "part": "Vertebral Column", "function": "Supports the body, protects the spinal cord, and enables movement." },
+    { "part": "Ribs", "function": "Protects internal organs like the heart and liver." },
+    { "part": "Fin Rays", "function": "Provide support and structure to the fins, aiding in locomotion and balance." },
+    { "part": "Operculum Bones", "function": "Protect the gills and assist in respiration by facilitating water movement." },
+    { "part": "Pectoral Girdle", "function": "Supports the pectoral fins and connects them to the skull." },
+    { "part": "Pelvic Girdle", "function": "Supports the pelvic fins, aiding in stability and steering." },
+    { "part": "Caudal Fin Skeleton", "function": "Provides structure to the tail fin, aiding in propulsion." },
+    { "part": "Jaw Bones", "function": "Enable feeding by allowing the fish to bite and chew." },
+    { "part": "Scales", "function": "Provide protection to the body and reduce water resistance during swimming." }
+                ]
+            },
+			integumentary: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+				{ "part": "Skin", "function": "Acts as a barrier against pathogens, aids in respiration, and provides sensory input." },
+    { "part": "Scales", "function": "Protect the fish from physical damage and reduce water resistance during swimming." },
+    { "part": "Mucous Layer", "function": "Prevents infections by acting as a physical barrier and reduces drag while swimming." },
+    { "part": "Chromatophores", "function": "Pigment cells that allow for color changes and camouflage." },
+    { "part": "Lateral Line System", "function": "Detects vibrations and movements in water, aiding in navigation and predator detection." },
+    { "part": "Dermis", "function": "Provides structural support and houses blood vessels, nerves, and chromatophores." },
+    { "part": "Epidermis", "function": "The outermost layer that contains mucous glands and protects against environmental damage." },
+    { "part": "Photophores", "function": "Light-producing organs found in some fish, used for communication, camouflage, or attracting prey." },
+    { "part": "Claspers (in male cartilaginous fish)", "function": "Modified fins used during reproduction for holding and transferring sperm to females." }
+       ]
+	   },
+	   reproductive: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+				{ "part": "Testes", "function": "Produce sperm in male fish for fertilization." },
+    { "part": "Ovaries", "function": "Produce eggs in female fish for reproduction." },
+    { "part": "Spawning Ducts", "function": "Transport gametes (sperm or eggs) to the outside environment during spawning." },
+    { "part": "Claspers", "function": "Modified pelvic fins in male cartilaginous fish used to transfer sperm to females." },
+    { "part": "Urogenital Opening", "function": "Exit point for sperm or eggs and other excretory products." },
+    { "part": "Gonopodium", "function": "A modified anal fin in some fish, such as guppies, used for internal fertilization." },
+    { "part": "Eggs", "function": "Contain the developing embryo and provide nutrients for early development." },
+    { "part": "Spermatophores", "function": "Packages of sperm produced by some fish, facilitating external or internal fertilization." },
+    { "part": "Vitelline Membrane", "function": "Encloses the egg and provides protection to the developing embryo." },
+    { "part": "Yolk Sac", "function": "Provides nutrients to the developing embryo within the egg." },
+    { "part": "Nuptial Tubercules", "function": "Small bumps that develop on males during breeding season to attract females or aid in spawning." },
+    { "part": "Gonadal Arteries and Veins", "function": "Supply blood to and from the gonads for nutrient and waste exchange." }
+        ]
+    },
+	excretory: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+				{ "part": "Kidneys", "function": "Filter blood, excrete waste products, and regulate water and salt balance in the body." },
+    { "part": "Nephrons", "function": "Basic functional units of the kidney, responsible for filtering blood and producing urine." },
+    { "part": "Urinary Bladder", "function": "Stores urine before it is excreted from the body." },
+    { "part": "Ureters", "function": "Carry urine from the kidneys to the urinary bladder for storage." },
+    { "part": "Urogenital Opening", "function": "The opening through which both urine and reproductive products are expelled from the body." },
+    { "part": "Pyloric Caeca", "function": "Aid in the absorption of nutrients and the processing of waste in some fish, particularly in teleosts." },
+    { "part": "Rectum", "function": "Stores and expels undigested food waste through the anus." },
+    { "part": "Liver (Excretory role)", "function": "Detoxifies harmful substances and contributes to metabolic waste elimination." },
+    { "part": "Gills (Excretory role)", "function": "In some species, gills help in the excretion of ammonia and regulate osmoregulation." }
+        ]
+	},
+	immune: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+				{ "part": "Thymus", "function": "Produces T cells that are essential for adaptive immune responses." },
+            { "part": "Spleen", "function": "Filters blood, stores immune cells, and removes old or damaged blood cells." },
+            { "part": "Kidney (Anterior)", "function": "A major lymphoid organ involved in the production of immune cells like lymphocytes and macrophages." },
+            { "part": "Kidney (Posterior)", "function": "Filters blood and contributes to immune responses, particularly during infections." },
+            { "part": "Mucosal Surfaces", "function": "Act as physical and immune barriers against pathogens entering through the skin, gills, and digestive tract." },
+            { "part": "Gills", "function": "Contain immune cells that help prevent pathogen entry and regulate inflammatory responses." },
+            { "part": "Lymphoid Tissue (Gut-Associated)", "function": "Protects against pathogens in the digestive system and generates immune responses." },
+            { "part": "Leukocytes", "function": "Includes various white blood cells (e.g., macrophages, lymphocytes) that detect and eliminate pathogens." },
+            { "part": "Antibodies", "function": "Produced by B cells, they recognize and neutralize specific pathogens." },
+            { "part": "Cytokines", "function": "Signaling proteins that mediate and regulate immunity and inflammation." },
+            { "part": "Complement System", "function": "A group of proteins that enhance immune responses by promoting inflammation and pathogen destruction." },
+            { "part": "Melanomacrophage Centers", "function": "Aggregates of immune cells found in organs like the liver and kidney, involved in phagocytosis and waste processing." }
+                ]
+		    },
+			electric: {
+                image: "https://cdn.pixabay.com/photo/2023/04/30/17/31/fish-7961064_640.png",
+                parts: [
+				{ "part": "Electric Organs", "function": "Generate electrical fields for navigation, communication, or stunning prey (e.g., in electric eels and rays)." },
+            { "part": "Electrocytes", "function": "Specialized cells in electric organs that store and release electric charge to create electric fields." },
+            { "part": "Ampullae of Lorenzini", "function": "Electroreceptors that detect electric fields in water, aiding in prey detection and navigation (found in sharks and rays)." },
+            { "part": "Lateral Line System", "function": "A series of mechanoreceptors along the body that sense water movements and vibrations, aiding in navigation and detecting predators or prey." },
+            { "part": "Otoliths", "function": "Calcium carbonate structures in the inner ear that help fish sense balance and orientation." },
+            { "part": "Neuromasts", "function": "Sensory organs in the lateral line that detect changes in water pressure and movement." },
+            { "part": "Rostrum (in Paddlefish)", "function": "A sensory structure rich in electroreceptors for detecting plankton in murky water." },
+            { "part": "Eye Adaptations", "function": "Specialized retinas in some fish enhance vision in low-light environments or detect UV/infrared light." },
+            { "part": "Chemoreceptors", "function": "Sensory cells in the nose and mouth that detect chemicals in the water for taste and smell." },
+            { "part": "Weberian Apparatus (in Ostariophysian fish)", "function": "A series of bones that transmit sound vibrations from the swim bladder to the inner ear, enhancing hearing." }
+                ]
+		    },
+};
+        
+                
+
+        function displayOrgan() {
+            const organSelect = document.getElementById("organ-select");
+            const selectedOrgan = organSelect.value;
+
+            if (selectedOrgan && organData[selectedOrgan]) {
+                // Display organ image
+                document.getElementById("organ-image").src = organData[selectedOrgan].image;
+                document.getElementById("organ-image-container").style.display = "block";
+
+                // Prepare parts dropdown
+                const partsDropdown = document.getElementById("part-select");
+                partsDropdown.innerHTML = '<option value="" selected disabled>Select a part</option>';
+
+                const parts = organData[selectedOrgan].parts;
+                for (const partObj of parts) {
+                    const option = document.createElement("option");
+                    option.value = partObj.part.toLowerCase();
+                    option.textContent = partObj.part;
+                    partsDropdown.appendChild(option);
+                }
+            }
+        }
+
+        function displayParts() {
+            // Show parts dropdown
+            document.getElementById("parts-dropdown-container").style.display = "block";
+            document.getElementById("info-box").style.display = "none";
+        }
+
+        function displayPartFunction() {
+            const organSelect = document.getElementById("organ-select");
+            const selectedOrgan = organSelect.value;
+            const partSelect = document.getElementById("part-select");
+            const selectedPart = partSelect.value;
+
+            if (selectedOrgan && selectedPart) {
+                const partObj = organData[selectedOrgan].parts.find(part => part.part.toLowerCase() === selectedPart);
+                if (partObj) {
+                    const infoText = partObj.function;
+                    document.getElementById("info-text").textContent = infoText;
+                    document.getElementById("info-box").style.display = "block";
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

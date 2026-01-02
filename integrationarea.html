@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definite Integral Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        input, button { width: 80%; padding: 10px; font-size: 18px; margin: 10px; }
+        button { cursor: pointer; }
+        #steps { font-size: 18px; text-align: left; display: inline-block; margin-top: 20px; max-width: 600px; }
+    </style>
+</head>
+<body>
+
+    <h1>📐 Definite Integral & Area</h1>
+
+    <p>Enter a polynomial function and integration limits:</p>
+    <input type="text" id="function" placeholder="e.g., 3x^2 - 4x + 5"><br>
+    <label>Lower Limit (a):</label> <input type="number" id="lowerLimit"><br>
+    <label>Upper Limit (b):</label> <input type="number" id="upperLimit"><br>
+    <button onclick="calculateDefiniteIntegral()">Calculate Area</button>
+
+    <h2 id="finalResult"></h2>
+    <div id="steps"></div>
+
+    <script>
+        
+
+		
+		function parsePolynomial(polynomial) {
+    let terms = polynomial.match(/([+-]?\s*\d*\.?\d*\/?\d*x?\^?\d*|[+-]?\s*\d+\/?\d+)/g);
+    let parsedTerms = [];
+
+    if (terms) {
+        terms.forEach(term => {
+            term = term.replace(/\s+/g, ''); // Remove spaces
+
+            let fractionMatch = term.match(/^([+-]?\d+)\/(\d+)(x?\^?\d*)$/);
+            let normalMatch = term.match(/^([+-]?)(x)(\^?\d*)$/); // Detect -x^3
+            let generalMatch = term.match(/^([+-]?\d*\.?\d*)x?\^?(\d*)$/);
+            let constantMatch = term.match(/^([+-]?\d+\.?\d*)$/); // Standalone numbers
+
+            let coefficient, exponent;
+
+            if (fractionMatch) {
+                // Convert fraction to decimal
+                coefficient = parseFloat(fractionMatch[1]) / parseFloat(fractionMatch[2]);
+                exponent = fractionMatch[3].includes('^') ? parseInt(fractionMatch[3].slice(1)) : 1;
+            } else if (normalMatch) {
+                // Handle cases like "-x^3" (implicitly -1)
+                coefficient = normalMatch[1] === "-" ? -1 : 1;
+                exponent = normalMatch[3] ? parseInt(normalMatch[3].slice(1)) : 1;
+            } else if (generalMatch) {
+                coefficient = generalMatch[1] ? parseFloat(generalMatch[1]) : (term.includes('x') ? 1 : 0);
+                exponent = generalMatch[2] ? parseInt(generalMatch[2]) : (term.includes('x') ? 1 : 0);
+            } else if (constantMatch) {
+                coefficient = parseFloat(constantMatch[1]);
+                exponent = 0; // Constants have exponent 0
+            } else {
+                return;
+            }
+
+            parsedTerms.push({ coefficient, exponent });
+        });
+    }
+    return parsedTerms;
+		
+        }
+
+        function integrateFunction(func) {
+            let terms = parsePolynomial(func);
+            let integratedTerms = [];
+            let steps = "<b>Step-by-Step Integration:</b><br>";
+
+            terms.forEach(term => {
+                let newExp = term.exponent + 1;
+                let newCoeff = term.coefficient / newExp;
+                let formattedTerm = formatTerm(newCoeff, newExp);
+                integratedTerms.push(formattedTerm);
+                steps += `∫(${formatTerm(term.coefficient, term.exponent)})dx = (${term.coefficient} / ${newExp})x^(${newExp}) = ${formattedTerm}<br>`;
+            });
+
+            let finalIntegral = integratedTerms.join(" + ").replace(/\+\s*-/g, "- ");
+            return { integralExpression: finalIntegral, steps };
+        }
+
+       function evaluateIntegral(func, x) {
+    let terms = parsePolynomial(func);
+    let result = 0;
+
+    terms.forEach(term => {
+        let newExp = term.exponent + 1;
+        let newCoeff = term.coefficient / newExp;
+        result += newCoeff * Math.pow(x, newExp);
+    });
+
+    return parseFloat(result.toFixed(6));  // Ensure precision
+        }
+
+        function formatTerm(coefficient, exponent) {
+            coefficient = coefficient % 1 === 0 ? coefficient : coefficient.toFixed(4);
+            if (coefficient == 0) return "";
+            let coeffStr = (coefficient == 1 && exponent != 0) ? "" : 
+                           (coefficient == -1 && exponent != 0) ? "-" : coefficient;
+            let exponentStr = exponent == 0 ? "" : exponent == 1 ? "x" : `x^${exponent}`;
+            return `${coeffStr}${exponentStr}`;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        function calculateDefiniteIntegral() {
+    let func = document.getElementById("function").value.trim();
+    let a = parseFloat(document.getElementById("lowerLimit").value);
+    let b = parseFloat(document.getElementById("upperLimit").value);
+
+    if (isNaN(a) || isNaN(b)) {
+        alert("Please enter valid numerical limits.");
+        return;
+    }
+
+    let { integralExpression, steps: integrationSteps } = integrateFunction(func);
+    let terms = parsePolynomial(func);
+
+    let F_b = 0, F_a = 0;
+    let substitutionSteps = "<br><b>Step-by-Step Substitution:</b><br>";
+
+    terms.forEach(term => {
+        let newExp = term.exponent + 1;
+        let newCoeff = term.coefficient / newExp;
+
+        let F_b_term = newCoeff * Math.pow(b, newExp);
+        let F_a_term = newCoeff * Math.pow(a, newExp);
+
+        F_b += F_b_term;
+        F_a += F_a_term;
+
+        let termExpression = `${formatTerm(newCoeff, newExp)}`;
+        substitutionSteps += `(${termExpression}) | F(${b}) = ${F_b_term.toFixed(4)}, F(${a}) = ${F_a_term.toFixed(4)}<br>`;
+    });
+
+    let finalArea = F_b - F_a;
+    substitutionSteps += `<br><b>Final Calculation:</b><br>`;
+    substitutionSteps += `F(${b}) - F(${a}) = ${F_b.toFixed(4)} - ${F_a.toFixed(4)} = <b>${finalArea.toFixed(4)}</b>`;
+
+    document.getElementById("steps").innerHTML = integrationSteps + substitutionSteps;
+    document.getElementById("finalResult").innerHTML = `<b>Calculated Area: ${finalArea.toFixed(4)}</b>`;
+        }
+    </script>
+</body>
+</html>
+

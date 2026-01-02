@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Units Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+        }
+
+        .converter {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .converter select, .converter input {
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .result, .explanation {
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            border-radius: 5px;
+        }
+
+        .explanation {
+            background-color: #2196F3;
+        }
+
+        @media (orientation: landscape) {
+            .converter {
+                width: 70%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Comprehensive Units Converter</h1>
+
+    <div class="converter">
+        <select id="unitFrom"></select>
+        <select id="unitTo"></select>
+        <input type="number" id="value" placeholder="Enter value" />
+        <button onclick="convert()">Convert</button>
+
+        <div class="result" id="result">Result will appear here</div>
+        <div class="explanation" id="explanation">Explanation will appear here</div>
+    </div>
+	 <!-- Educational Cartoons Section -->
+    <div class="cartoon-container">
+        <!-- Cartoon 1 -->
+        <img src="https://publicdomainvectors.org/tn_img/bts4.webp" alt="Educational Cartoon 1">
+        <!-- Cartoon 2 -->
+    <img src="https://as2.ftcdn.net/jpg/04/57/28/49/220_F_457284919_Wawn9EsuWFKQxPtXCRggogm04P2kCHAt.jpg" alt="Educational Cartoon 1">
+        <!-- Cartoon 3 -->
+         <img src="https://publicdomainvectors.org/tn_img/books-and-mouse.webp" alt="Educational Cartoon 3">
+    </div>
+
+    <script>
+
+		
+        // Comprehensive unit data
+        const units = {
+            "Length": {
+                meter: 1,
+                kilometer: 0.001,
+                centimeter: 100,
+                millimeter: 1000,
+            },
+            "Mass": {
+                kilogram: 1,
+                gram: 1000,
+                milligram: 1e6,
+            },
+            "Volume": {
+                liter: 1,
+                milliliter: 1000,
+                "cubic meter": 0.001,
+            },
+            "Temperature": {
+                celsius: "temp",
+                fahrenheit: "temp",
+                kelvin: "temp",
+            },
+            "Molarity": {
+                "moles per liter": 1,
+                "millimoles per liter": 1000,
+            },
+        };
+
+        // Populate the dropdowns with all units
+        function populateUnits() {
+            const unitFrom = document.getElementById("unitFrom");
+            const unitTo = document.getElementById("unitTo");
+
+            unitFrom.innerHTML = "";
+            unitTo.innerHTML = "";
+
+            Object.keys(units).forEach((type) => {
+                const optGroup = document.createElement("optgroup");
+                optGroup.label = type;
+
+                Object.keys(units[type]).forEach((unit) => {
+                    const option = document.createElement("option");
+                    option.value = unit;
+                    option.textContent = unit;
+
+                    optGroup.appendChild(option);
+                });
+
+                unitFrom.appendChild(optGroup.cloneNode(true));
+                unitTo.appendChild(optGroup);
+            });
+        }
+
+        // Convert values
+        function convert() {
+            const fromUnit = document.getElementById("unitFrom").value;
+            const toUnit = document.getElementById("unitTo").value;
+            const value = parseFloat(document.getElementById("value").value);
+            const resultBox = document.getElementById("result");
+            const explanationBox = document.getElementById("explanation");
+
+            if (isNaN(value)) {
+                resultBox.textContent = "Please enter a valid number.";
+                explanationBox.textContent = "";
+                return;
+            }
+
+            let result, explanation;
+
+            // Handle special km to cm and cm to km conversions
+            if (fromUnit === "kilometer" && toUnit === "centimeter") {
+                result = value * 100000;
+                explanation = "To convert from kilometers to centimeters, multiply by 100,000.";
+            } else if (fromUnit === "centimeter" && toUnit === "kilometer") {
+                result = value / 100000;
+                explanation = "To convert from centimeters to kilometers, divide by 100,000.";
+            }
+            // Handle temperature separately
+            else if (units["Temperature"]?.[fromUnit] === "temp") {
+                result = convertTemperature(fromUnit, toUnit, value);
+                explanation = temperatureExplanation(fromUnit, toUnit);
+            } else {
+                const conversionFactorFrom = getConversionFactor(fromUnit);
+                const conversionFactorTo = getConversionFactor(toUnit);
+
+                if (conversionFactorFrom === undefined || conversionFactorTo === undefined) {
+                    resultBox.textContent = "Conversion not possible.";
+                    explanationBox.textContent = "";
+                    return;
+                }
+
+                const conversionFactor = conversionFactorTo / conversionFactorFrom;
+
+                if (conversionFactor >= 1) {
+                    result = value * conversionFactor;
+                    explanation = `To convert from ${fromUnit} to ${toUnit}, multiply by ${conversionFactor}`;
+                } else {
+                    result = value / (1 / conversionFactor);
+                    explanation = `To convert from ${fromUnit} to ${toUnit}, divide by ${1 / conversionFactor}`;
+                }
+            }
+
+            resultBox.textContent = `${value} ${fromUnit} = ${result} ${toUnit}`;
+            explanationBox.textContent = explanation;
+        }
+
+        // Helper: Get conversion factor
+        function getConversionFactor(unit) {
+            for (let type in units) {
+                if (units[type][unit] !== undefined) {
+                    return units[type][unit];
+                }
+            }
+        }
+
+        // Helper: Convert temperature
+        function convertTemperature(from, to, value) {
+            if (from === to) return value;
+
+            if (from === "celsius") {
+                if (to === "fahrenheit") return (value * 9) / 5 + 32;
+                if (to === "kelvin") return value + 273;
+            } else if (from === "fahrenheit") {
+                if (to === "celsius") return ((value - 32) * 5) / 9;
+                if (to === "kelvin") return ((value - 32) * 5) / 9 + 273;
+            } else if (from === "kelvin") {
+                if (to === "celsius") return value - 273;
+                if (to === "fahrenheit") return ((value - 273) * 9) / 5 + 32;
+            }
+        }
+
+        // Helper: Explanation for temperature conversions
+        function temperatureExplanation(from, to) {
+            if (from === "celsius" && to === "kelvin") return "To convert from Celsius to Kelvin, add 273.";
+            if (from === "kelvin" && to === "celsius") return "To convert from Kelvin to Celsius, subtract 273.";
+            if (from === "celsius" && to === "fahrenheit") return "To convert from Celsius to Fahrenheit, multiply by 9/5 and add 32.";
+            if (from === "fahrenheit" && to === "celsius") return "To convert from Fahrenheit to Celsius, subtract 32 and multiply by 5/9.";
+            if (from === "kelvin" && to === "fahrenheit") return "To convert from Kelvin to Fahrenheit, subtract 273, multiply by 9/5, and add 32.";
+            if (from === "fahrenheit" && to === "kelvin") return "To convert from Fahrenheit to Kelvin, subtract 32, multiply by 5/9, and add 273.";
+        }
+
+        // Initialize on load
+        populateUnits();
+    </script>
+
+</body>
+</html>
+

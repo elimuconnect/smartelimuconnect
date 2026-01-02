@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Relative Atomic Mass (RAM) Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 30px;
+      background: #f0f4f8;
+      color: #333;
+    }
+
+    h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    input, select {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    #results {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+
+    .isotope-row {
+      margin-bottom: 10px;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+
+    .section-title {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Relative Atomic Mass (RAM) Calculator</h2>
+
+  <div>
+    <div class="section-title">Input Isotope Data (up to 4 isotopes)</div>
+    <div id="isotopeInputs"></div>
+    <button onclick="addIsotope()">+ Add Isotope</button>
+    <button onclick="removeIsotope()">- Remove Isotope</button>
+  </div>
+
+  <br>
+  <div>
+    <label class="label">Calculate:</label>
+    <select id="mode">
+      <option value="ram">Relative Atomic Mass (RAM)</option>
+      <option value="abundance">Abundances (given RAM)</option>
+      <option value="masses">Masses (given RAM)</option>
+    </select>
+  </div>
+
+  <div id="ramInputDiv" style="display:none;">
+    <label class="label">Enter RAM:</label>
+    <input type="number" id="inputRAM" step="any">
+  </div>
+
+  <button onclick="calculate()">Calculate</button>
+
+  <div id="results"></div>
+
+  <script>
+
+
+
+    
+    let isotopeCount = 2;
+
+    function createInputs() {
+      const container = document.getElementById('isotopeInputs');
+      container.innerHTML = '';
+      for (let i = 0; i < isotopeCount; i++) {
+        container.innerHTML += `
+          <div class="isotope-row">
+            <label class="label">Mass ${i + 1}:</label>
+            <input type="number" id="mass${i}" step="any" placeholder="e.g., 35">
+            <label class="label">Abundance ${i + 1} (%):</label>
+            <input type="number" id="abundance${i}" step="any" placeholder="e.g., 75">
+          </div>
+        `;
+      }
+    }
+
+    function addIsotope() {
+      if (isotopeCount < 4) {
+        isotopeCount++;
+        createInputs();
+      }
+    }
+
+    function removeIsotope() {
+      if (isotopeCount > 2) {
+        isotopeCount--;
+        createInputs();
+      }
+    }
+
+    function clean(num) {
+      return parseFloat(num.toFixed(3)).toString();
+    }
+
+    function calculate() {
+      const mode = document.getElementById('mode').value;
+      const results = document.getElementById('results');
+      results.innerHTML = '';
+      let masses = [], abundances = [];
+
+      for (let i = 0; i < isotopeCount; i++) {
+        const mass = parseFloat(document.getElementById(`mass${i}`).value);
+        const abundance = parseFloat(document.getElementById(`abundance${i}`).value);
+        masses.push(isNaN(mass) ? null : mass);
+        abundances.push(isNaN(abundance) ? null : abundance);
+      }
+
+      if (mode === 'ram') {
+        let total = 0;
+        let sumPercent = 0;
+        for (let i = 0; i < isotopeCount; i++) {
+          if (masses[i] == null || abundances[i] == null) {
+            alert("Please fill in all masses and abundances.");
+            return;
+          }
+          total += masses[i] * abundances[i];
+          sumPercent += abundances[i];
+        }
+        if (sumPercent !== 100) {
+          alert("Total abundance must be 100%");
+          return;
+        }
+        const ram = total / 100;
+        results.innerHTML = `<b>Step 1:</b> Multiply each mass by its abundance.<br>`;
+        for (let i = 0; i < isotopeCount; i++) {
+          results.innerHTML += `${masses[i]} × ${abundances[i]} = ${clean(masses[i] * abundances[i])}<br>`;
+        }
+        results.innerHTML += `<br><b>Step 2:</b> Add the results and divide by 100.<br>`;
+        results.innerHTML += `RAM = ${clean(total)} ÷ 100 = <strong>${clean(ram)}</strong>`;
+      }
+
+      else if (mode === 'abundance') {
+        const inputRAM = parseFloat(document.getElementById("inputRAM").value);
+        if (isNaN(inputRAM)) {
+          alert("Enter the RAM.");
+          return;
+        }
+        if (isotopeCount !== 2) {
+          alert("Abundance calculation is currently supported for 2 isotopes only.");
+          return;
+        }
+        if (masses[0] == null || masses[1] == null) {
+          alert("Enter both isotope masses.");
+          return;
+        }
+        const x = ((inputRAM - masses[1]) / (masses[0] - masses[1])) * 100;
+        const y = 100 - x;
+        results.innerHTML = `
+          Let abundance of ${masses[0]} = x%, ${masses[1]} = 100 - x%<br>
+          ${masses[0]}×x + ${masses[1]}×(100 - x) = ${inputRAM} × 100<br><br>
+          Solving: x = <strong>${clean(x)}%</strong>, y = <strong>${clean(y)}%</strong>
+        `;
+      }
+
+      else if (mode === 'masses') {
+        const inputRAM = parseFloat(document.getElementById("inputRAM").value);
+        if (isNaN(inputRAM)) {
+          alert("Enter the RAM.");
+          return;
+        }
+        if (isotopeCount !== 2) {
+          alert("Mass calculation is currently supported for 2 isotopes only.");
+          return;
+        }
+        if (abundances[0] == null || abundances[1] == null) {
+          alert("Enter both abundances.");
+          return;
+        }
+        const a = abundances[0] / 100;
+        const b = abundances[1] / 100;
+        const m1 = masses[0];
+        if (m1 == null) {
+          const m2 = (inputRAM - a * masses[1]) / b;
+          results.innerHTML = `Mass of isotope 1 unknown<br>
+            Using: RAM = a×m1 + b×m2<br>
+            Solved mass = <strong>${clean(m2)}</strong>`;
+        } else if (masses[1] == null) {
+          const m2 = (inputRAM - a * m1) / b;
+          results.innerHTML = `Mass of isotope 2 unknown<br>
+            RAM = a×m1 + b×m2<br>
+            Solved mass = <strong>${clean(m2)}</strong>`;
+        } else {
+          alert("Enter only one unknown mass.");
+        }
+      }
+    }
+
+    document.getElementById("mode").addEventListener("change", function () {
+      const mode = this.value;
+      document.getElementById("ramInputDiv").style.display = (mode === 'abundance' || mode === 'masses') ? 'block' : 'none';
+    });
+
+    createInputs();
+  </script>
+
+</body>
+</html>
+
+

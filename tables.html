@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Operations Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        input, button { margin: 5px; padding: 10px; font-size: 16px; }
+        table { width: 50%; margin: 20px auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 10px; }
+        #steps { margin-top: 20px; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto; }
+    </style>
+</head>
+<body>
+
+    <h1>Math Tables Tool</h1>
+    <input type="number" id="numberInput" placeholder="Enter a number">
+    <button onclick="calculate('square')">Square</button>
+    <button onclick="calculate('sqrt')">Square Root</button>
+    <button onclick="calculate('cube')">Cube</button>
+    <button onclick="calculate('cbrt')">Cube Root</button>
+    <button onclick="calculate('reciprocal')">Reciprocal</button>
+    <button onclick="calculate('log')">Logarithm</button>
+    <button onclick="calculate('antilog')">Antilogarithm</button>
+
+    <h2>Results:</h2>
+    <table>
+        <tr>
+            <th>Operation</th>
+            <th>Result</th>
+        </tr>
+        <tbody id="resultTable"></tbody>
+    </table>
+
+    <h2>Step-by-Step Explanation:</h2>
+    <div id="steps"></div>
+
+    <h2>Explore Values:</h2>
+    <input type="range" id="slider" min="1" max="100" value="1" oninput="updateSlider()">
+    <span id="sliderValue">1</span>
+
+    <script>
+
+        function calculate(operation) {
+            let num = parseFloat(document.getElementById("numberInput").value);
+            if (isNaN(num)) {
+                alert("Please enter a valid number.");
+                return;
+            }
+
+            let result, explanation;
+switch (operation) {
+    case 'square':
+    result = num * num;  // Calculate the square (num × num)
+    explanation = `${num} × ${num} = ${result}<br><br><strong>How to use the Square Table:</strong><br>For example, to find the square of 2.463, follow these steps:<br><ul><li>Locate the first two digits of the number in the table. In this case, look for "2.4" in the first column.</li><li>Move to the right along the row for 2.4 to the main column marked 6. The intersection value at this point is 6.052.</li><li>Move further to the right along the "difference" (or "add") section marked 3. The fractional part is 15.</li><li>Write the fractional part as 0.015 and add it to 6.052 to get the final result: 6.052 + 0.015 = 6.067.</li></ul>`;
+    break;
+
+
+    case 'sqrt':
+    result = Math.sqrt(num).toFixed(4);  // Calculate the square root and round to 4 decimal places
+    explanation = `√ ${num}  = ${result}<br><br><strong>How to use the Square Root Table:</strong><br>For example, to find the square root of 54.23, follow these steps:<br><ul><li>Locate the first two digits of the number in the table. In this case, look for "54" in the first column.</li><li>Move to the right along the row for 54 to the main column marked 2. The intersection value at this point is 7.362.</li><li>Move further to the right along the "difference" (or "add") section. The mean difference is 20.</li><li>Write the fractional part as 0.0020 and add it to 7.362 to get the final result: 7.362 + 0.0020 = 7.364.</li></ul>`;
+    break;
+
+
+    case 'cube':
+        result = num * num * num;
+        explanation = `${num} × ${num} × ${num} = ${result}<br><br><strong>How to use the Cube Table:</strong><br>For example, to find the cube of 4.865, follow these steps:<br><ul><li>Look for the first two digits of the number from the table. In this case, look for "4.8" in the first column.</li><li>Move to the right along the row for 4.8 to the main column marked 6 (which represents the integer part). The intersection value at this point is 114.79.</li><li>Move further to the right along the difference (or "add" section) marked 5. The value here represents the fractional part, which is 35.</li><li>Write the fractional part as 0.35 and add it to 114.79 to get the final result: 114.79 + 0.35 = 115.14.</li></ul>`;
+        break;
+
+    case 'cbrt':
+    result = Math.cbrt(num).toFixed(3); // Calculate the cube root of the number and round it to 3 decimal places
+    explanation = `${num} ^(1/3) = ${result}<br><br><strong>How to use the Cube Root Table:</strong><br>For example, to find the cube root of 11.559, follow these steps:<br><ul><li>Look for the closest number in the main column of the table, or the number just below it. In this case, the closest number is 11.543, found at the intersection of row 2.2 and the main column headed 6.</li><li>Calculate the difference: 11.559 - 11.543 = 0.016.</li><li>Ignore the decimal and focus on the integer part, which is 16. Find the closest number lower than 16 in the "difference" or "add" section. In this case, it's 15.</li><li>Find the value for 15 in the "difference" section, which is located at the intersection of row 2.2 and the difference column headed 1.</li><li>Finally, add the value at the intersection of row 2.2 and the main column (2.2) and the value found in the "difference" section (0.061). This gives the final result for the cube root.</li><li>The final cube root of 11.559 is approximately 2.261.</li></ul>`;
+    break;
+
+                case 'reciprocal':
+    if (num === 0) {
+        result = "Undefined";
+        explanation = "Reciprocal of 0 is undefined.";
+    } else {
+        result = (1 / num).toFixed(4); // Calculate the reciprocal (1 / num)
+        explanation = `reciprocal ${num}  = ${result}<br><br><strong>How to use the Reciprocal Table:</strong><br>For example, to find the reciprocal of 1.752, follow these steps:<br><ul><li>Locate the first two digits of the number in the table. In this case, look for "1.7" in the first column.</li><li>Move to the right along the row for 1.7 to the main column marked 5. The intersection value at this point is 0.5714.</li><li>Move further to the right along the "difference" (or "add") section marked 2. The fractional part is 7.</li><li>Write the fractional part as 0.0007 and add it to 0.5714 to get the final result: 0.5714 + 0.0007 = 0.5707.</li></ul>`;
+    }
+    break;
+
+                case 'log':
+    if (num <= 0) {
+        result = "Undefined";
+        explanation = "Logarithm is not defined for non-positive numbers.";
+    } else {
+        result = Math.log10(num).toFixed(4); // Calculate logarithm base 10 of the number
+        explanation = `log  ${num} = ${result}<br><br><strong>How to use the Logarithm Table:</strong><br>For example, to find the logarithm of 2.456, follow these steps:<br><ul><li>Locate the first two digits of the number in the table. In this case, look for "2.4" in the first column.</li><li>Move to the right along the row for 2.4 to the main column marked 5. The intersection value at this point is 0.3892.</li><li>Move further to the right along the difference (or "add") section marked 6. The value here represents the fractional part, which is 11.</li><li>Write the fractional part as 0.0011 and add it to 0.3892 to get the final result: 0.3892 + 0.0011 = 0.3903.</li></ul>`;
+    }
+    break;
+
+               case 'antilog':
+    if (num <= 0) {
+        result = "Undefined";
+        explanation = "Antilogarithm is not defined for non-positive numbers.";
+    } else {
+        result = Math.pow(10, num).toFixed(4); // Calculate the antilogarithm (10^num)
+        explanation = `antilog  ${num} = ${result}<br><br><strong>How to use the Antilogarithm Table:</strong><br>For example, to find the antilogarithm of 0.1568, follow these steps:<br><ul><li>Locate the first two digits of the number in the table. In this case, look for "0.15" in the first column.</li><li>Move to the right along the row for 0.15 to the main column marked 6. The intersection value at this point is 1.432.</li><li>Move further to the right along the "difference" (or "add") section marked 8. The fractional part is 3.</li><li>Write 3 as 0.003 and add it to 1.432 to get the final result: 1.432 + 0.003 = 1.435.</li></ul>`;
+    }
+    break;
+                default:
+                    return;
+            }
+
+            updateTable(operation, result);
+            document.getElementById("steps").innerHTML = explanation;
+        }
+
+        function updateTable(operation, result) {
+            let table = document.getElementById("resultTable");
+            let row = document.createElement("tr");
+            row.innerHTML = `<td>${operation.charAt(0).toUpperCase() + operation.slice(1)}</td><td>${result}</td>`;
+            table.appendChild(row);
+        }
+
+        function updateSlider() {
+            let slider = document.getElementById("slider");
+            document.getElementById("sliderValue").innerText = slider.value;
+            document.getElementById("numberInput").value = slider.value;
+        }
+    </script>
+
+</body>
+</html>
+

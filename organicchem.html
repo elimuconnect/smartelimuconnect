@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organic Chemistry Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 10px;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        header h1 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        section div {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 15px;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+        }
+
+        footer p {
+            color: #888;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .property {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .content {
+            margin-top: 10px;
+        }
+
+        /* Media query for smaller screens */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.5em;
+            }
+
+            section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            section div {
+                width: 100%;
+                max-width: 90%;
+            }
+
+            button {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Organic Chemistry Tool</h1>
+        <p>Help with IUPAC naming, functional group identification, and isomer generation for hydrocarbons.</p>
+    </header>
+
+    <section>
+        <div>
+            <h2>Select a Compound Type</h2>
+            <select id="compoundType" onchange="showCompounds()">
+                <option value="">Select...</option>
+                <option value="alkanes">Alkanes</option>
+                <option value="alkenes">Alkenes</option>
+                <option value="alkynes">Alkynes</option>
+                <option value="alkanols">Alkanols</option>
+                <option value="alkanoicAcids">Alkanoic Acids</option>
+                <option value="esters">Esters</option>
+            </select>
+        </div>
+
+        <div id="compoundList">
+            <h2>Select a Compound</h2>
+            <select id="compoundSelect" onchange="showCompoundInfo()">
+                <option value="">Select a compound...</option>
+            </select>
+        </div>
+
+        <div id="results">
+            <h3>Results</h3>
+            <p id="iupacResult"></p>
+            <p id="functionalResult"></p>
+            <p id="molecularFormulaResult"></p>
+            <p id="structuralFormulaResult"></p>
+            <p id="propertiesResult"></p>
+            <p id="isomerResult"></p>
+        </div>
+    </section>
+
+    <footer>
+        <p>Organic Chemistry Tool © 2025</p>
+    </footer>
+
+    <script>
+
+		
+        // Data for hydrocarbons
+        const hydrocarbons = {
+            alkanes: [
+                {  "name": "Methane",
+        "formula": "CH4",
+        "structural": "CH₄",
+        "properties": "Colorless, odorless gas, flammable, low boiling point.",
+        "isomers": "No isomers",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Ethane",
+        "formula": "C2H6",
+        "structural": "CH₃-CH₃",
+        "properties": "Colorless, odorless gas, flammable, low boiling point.",
+        "isomers": "No isomers",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Propane",
+        "formula": "C3H8",
+        "structural": "CH₃-CH₂-CH₃",
+        "properties": "Colorless, odorless gas, used as fuel, flammable.",
+        "isomers": "No isomers",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Butane",
+        "formula": "C4H10",
+        "structural": "CH₃-CH₂-CH₂-CH₃",
+        "properties": "Colorless, odorless gas, flammable, used in lighters.",
+        "isomers": "2-Methylpropane",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Pentane",
+        "formula": "C5H12",
+        "structural": "CH₃-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used as solvent.",
+        "isomers": "2-Methylbutane, 3-Methylbutane",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Hexane",
+        "formula": "C6H14",
+        "structural": "CH₃-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used as solvent.",
+        "isomers": "2-Methylpentane, 3-Methylpentane, 2,3-Dimethylpentane, 2,2-Dimethylpentane",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Heptane",
+        "formula": "C7H16",
+        "structural": "CH₃-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in fuel.",
+        "isomers": "2-Methylhexane, 3-Methylhexane, 2,2-Dimethylhexane, 3-Ethylpentane",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Octane",
+        "formula": "C8H18",
+        "structural": "CH₃-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in fuel.",
+        "isomers": "2,2,3-Trimethylpentane",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Nonane",
+        "formula": "C9H20",
+        "structural": "CH₃-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in fuel.",
+        "isomers": "2,3-Dimethylheptane, 3-Ethylhexane, 2,4-Dimethylhexane",
+        "functionalGroup": "None"
+    },
+    {
+        "name": "Decane",
+        "formula": "C10H22",
+        "structural": "CH₃-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in fuel.",
+        "isomers": "2,2,3,3-Tetramethylbutane, 2,3,4-Trimethylpentane",
+        "functionalGroup": "None"}
+            ],
+            alkenes: [
+                { "name": "Ethene",
+        "formula": "C2H4",
+        "structural": "CH₂=CH₂",
+        "properties": "Colorless gas, flammable, used in the production of polyethylene and as a plant hormone.",
+        "isomers": "No isomers",
+        "functionalGroup": "Double bond (C=C)"
+    },
+    {
+        "name": "Propene",
+        "formula": "C3H6",
+        "structural": "CH₂=CH-CH₃",
+        "properties": "Colorless gas, flammable, used in the production of polypropylene and other chemicals.",
+        "isomers": "No isomers",
+        "functionalGroup": "Double bond (C=C)"
+    },
+    {
+        "name": "But-1-ene",
+        "formula": "C4H8",
+        "structural": "CH₂=CH-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of synthetic rubbers and plastics.",
+        "isomers": "But-2-ene, 2-Methylpropene",
+        "functionalGroup": "Double bond (C=C)" },
+                {  "name": "Pent-1-ene",
+        "formula": "C5H10",
+        "structural": "CH₂=CH-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of synthetic rubbers and plastics.",
+        "isomers": "Pent-2-ene, 2-Methylbut-1-ene, 3-Methylbut-1-ene",
+        "functionalGroup": "Double bond (C=C)"},
+                {  "name": "Hex-1-ene",
+        "formula": "C6H12",
+        "structural": "CH₂=CH-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of synthetic rubbers and plastics.",
+        "isomers": "Hex-2-ene, 2-Methylpent-1-ene, 3-Methylpent-1-ene, 2,3-Dimethylbut-1-ene",
+        "functionalGroup": "Double bond (C=C)"},
+		{"name": "Hept-1-ene",
+        "formula": "C7H14",
+        "structural": "CH₂=CH-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in fuel and chemical synthesis.",
+        "isomers": "Hept-2-ene, 2-Methylhex-1-ene, 3-Methylhex-1-ene, 2,3-Dimethylpent-1-ene",
+        "functionalGroup": "Double bond (C=C)"},
+		{
+        "name": "Oct-1-ene",
+        "formula": "C8H16",
+        "structural": "CH₂=CH-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of synthetic rubbers and plastics.",
+        "isomers": "Oct-2-ene, 2-Methylhept-1-ene, 3-Methylhept-1-ene, 2,3-Dimethylhex-1-ene",
+        "functionalGroup": "Double bond (C=C)"
+    },
+	{
+        "name": "Non-1-ene",
+        "formula": "C9H18",
+        "structural": "CH₂=CH-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of synthetic rubbers and plastics.",
+        "isomers": "Non-2-ene, 2-Methyloct-1-ene, 3-Methyloct-1-ene, 2,3-Dimethylhept-1-ene",
+        "functionalGroup": "Double bond (C=C)"
+    },
+	{
+        "name": "Dec-1-ene",
+        "formula": "C10H20",
+        "structural": "CH₂=CH-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of synthetic rubbers and plastics.",
+        "isomers": "Dec-2-ene, 2-Methylnon-1-ene, 3-Methylnon-1-ene, 2,3-Dimethyloct-1-ene",
+        "functionalGroup": "Double bond (C=C)"
+    },
+            ],
+			alkynes: [
+    {  
+        "name": "Ethyne",
+        "formula": "C2H2",
+        "structural": "C≡C",
+        "properties": "Colorless gas, highly flammable, used as a fuel and in the production of chemicals.",
+        "isomers": ["No isomers"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Propyne",
+        "formula": "C3H4",
+        "structural": "CH≡C-CH₃",
+        "properties": "Colorless gas, highly flammable, used in welding and cutting metals.",
+        "isomers": ["No isomers"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Butyne",
+        "formula": "C4H6",
+        "structural": "CH≡C-CH₂-CH₃",
+        "properties": "Colorless gas, flammable, used as a fuel and in chemical syntheses.",
+        "isomers": ["But-1-yne", "But-2-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Pentyne",
+        "formula": "C5H8",
+        "structural": "CH≡C-CH₂-CH₂-CH₃",
+        "properties": "Colorless gas, flammable, used in chemical industries.",
+        "isomers": ["Pent-1-yne", "Pent-2-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Hexyne",
+        "formula": "C6H10",
+        "structural": "CH≡C-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in organic synthesis and chemical production.",
+        "isomers": ["Hex-1-yne", "Hex-2-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Heptyne",
+        "formula": "C7H12",
+        "structural": "CH≡C-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of chemicals and organic compounds.",
+        "isomers": ["Hept-1-yne", "Hept-2-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Octyne",
+        "formula": "C8H14",
+        "structural": "CH≡C-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of chemicals and organic compounds.",
+        "isomers": ["Oct-1-yne", "Oct-2-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Nonyne",
+        "formula": "C9H16",
+        "structural": "CH≡C-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in the production of chemicals and organic compounds.",
+        "isomers": ["Non-1-yne", "Non-2-yne", "2-Methyloct-1-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+    {
+        "name": "Decyne",
+        "formula": "C10H18",
+        "structural": "CH≡C-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₂-CH₃",
+        "properties": "Colorless liquid, flammable, used in organic syntheses.",
+        "isomers": ["Dec-1-yne", "Dec-2-yne", "2-Methylnon-1-yne"],
+        "functionalGroup": "Triple bond (C≡C)"
+    },
+],
+alkanols: [
+    {
+        "name": "Methanol",
+        "formula": "CH3OH",
+        "structural": "CH₃OH",
+        "properties": "Colorless liquid, flammable, used as a solvent and in fuel.",
+        "isomers": ["Methanol (no isomers for single carbon alcohol)"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Ethanol",
+        "formula": "C2H5OH",
+        "structural": "CH₃CH₂OH",
+        "properties": "Colorless liquid, flammable, used in alcoholic beverages and as a solvent.",
+        "isomers": ["Ethanol (no positional or chain isomers)"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Propanol",
+        "formula": "C3H7OH",
+        "structural": "CH₃CH₂CH₂OH (Propan-1-ol), CH₃CHOHCH₃ (Propan-2-ol)",
+        "properties": "Colorless liquid, flammable, used as a solvent and in disinfectants.",
+        "isomers": ["Propan-1-ol", "Propan-2-ol"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Butanol",
+        "formula": "C4H9OH",
+        "structural": "CH₃CH₂CH₂CH₂OH (Butan-1-ol), CH₃CH₂CHOHCH₃ (Butan-2-ol), (CH₃)₂CHCH₂OH (Isobutanol), (CH₃)₃COH (Tert-butanol)",
+        "properties": "Colorless liquid, flammable, used as a solvent and in the production of plastics.",
+        "isomers": ["Butan-1-ol", "Butan-2-ol", "Isobutanol", "Tert-butanol"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Pentanol",
+        "formula": "C5H11OH",
+        "structural": "CH₃CH₂CH₂CH₂CH₂OH (Pentan-1-ol), CH₃CH₂CH₂CHOHCH₃ (Pentan-2-ol), CH₃CH₂CHOHCH₂CH₃ (Pentan-3-ol), (CH₃)₂CHCH₂CH₂OH (Isopentanol), (CH₃)₂CHCHOHCH₃ (Neopentanol)",
+        "properties": "Colorless liquid, flammable, used as a solvent and in the production of pharmaceuticals.",
+        "isomers": ["Pentan-1-ol", "Pentan-2-ol", "Pentan-3-ol", "Isopentanol", "Neopentanol"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Hexanol",
+        "formula": "C6H13OH",
+        "structural": "CH₃CH₂CH₂CH₂CH₂CH₂OH (Hexan-1-ol), Other positional isomers of -OH group",
+        "properties": "Colorless liquid, flammable, used as a solvent and in manufacturing processes.",
+        "isomers": ["Hexan-1-ol", "Hexan-2-ol", "Hexan-3-ol", "Other chain isomers"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Heptanol",
+        "formula": "C7H15OH",
+        "structural": "CH₃CH₂CH₂CH₂CH₂CH₂CH₂OH (Heptan-1-ol), Other positional isomers of -OH group",
+        "properties": "Colorless liquid, flammable, used as a solvent in the production of paints and coatings.",
+        "isomers": ["Heptan-1-ol", "Heptan-2-ol", "Heptan-3-ol", "Other chain isomers"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Octanol",
+        "formula": "C8H17OH",
+        "structural": "CH₃CH₂CH₂CH₂CH₂CH₂CH₂CH₂OH (Octan-1-ol), Other positional isomers of -OH group",
+        "properties": "Colorless liquid, flammable, used in the production of perfumes and in chemical synthesis.",
+        "isomers": ["Octan-1-ol", "Octan-2-ol", "Octan-3-ol", "Other chain isomers"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Nonanol",
+        "formula": "C9H19OH",
+        "structural": "CH₃CH₂CH₂CH₂CH₂CH₂CH₂CH₂CH₂OH (Nonan-1-ol), Other positional isomers of -OH group",
+        "properties": "Colorless liquid, flammable, used in manufacturing and in perfumes.",
+        "isomers": ["Nonan-1-ol", "Nonan-2-ol", "Nonan-3-ol", "Other chain isomers"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+    {
+        "name": "Decanol",
+        "formula": "C10H21OH",
+        "structural": "CH₃CH₂CH₂CH₂CH₂CH₂CH₂CH₂CH₂CH₂OH (Decan-1-ol), Other positional isomers of -OH group",
+        "properties": "Colorless liquid, flammable, used in the manufacture of detergents and in perfumes.",
+        "isomers": ["Decan-1-ol", "Decan-2-ol", "Decan-3-ol", "Other chain isomers"],
+        "functionalGroup": "Hydroxyl group (-OH)"
+    },
+],
+alkanoicAcids: [
+     {
+        "name": "Formic acid",
+        "formula": "CH2O2",
+        "structural": "HCOOH",
+        "properties": "Colorless liquid, pungent odor, used in leather production and as a preservative.",
+        "isomers": ["Formic acid (no structural isomers)"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Acetic acid",
+        "formula": "C2H4O2",
+        "structural": "CH3COOH",
+        "properties": "Colorless liquid, pungent smell, used in the production of vinegar and as a solvent.",
+        "isomers": ["Acetic acid (no structural isomers)"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Propanoic acid",
+        "formula": "C3H6O2",
+        "structural": "CH3CH2COOH",
+        "properties": "Colorless liquid, pungent odor, used as a preservative and in manufacturing chemicals.",
+        "isomers": ["Propanoic acid", "Methylacetic acid"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Butanoic acid",
+        "formula": "C4H8O2",
+        "structural": "CH3CH2CH2COOH",
+        "properties": "Colorless liquid, strong odor, used in the manufacture of esters and in animal feed.",
+        "isomers": ["Butanoic acid", "Isobutyric acid"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Pentanoic acid",
+        "formula": "C5H10O2",
+        "structural": "CH3CH2CH2CH2COOH",
+        "properties": "Colorless liquid, unpleasant odor, used in the manufacture of synthetic resins and plastics.",
+        "isomers": ["Pentanoic acid", "2-Methylbutanoic acid", "3-Methylbutanoic acid"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Hexanoic acid",
+        "formula": "C6H12O2",
+        "structural": "CH3CH2CH2CH2CH2COOH",
+        "properties": "Colorless liquid, strong odor, used in the production of lubricants and in food flavoring.",
+        "isomers": ["Hexanoic acid", "2-Methylpentanoic acid", "3-Methylpentanoic acid", "Other chain isomers"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Heptanoic acid",
+        "formula": "C7H14O2",
+        "structural": "CH3CH2CH2CH2CH2CH2COOH",
+        "properties": "Colorless liquid, strong odor, used in food flavoring and as an industrial lubricant.",
+        "isomers": ["Heptanoic acid", "2-Methylhexanoic acid", "3-Methylhexanoic acid", "Other chain isomers"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Octanoic acid",
+        "formula": "C8H16O2",
+        "structural": "CH3CH2CH2CH2CH2CH2CH2COOH",
+        "properties": "Colorless liquid, strong odor, used in the food industry and as a precursor for other chemicals.",
+        "isomers": ["Octanoic acid", "Other positional and chain isomers"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Nonanoic acid",
+        "formula": "C9H18O2",
+        "structural": "CH3CH2CH2CH2CH2CH2CH2CH2COOH",
+        "properties": "Colorless liquid, unpleasant odor, used in cosmetics and as a lubricant.",
+        "isomers": ["Nonanoic acid", "Other positional and chain isomers"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+    {
+        "name": "Decanoic acid",
+        "formula": "C10H20O2",
+        "structural": "CH3CH2CH2CH2CH2CH2CH2CH2CH2COOH",
+        "properties": "Colorless liquid, strong odor, used in the production of esters and in perfumes.",
+        "isomers": ["Decanoic acid", "Other positional and chain isomers"],
+        "functionalGroup": "Carboxyl group (-COOH)"
+    },
+
+],
+
+esters: [
+     {
+        "name": "Methyl methanoate",
+        "formula": "CH2O2",
+        "structural": "HCOOCH3",
+        "properties": "Colorless liquid, fruity odor, used as a solvent and in the manufacture of fragrances.",
+        "isomers": ["Formic acid (HCOOH)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Ethyl methanoate",
+        "formula": "C3H6O2",
+        "structural": "HCOOC2H5",
+        "properties": "Colorless liquid, pleasant odor, used as a flavoring agent and solvent.",
+        "isomers": ["Methyl ethanoate (CH3COOCH3)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Methyl ethanoate",
+        "formula": "C3H6O2",
+        "structural": "CH3COOCH3",
+        "properties": "Colorless liquid, sweet odor, used as a solvent in paints and coatings.",
+        "isomers": ["Ethyl methanoate (HCOOC2H5)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Ethyl ethanoate",
+        "formula": "C4H8O2",
+        "structural": "CH3COOC2H5",
+        "properties": "Colorless liquid, fruity odor, used as a solvent in nail polish remover and as a flavoring agent.",
+        "isomers": ["Butanoic acid (CH3CH2CH2COOH)", "Methyl propanoate (CH3CH2COOCH3)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Propyl ethanoate",
+        "formula": "C5H10O2",
+        "structural": "CH3COOC3H7",
+        "properties": "Colorless liquid, fruity odor, used as a solvent in paints, coatings, and cosmetics.",
+        "isomers": ["Pentanoic acid (CH3CH2CH2CH2COOH)", "Methyl butanoate (CH3CH2CH2COOCH3)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Butyl ethanoate",
+        "formula": "C6H12O2",
+        "structural": "CH3COOC4H9",
+        "properties": "Colorless liquid, fruity odor, used in the production of lacquers, paints, and adhesives.",
+        "isomers": ["Hexanoic acid (CH3CH2CH2CH2CH2COOH)", "Ethyl butanoate (CH3CH2CH2COOC2H5)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Pentyl acetate",
+        "formula": "C8H16O2",
+        "structural": "CH3COOC5H11",
+        "properties": "Colorless liquid, fruity odor, used in the manufacture of perfumes and as a solvent in coatings.",
+        "isomers": ["Octanoic acid (CH3CH2CH2CH2CH2CH2CH2COOH)", "Other chain isomers"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Heptyl ethanoate",
+        "formula": "C10H20O2",
+        "structural": "CH3COOC7H15",
+        "properties": "Colorless liquid, fruity odor, used in the production of fragrances and as a solvent in varnishes.",
+        "isomers": ["Decanoic acid (CH3CH2CH2CH2CH2CH2CH2CH2CH2COOH)", "Other chain isomers"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Methyl butanoate",
+        "formula": "C5H10O2",
+        "structural": "CH3CH2CH2COOCH3",
+        "properties": "Colorless liquid, pineapple odor, used in the food industry as a flavoring agent.",
+        "isomers": ["Propyl ethanoate (CH3COOC3H7)", "Pentanoic acid (CH3CH2CH2CH2COOH)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+    {
+        "name": "Ethyl butanoate",
+        "formula": "C6H12O2",
+        "structural": "CH3CH2CH2COOC2H5",
+        "properties": "Colorless liquid, pineapple odor, used as a flavoring agent in the food industry.",
+        "isomers": ["Butyl ethanoate (CH3COOC4H9)", "Hexanoic acid (CH3CH2CH2CH2CH2COOH)"],
+        "functionalGroup": "Ester group (-COO-)"
+    },
+],
+
+        };
+
+        // Update the compound select options based on type
+        function showCompounds() {
+            const compoundType = document.getElementById("compoundType").value;
+            const compoundSelect = document.getElementById("compoundSelect");
+            compoundSelect.innerHTML = "<option value=''>Select a compound...</option>"; // Reset
+
+            if (compoundType) {
+                const compounds = hydrocarbons[compoundType];
+                compounds.forEach(compound => {
+                    const option = document.createElement("option");
+                    option.value = compound.name;
+                    option.textContent = compound.name;
+                    compoundSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Display information for the selected compound
+        function showCompoundInfo() {
+            const compoundType = document.getElementById("compoundType").value;
+            const compoundName = document.getElementById("compoundSelect").value;
+            const compounds = hydrocarbons[compoundType];
+
+            const compound = compounds.find(c => c.name === compoundName);
+
+            if (compound) {
+                document.getElementById("iupacResult").textContent = `IUPAC Name: ${compound.name}`;
+                document.getElementById("functionalResult").textContent = `Functional Group: ${compound.functionalGroup}`;
+                document.getElementById("molecularFormulaResult").textContent = `Molecular Formula: ${compound.formula}`;
+                document.getElementById("structuralFormulaResult").textContent = `Structural Formula: ${compound.structural}`;
+                document.getElementById("propertiesResult").textContent = `Properties: ${compound.properties}`;
+                document.getElementById("isomerResult").textContent = `Isomers: ${compound.isomers}`;
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry of Common Gases</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            color: #444;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 1.1em;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary ul {
+            padding-left: 20px;
+            list-style: square;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Chemistry of Common Gases</h1>
+
+    <label for="gasSelect">Select a Gas:</label>
+    <select id="gasSelect" onchange="showSummary()">
+        <option value="">Select a Gas</option>
+        <!-- Options -->
+        <option value="O2">Oxygen (O₂)</option>
+        <option value="H2">Hydrogen (H₂)</option>
+        <option value="CO">Carbon(II)Oxide (CO)</option>
+        <option value="CO2">Carbon(IV)Oxide (CO₂)</option>
+		<option value="CH4">Methane (CH₄)</option>
+        <option value="C2H6">Ethane (C₂H₆)</option>	
+        <option value="C2H4">Ethene (C₂H₄)</option>
+        <option value="C2H2">Ethyne (C₂H₂)</option>
+        <option value="N2">Nitrogen (N₂)</option>
+        <option value="NO">Nitrogen(II) Oxide (NO)</option>
+        <option value="N2O">Nitrogen (I)Oxide (N₂O)</option>
+        <option value="NO2">Nitrogen(IV)Oxide (NO₂)</option>
+		<option value="NH3">Ammonia (NH₃)</option>
+        <option value="SO2">Sulphur(IV)Oxide(SO₂)</option>
+        <option value="SO3">Sulphur(VI)oxide (SO₃)</option>
+        <option value="H2S">Hydrogen Sulfide (H₂S)</option>
+        <option value="Cl2">Chlorine (Cl₂)</option>
+        <option value="HCl">Hydrogen Chloride (HCl)</option>
+    </select>
+
+    <div id="gasSummary" class="summary">
+        <p>Please select a gas from the list above.</p>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Chemistry of Gases. All rights reserved.</p>
+    </footer>
+
+    <script>
+
+
+
+
+		
+        const gasData = {
+            O2: {
+        name: "Oxygen (O₂)",
+        description: "Oxygen is a colorless, odorless, and tasteless gas essential for respiration in living organisms. It is the most abundant element in the Earth's crust and is necessary for combustion processes.",
+        reactions: [
+            { equation: "2H₂ + O₂ → 2H₂O", description: "Oxygen reacts with hydrogen to form water." },
+            { equation: "C + O₂ → CO₂", description: "Oxygen reacts with carbon to form carbon dioxide." },
+            { equation: "4Fe + 3O₂ → 2Fe₂O₃", description: "Oxygen reacts with iron to form iron(III) oxide (rust)." }
+        ]
+    },
+    H2: {
+         name: "Hydrogen (H₂)",
+        description: "Hydrogen is the lightest element and is highly flammable. It is a colorless, odorless gas and is used in fuel cells and various industrial processes, such as in the production of ammonia.",
+        reactions: [
+            { equation: "2H₂ + O₂ → 2H₂O", description: "Hydrogen reacts with oxygen to form water." },
+            { equation: "H₂ + Cl₂ → 2HCl", description: "Hydrogen reacts with chlorine to form hydrogen chloride." },
+            { equation: "H₂ + C₃H₆ → C₃H₈", description: "Hydrogen reacts with propene to form propane." }
+        ]
+    },
+    CO: {
+        name: "Carbon(II)Oxide (CO)",
+        description: "Carbon(II)Oxide is a colorless, odorless, and toxic gas produced by incomplete combustion. It binds with hemoglobin in the blood, preventing oxygen transport, which can be fatal.",
+        reactions: [
+            { equation: "2CO + O₂ → 2CO₂", description: "Carbon(II)Oxide reacts with oxygen to form carbon dioxide." },
+            { equation: "CO + Cl₂ → COCl₂", description: "Carbon(II)Oxide reacts with chlorine to form phosgene (COCl₂), a toxic gas." },
+            { equation: "CO + CuO → Cu + CO₂", description: "Carbon(II)Oxide reacts with copper(II) oxide to form copper and carbon dioxide." }
+        ]
+    },
+    CO2: {
+        name: "Carbon(IV)Oxide (CO₂)",
+        description: "Carbon(IV)Oxide is a colorless, odorless gas that is naturally present in Earth's atmosphere. It is produced by respiration and combustion and is used by plants in photosynthesis.",
+        reactions: [
+            { equation: "CO₂ + H₂O → H₂CO₃", description: "Carbon(IV)Oxide reacts with water to form carbonic acid." },
+            { equation: "6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂", description: "In photosynthesis, Carbon(IV)Oxide reacts with water to produce glucose and oxygen." },
+            { equation: "CO₂ + CaO → CaCO₃", description: "Carbon(IV)Oxide reacts with calcium oxide to form calcium carbonate." }
+        ]
+		},
+		CH4: {
+    "name": "Methane (CH₄)",
+    "description": "Methane is a colorless, odorless gas and is the primary component of natural gas. It is widely used as a fuel and is also a potent greenhouse gas.",
+    "reactions": [
+        { 
+            "equation": "CH₄ + Cl₂ → CH₃Cl + HCl", 
+            "description": "Methane reacts with chlorine to form methyl chloride and hydrogen chloride." 
+        },
+        { 
+            "equation": "CH₄ + NH₃ → CH₃NH₂ + H₂", 
+            "description": "Methane reacts with ammonia to form methylamine and hydrogen." 
+        },
+        { 
+            "equation": "CH₄ + H₂O → CO + 3H₂", 
+            "description": "Methane reacts with steam to form carbon monoxide and hydrogen in a steam reforming reaction." 
+        }
+    ]
+    },
+    C2H6: {
+        name: "Ethane (C₂H₆)",
+        description: "Ethane is a colorless, odorless gas and a component of natural gas. It is used in the production of ethylene, which is a precursor to many chemicals, including plastics.",
+        reactions: [
+            { equation: "2C₂H₆ + 7O₂ → 4CO₂ + 6H₂O", description: "Ethane reacts with oxygen to form carbon dioxide and water." },
+            { equation: "C₂H₆ + Cl₂ → C₂H₅Cl + HCl", description: "Ethane reacts with chlorine to form chloroethane." },
+            { equation: "C₂H₆ + HBr → C₂H₅Br + H₂", description: "Ethane reacts with hydrogen bromide to form bromoethane and hydrogen." }
+        ]
+    },
+    C2H4: {
+        name: "Ethene (C₂H₄)",
+        description: "Ethene, also known as ethylene, is a colorless, odorless gas and an important building block in the chemical industry, especially in the production of plastics and other chemicals.",
+        reactions: [
+            { equation: "C₂H₄ + 3O₂ → 2CO₂ + 2H₂O", description: "Ethene reacts with oxygen to form carbon dioxide and water." },
+            { equation: "C₂H₄ + H₂ → C₂H₆", description: "Ethene reacts with hydrogen to form ethane." },
+            { equation: "C₂H₄ + HCl → C₂H₅Cl", description: "Ethene reacts with hydrochloric acid to form chloroethane." }
+        ]
+    },
+    C2H2: {
+        name: "Ethyne (C₂H₂)",
+        description: "Ethyne, or acetylene, is a flammable gas used as a fuel and in chemical synthesis. It has a distinct odor and is used in welding and the production of various chemicals.",
+        reactions: [
+            { equation: "2C₂H₂ + 5O₂ → 4CO₂ + 2H₂O", description: "Ethyne reacts with oxygen to form carbon dioxide and water." },
+            { equation: "C₂H₂ + H₂ → C₂H₆", description: "Ethyne reacts with hydrogen to form ethane." },
+            { equation: "C₂H₂ + Cl₂ → C₂H₂Cl₂", description: "Ethyne reacts with chlorine to form 1,2-dichloroethene." }
+        ]
+    },
+    N2: {
+         name: "Nitrogen (N₂)",
+        description: "Nitrogen is an inert, colorless, odorless gas that makes up 78% of Earth's atmosphere. It is essential in the production of ammonia for fertilizers and in the preservation of food.",
+        reactions: [
+            { equation: "N₂ + 3H₂ → 2NH₃", description: "Nitrogen reacts with hydrogen to form ammonia (Haber process)." },
+            { equation: "N₂ + O₂ → 2NO", description: "Nitrogen reacts with oxygen to form nitric oxide." },
+            { equation: "N₂ + 3Mg → Mg₃N₂", description: "Nitrogen reacts with magnesium to form magnesium nitride." }
+        ]
+    },
+    NO: {
+         name: "Nitrogen(II)Oxide (NO)",
+    description: 'Nitrogen(II)Oxide is a colorless, odorless gas that plays a role in various biological processes. It is produced during combustion and is a precursor to pollutants like nitrogen dioxide.',
+    reactions: [
+        { equation: '2NO + O₂ → 2NO₂', description: 'Nitrogen(II)Oxide reacts with oxygen to form nitrogen dioxide.' },
+        { equation: 'NO + O₃ → NO₂ + O₂', description: 'Nitrogen(II)Oxide reacts with ozone to form nitrogen dioxide and oxygen.' },
+        { equation: 'NO + CO → N₂ + CO₂', description: 'Nitrogen(II)Oxide reacts with carbon monoxide to form nitrogen and carbon dioxide.' }
+    ]
+    },
+    N2O: {
+       name: "Nitrogen(I)Oxide (N₂O)",
+    description: "Nitrogen(I)Oxide is a colorless, odorless gas used as an anesthetic and in the production of foam products. It is also a greenhouse gas and contributes to ozone depletion.",
+    reactions: [
+        { equation: "2N₂O → 2N₂ + O₂", description: "Nitrogen(I)Oxide decomposes at high temperatures to produce nitrogen gas and oxygen." },
+        { equation: "N₂O + 2H₂ → 2NH₃", description: "Nitrogen(I)Oxide reacts with hydrogen to produce ammonia." },
+        { equation: "N₂O + 2Mg → 2MgO + N₂", description: "Nitrogen(I)Oxide reacts with magnesium to form magnesium oxide and nitrogen gas." }
+    ]
+    },
+    NO2: {
+        "name": "Nitrogen(IV)Oxide (NO₂)",
+    "description": "Nitrogen(IV)Oxide  is a reddish-brown gas that is a key air pollutant. It is produced by combustion processes and contributes to the formation of smog and acid rain.",
+    "reactions": [
+        { "equation": "NO₂ + CO → NO + CO₂", "description": "Nitrogen(IV)Oxide  reacts with carbon monoxide to form nitric oxide and carbon dioxide." },
+        { "equation": "NO₂ + H₂O → HNO₃ + HNO₂", "description": "Nitrogen(IV)Oxide  reacts with water to form nitric acid and nitrous acid." },
+        { "equation": "NO₂ + 4NH₃ → N₂ + 6H₂O", "description": " Nitrogen(IV)Oxide reacts with ammonia to produce nitrogen gas and water." }
+    ]
+    },
+	
+	NH3: {
+    "name": "Ammonia (NH₃)",
+    "description": "Ammonia is a colorless gas with a pungent odor. It is used in fertilizers, cleaning products, and as a precursor to many chemicals. It is an important compound in the nitrogen cycle.",
+    "reactions": [
+        { "equation": "4NH₃ + 3O₂ → 2N₂ + 6H₂O", "description": "Ammonia reacts with oxygen to form nitrogen and water (at high temperatures)." },
+        { "equation": "2NH₃ + 3O₂ → 2NO + 3H₂O", "description": "Ammonia reacts with oxygen to form nitrogen(II)oxide and water." },
+        { "equation": "NH₃ + HCl → NH₄Cl", "description": "Ammonia reacts with hydrochloric acid to form ammonium chloride." }
+    ]
+},
+    SO2: {
+        "name": "Sulphur(IV)Oxide (SO₂)",
+    "description": "Sulphur(IV)Oxide is a colorless gas with a pungent odor. It is produced by the burning of fossil fuels and is a major contributor to acid rain.",
+    "reactions": [
+        { "equation": "2SO₂ + O₂ → 2SO₃", "description": "Sulphur(IV)Oxide reacts with oxygen to form sulfur trioxide." },
+        { "equation": "SO₂ + H₂O → H₂SO₃", "description": "Sulphur(IV)Oxide reacts with water to form sulfurous acid." },
+        { "equation": "SO₂ + NH₃ → NH₄HSO₃", "description": "Sulphur(IV)Oxide reacts with ammonia to form ammonium bisulfite." }
+    ]
+    },
+    SO3: {
+        "name": "Sulphur(VI)Oxide (SO₃)",
+    "description": " Sulphur(VI)Oxide is a colorless gas that is highly reactive. It is used in the production of sulfuric acid, an important industrial chemical.",
+    "reactions": [
+        { "equation": "SO₃ + H₂O → H₂SO₄", "description": "Sulphur(VI)Oxide  reacts with water to form sulfuric acid." },
+        { "equation": "SO₃ + 2NaOH → Na₂SO₄ + H₂O", "description": "Sulphur(VI)Oxide  reacts with sodium hydroxide to form sodium sulfate and water." },
+        { "equation": "SO₃ + NH₃ → NH₄SO₃", "description": " Sulphur(VI)Oxide reacts with ammonia to form ammonium bisulfate." }
+    ]
+    },
+    H2S: {
+        name: "Hydrogen Sulfide (H₂S)",
+        description: "Hydrogen sulfide is a colorless, flammable gas with a distinct rotten egg smell. It is produced by the decomposition of organic matter and is toxic at high concentrations.",
+        reactions: [
+            { equation: "H₂S + O₂ → H₂O + SO₂", description: "Hydrogen sulfide reacts with oxygen to form water and sulfur dioxide." },
+            { equation: "H₂S + Cl₂ → 2HCl + S", description: "Hydrogen sulfide reacts with chlorine to form hydrochloric acid and sulfur." },
+            { equation: "H₂S + 2NaOH → Na₂S + 2H₂O", description: "Hydrogen sulfide reacts with sodium hydroxide to form sodium sulfide and water." }
+        ]
+    },
+    Cl2: {
+        name: "Chlorine (Cl₂)",
+        description: "Chlorine is a yellow-green gas with a strong odor. It is used in water purification, the production of disinfectants, and various industrial processes.",
+        reactions: [
+            { equation: "Cl₂ + H₂O → HCl + HOCl", description: "Chlorine reacts with water to form hydrochloric acid and hypochlorous acid." },
+            { equation: "Cl₂ + Na₂SO₃ → 2NaCl + SO₂", description: "Chlorine reacts with sodium sulfite to form sodium chloride and sulfur dioxide." },
+            { equation: "Cl₂ + H₂S → 2HCl + S", description: "Chlorine reacts with hydrogen sulfide to form hydrochloric acid and sulfur." }
+        ]
+    },
+    HCl: {
+        name: "Hydrogen Chloride (HCl)",
+        description: "Hydrogen chloride is a colorless gas with a sharp, pungent odor. When dissolved in water, it forms hydrochloric acid, which is widely used in chemical synthesis and industrial processes.",
+        reactions: [
+            { equation: "HCl + NaOH → NaCl + H₂O", description: "Hydrogen chloride reacts with sodium hydroxide to form sodium chloride and water." },
+            { equation: "HCl + NH₃ → NH₄Cl", description: "Hydrogen chloride reacts with ammonia to form ammonium chloride." },
+            { equation: "HCl + Na₂CO₃ → 2NaCl + CO₂ + H₂O", description: "Hydrogen chloride reacts with sodium carbonate to form sodium chloride, carbon dioxide, and water." }
+        ]
+    },
+	};
+        
+
+        function showSummary() {
+            const gasSelect = document.getElementById("gasSelect");
+            const gasSummary = document.getElementById("gasSummary");
+            const selectedGas = gasSelect.value;
+
+            if (selectedGas && gasData[selectedGas]) {
+                const { name, description, reactions } = gasData[selectedGas];
+                gasSummary.innerHTML = `
+                    <h2>${name}</h2>
+                    <p><strong>Description:</strong> ${description}</p>
+                    <h3>Key Reactions:</h3>
+                    <ul>
+                        ${reactions.map(r => `<li><strong>Reaction:</strong> ${r.equation}<br><strong>Description:</strong> ${r.description}</li>`).join("")}
+                    </ul>
+                `;
+            } else {
+                gasSummary.innerHTML = `<p>Please select a gas from the list above.</p>`;
+            }
+        }
+    </script>
+
+</body>
+</html>
+

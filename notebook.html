@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Digital Notebook</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            margin-top: 20px;
+            text-align: center;
+        }
+        #editor {
+            width: 100%;
+            height: 300px;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            resize: none;
+            background-color: #fff;
+            direction: ltr; /* Ensures the text is left to right */
+        }
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .toolbar button, .toolbar input {
+            padding: 8px 12px;
+            margin: 5px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .toolbar input[type="color"] {
+            padding: 3px;
+            width: 40px;
+            height: 40px;
+            border: none;
+        }
+        button:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Advanced Digital Notebook</h1>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button onclick="formatText('bold')"><b>Bold</b></button>
+            <button onclick="formatText('italic')"><i>Italic</i></button>
+            <button onclick="formatText('underline')"><u>Underline</u></button>
+            <input type="color" onchange="changeTextColor(this.value)" title="Change Text Color">
+            <input type="color" onchange="changeBackgroundColor(this.value)" title="Change Background Color">
+        </div>
+
+        <!-- Editable Content -->
+        <div id="editor" contenteditable="true" placeholder="Write your notes here...">
+        </div>
+
+        <!-- Buttons -->
+        <button onclick="saveNotes()">Save Notes</button>
+        <button onclick="clearNotes()">Clear Notes</button>
+    </div>
+
+    <script>
+        const noteKey = 'digitalNotebook_notes';
+
+        // Load the notes on page load
+        window.onload = function () {
+            loadNotes();
+        };
+
+        // Text formatting functions
+        function formatText(command) {
+            document.execCommand(command, false, null);
+        }
+
+        // Change text color
+        function changeTextColor(color) {
+            document.execCommand('foreColor', false, color);
+        }
+
+        // Change background color
+        function changeBackgroundColor(color) {
+            document.getElementById('editor').style.backgroundColor = color;
+        }
+
+        // Save notes to Local Storage
+        function saveNotes() {
+            const notes = document.getElementById('editor').innerHTML;
+            if (!notes.trim()) {
+                alert("Please enter some notes before saving.");
+                return;
+            }
+            localStorage.setItem(noteKey, notes);
+            alert("Notes saved locally!");
+        }
+
+        // Load notes from Local Storage
+        function loadNotes() {
+            const savedNotes = localStorage.getItem(noteKey);
+            document.getElementById('editor').innerHTML = savedNotes || "";
+        }
+
+        // Clear notes from the editor and Local Storage
+        function clearNotes() {
+            if (confirm("Are you sure you want to clear all notes?")) {
+                localStorage.removeItem(noteKey);
+                document.getElementById('editor').innerHTML = "";
+                alert("Notes cleared.");
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Laws Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { width: 400px; margin: auto; }
+        input, select { width: 100%; padding: 5px; margin: 5px 0; display: block; }
+        button { width: 100%; padding: 10px; margin-top: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+        .steps { margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 5px solid #28a745; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Gas Laws Calculator</h2>
+    
+    <label for="law">Select Gas Law:</label>
+    <select id="law" onchange="showInputs()">
+        
+       
+        
+	
+		<option value="">-- Select --</option>
+		 <option value="graham">Graham's Law (Rate/Time & Molecular Mass)</option>
+        <option value="boyle"></option>
+        <option value="charles"></option>
+        <option value="combined"></option>
+    </select>
+
+    <div id="inputs" class="hidden">
+        <!-- Graham's Law Inputs -->
+        <div id="graham_inputs" class="hidden">
+            <h4>Rate vs. Molecular Mass</h4>
+            <input type="number" id="r1" placeholder="Rate 1">
+            <input type="number" id="r2" placeholder="Rate 2">
+            <input type="number" id="m1" placeholder="Molecular Mass 1">
+            <input type="number" id="m2" placeholder="Molecular Mass 2">
+
+            <h4>Time vs. Molecular Mass</h4>
+            <input type="number" id="t1" placeholder="Time 1">
+            <input type="number" id="t2" placeholder="Time 2">
+        </div>
+    </div>
+
+    <button onclick="calculate()">Calculate</button>
+    
+    <h3 id="result"></h3>
+    <div id="steps" class="steps"></div>
+</div>
+
+<script>
+function showInputs() {
+    let law = document.getElementById("law").value;
+    
+    // Hide all input sections
+    document.getElementById("inputs").classList.add("hidden");
+    document.getElementById("graham_inputs").classList.add("hidden");
+
+    // Show relevant inputs
+    if (law === "graham") {
+        document.getElementById("inputs").classList.remove("hidden");
+        document.getElementById("graham_inputs").classList.remove("hidden");
+    }
+}
+
+function getValue(id) {
+    let val = document.getElementById(id);
+    return val && val.value ? parseFloat(val.value) : null;
+}
+
+function calculate() {
+    let law = document.getElementById("law").value;
+    let result = "";
+    let steps = "";
+
+    if (law === "graham") {
+        let r1 = getValue("r1"), r2 = getValue("r2");
+        let m1 = getValue("m1"), m2 = getValue("m2");
+        let t1 = getValue("t1"), t2 = getValue("t2");
+
+        // Rate vs. Molecular Mass
+        if (r1 === null && r2 !== null && m1 !== null && m2 !== null) {
+            result = r2 * Math.sqrt(m2 / m1);
+            steps = `R₁ = R₂ × √(M₂ ÷ M₁) = ${r2} × √(${m2} ÷ ${m1}) = ${result.toFixed(2)}`;
+        } else if (r2 === null && r1 !== null && m1 !== null && m2 !== null) {
+            result = r1 * Math.sqrt(m1 / m2);
+            steps = `R₂ = R₁ × √(M₁ ÷ M₂) = ${r1} × √(${m1} ÷ ${m2}) = ${result.toFixed(2)}`;
+        } else if (m1 === null && r1 !== null && r2 !== null && m2 !== null) {
+            result = (m2 * Math.pow(r2 / r1, 2));
+            steps = `M₁ = M₂ × (R₂ ÷ R₁)² = ${m2} × (${r2} ÷ ${r1})² = ${result.toFixed(2)}`;
+        } else if (m2 === null && r1 !== null && r2 !== null && m1 !== null) {
+            result = (m1 * Math.pow(r1 / r2, 2));
+            steps = `M₂ = M₁ × (R₁ ÷ R₂)² = ${m1} × (${r1} ÷ ${r2})² = ${result.toFixed(2)}`;
+        }
+
+        // Time vs. Molecular Mass
+        else if (t1 === null && t2 !== null && m1 !== null && m2 !== null) {
+            result = t2 * Math.sqrt(m1 / m2);
+            steps = `T₁ = T₂ × √(M₁ ÷ M₂) = ${t2} × √(${m1} ÷ ${m2}) = ${result.toFixed(2)}`;
+        } else if (t2 === null && t1 !== null && m1 !== null && m2 !== null) {
+            result = t1 / Math.sqrt(m1 / m2);
+            steps = `T₂ = T₁ ÷ √(M₁ ÷ M₂) = ${t1} ÷ √(${m1} ÷ ${m2}) = ${result.toFixed(2)}`;
+        }
+    }
+
+    // Display results
+    document.getElementById("result").textContent = result ? `Result: ${result.toFixed(2)}` : "Invalid inputs";
+    document.getElementById("steps").textContent = steps;
+}
+</script>
+
+</body>
+</html>

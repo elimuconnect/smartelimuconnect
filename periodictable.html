@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Periodic Table with First 20 Elements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .table-container {
+            display: grid;
+            grid-template-columns: repeat(18, 60px); /* 18 groups */
+            grid-template-rows: repeat(4, 60px); /* 4 periods */
+            gap: 10px;
+            margin-top: 20px;
+            width: 90%; /* Adjusts to 90% of screen width */
+            max-width: 1000px;
+            overflow-x: auto;
+        }
+        .element {
+            width: 60px;
+            height: 60px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            line-height: 60px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .element:hover {
+            background-color: #388E3C;
+        }
+        .empty {
+            background-color: white;
+            border: 1px solid #ddd;
+            cursor: default;
+        }
+        .details {
+            margin-top: 20px;
+            padding: 10px;
+            width: 80%;
+            max-width: 600px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .details h2 {
+            margin: 0 0 10px;
+        }
+        .details p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>First 20 Elements of the Periodic Table</h1>
+    <div class="table-container" id="periodic-table"></div>
+    <div class="details" id="element-details">
+        <h2>Click on an element to see its details</h2>
+    </div>
+
+    <script>
+
+        // Define the first 20 elements with structure, bonds, and chemical family
+        const elements = [
+            { symbol: "H", name: "Hydrogen", number: 1, mass: 1.008, config: "1", period: 1, group: 1, state: "Gas", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "He", name: "Helium", number: 2, mass: 4.0026, config: "2", period: 1, group: 18, state: "Gas", type: "Non-metal", structure: "Atomic", bonds: "Covalent" },
+            { symbol: "Li", name: "Lithium", number: 3, mass: 6.94, config: "2.1", period: 2, group: 1, state: "Solid", type: "Metal", structure: "Metallic", bonds: "Metallic" },
+            { symbol: "Be", name: "Beryllium", number: 4, mass: 9.0122, config: "2.2", period: 2, group: 2, state: "Solid", type: "Metal", structure: "Metallic", bonds: "Metallic" },
+            { symbol: "B", name: "Boron", number: 5, mass: 10.81, config: "2.3", period: 2, group: 13, state: "Solid", type: "Metalloid", structure: "Giant Molecular", bonds: "Covalent" },
+            { symbol: "C", name: "Carbon", number: 6, mass: 12.011, config: "2.4", period: 2, group: 14, state: "Solid", type: "Non-metal", structure: "Giant ionic/covalent", bonds: "Covalent" },
+            { symbol: "N", name: "Nitrogen", number: 7, mass: 14.007, config: "2.5", period: 2, group: 15, state: "Gas", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "O", name: "Oxygen", number: 8, mass: 15.999, config: "2.6", period: 2, group: 16, state: "Gas", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "F", name: "Fluorine", number: 9, mass: 18.998, config: "2.7", period: 2, group: 17, state: "Gas", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "Ne", name: "Neon", number: 10, mass: 20.180, config: "2.8", period: 2, group: 18, state: "Gas", type: "Non-metal", structure: "Atomic", bonds: "Covalent" },
+            { symbol: "Na", name: "Sodium", number: 11, mass: 22.990, config: "2.8.1", period: 3, group: 1, state: "Solid", type: "Metal", structure: "Metallic", bonds: "metallic" },
+            { symbol: "Mg", name: "Magnesium", number: 12, mass: 24.305, config: "2.8.2", period: 3, group: 2, state: "Solid", type: "Metal", structure: "Metallic", bonds: "Metallic" },
+            { symbol: "Al", name: "Aluminum", number: 13, mass: 26.982, config: "2.8.3", period: 3, group: 13, state: "Solid", type: "Metal", structure: "Metallic", bonds: "Metallic" },
+            { symbol: "Si", name: "Silicon", number: 14, mass: 28.085, config: "2.8.4", period: 3, group: 14, state: "Solid", type: "Metalloid", structure: "Giant ionic/covalent", bonds: "Covalent" },
+            { symbol: "P", name: "Phosphorus", number: 15, mass: 30.974, config: "2.8.5", period: 3, group: 15, state: "Solid", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "S", name: "Sulphur", number: 16, mass: 32.06, config: "2.8.6", period: 3, group: 16, state: "Solid", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "Cl", name: "Chlorine", number: 17, mass: 35.45, config: "2.8.7", period: 3, group: 17, state: "Gas", type: "Non-metal", structure: "Simple Molecular", bonds: "Covalent" },
+            { symbol: "Ar", name: "Argon", number: 18, mass: 39.948, config: "2.8.8", period: 3, group: 18, state: "Gas", type: "Non-metal", structure: "Atomic", bonds: "Covalent" },
+            { symbol: "K", name: "Potassium", number: 19, mass: 39.098, config: "2.8.8.1", period: 4, group: 1, state: "Solid", type: "Metal", structure: "Metallic", bonds: "metallic" },
+            { symbol: "Ca", name: "Calcium", number: 20, mass: 40.078, config: "2.8.8.2", period: 4, group: 2, state: "Solid", type: "Metal", structure: "Metallic", bonds: "Metallic" }
+        ];
+
+        // Function to get chemical family
+        function getChemicalFamily(element) {
+            const alkaliMetals = ["Li", "Na", "K"];
+            const alkalineEarthMetals = ["Be", "Mg", "Ca"];
+            const halogens = ["F", "Cl"];
+            const nobleGases = ["He", "Ne", "Ar"];
+
+            if (alkaliMetals.includes(element.symbol)) {
+                return "Alkali Metal";
+            } else if (alkalineEarthMetals.includes(element.symbol)) {
+                return "Alkaline Earth Metal";
+            } else if (halogens.includes(element.symbol)) {
+                return "Halogen";
+            } else if (nobleGases.includes(element.symbol)) {
+                return "Noble Gas";
+            } else {
+                return "N/A";
+            }
+        }
+
+        // Create the periodic table layout
+        const tableContainer = document.getElementById("periodic-table");
+
+        // Helper function to add an element to the grid
+        function addElement(element, className = '') {
+            const div = document.createElement("div");
+            div.className = `element ${className}`;
+            div.textContent = element.symbol || ""; // Empty space if no element
+            div.title = element.name || "";
+            div.addEventListener("click", () => {
+                if (element.symbol) {
+                    showDetails(element);
+                }
+            });
+            tableContainer.appendChild(div);
+        }
+
+        // Create grid layout for the first 20 elements, removing space between group 2 and 3
+        for (let period = 1; period <= 4; period++) {
+            for (let group = 1; group <= 18; group++) {
+                // Only leave empty spaces where there is no element
+                if (group >= 3 && group <= 12) {
+                    addElement({}, 'empty');
+                    continue;
+                }
+
+                // Find the element based on group and period for the first 20 elements
+                const element = elements.find(e => e.period === period && e.group === group);
+                if (element) {
+                    addElement(element);
+                } else {
+                    addElement({}, 'empty'); // Empty spot in the periodic table
+                }
+            }
+        }
+
+        // Show element details when clicked
+        function showDetails(element) {
+            const details = document.getElementById("element-details");
+            details.innerHTML = `
+                <h2>${element.name} (${element.symbol})</h2>
+                <p><strong>Atomic Number:</strong> ${element.number}</p>
+                <p><strong>Mass Number:</strong> ${element.mass}</p>
+                <p><strong>Electron Configuration:</strong> ${element.config}</p>
+                <p><strong>Physical State:</strong> ${element.state}</p>
+                <p><strong>Metal/Non-metal:</strong> ${element.type}</p>
+                <p><strong>Structure:</strong> ${element.structure}</p>
+                <p><strong>Type of Bonds:</strong> ${element.bonds}</p>
+                <p><strong>Chemical Family:</strong> ${getChemicalFamily(element)}</p>
+            `;
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interest and Financial Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      padding: 20px;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    #output, .explanation {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      white-space: pre-wrap;
+      margin-top: 20px;
+    }
+    button {
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+    }
+    button:hover {
+      background-color: #1a252f;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📘 Interest & Financial Tool</h2>
+
+<!-- Simple Interest -->
+<h3>🔹 Simple Interest Calculator</h3>
+<label>Principal (P):</label>
+<input id="p_si" type="number" placeholder="Leave blank to calculate P" />
+
+<label>Rate of Interest (R %):</label>
+<input id="r_si" type="number" placeholder="Leave blank to calculate R" />
+
+<label>Time (T in years):</label>
+<input id="t_si" type="number" placeholder="Leave blank to calculate T" />
+
+<label>Simple Interest (SI):</label>
+<input id="si" type="number" placeholder="Leave blank to calculate SI" />
+
+<button onclick="calculateSimpleInterest()">Calculate</button>
+<div id="siOutput"></div>
+<div class="explanation" id="siSteps"></div>
+
+
+
+
+
+<div id="compoundInterestCalculator">
+  <h2>Compound Interest Calculator (Any Unknown)</h2>
+  
+  <label>Known Values:</label>
+  <br />
+  <label>Principal (P): <input type="number" id="ci_p" placeholder="Leave blank if unknown" /></label><br />
+  <label>Final Amount (A): <input type="number" id="ci_a" placeholder="Leave blank if unknown" /></label><br />
+  <label>Annual Rate (%) (r): <input type="number" id="ci_r" placeholder="Leave blank if unknown" /></label><br />
+  <label>Time in years (t): <input type="number" id="ci_t" placeholder="Leave blank if unknown" /></label><br />
+
+  <label>Compounding Frequency per year (n): 
+    <select id="ci_n">
+      <option value="1">Annually</option>
+      <option value="2">Semi-Annually</option>
+      <option value="4">Quarterly</option>
+      <option value="12">Monthly</option>
+    </select>
+  </label><br />
+
+  <button onclick="calculateCIAnyUnknown()">Calculate</button>
+  <div id="ci_result"></div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<script>
+
+  
+function calculateSimpleInterest() {
+  let P = parseFloat(document.getElementById("p_si").value);
+  let R = parseFloat(document.getElementById("r_si").value);
+  let T = parseFloat(document.getElementById("t_si").value);
+  let SI = parseFloat(document.getElementById("si").value);
+  let explanation = "";
+
+  let known = [!isNaN(P), !isNaN(R), !isNaN(T), !isNaN(SI)].filter(Boolean).length;
+  if (known < 3) {
+    document.getElementById("siOutput").innerText = "❌ Please enter any 3 values.";
+    document.getElementById("siSteps").innerText = "";
+    return;
+  }
+
+  if (isNaN(SI)) {
+    SI = (P * R * T) / 100;
+    explanation = `SI = (P × R × T) / 100\n   = (${P} × ${R} × ${T}) / 100\n   = ${SI.toFixed(2)}`;
+    document.getElementById("siOutput").innerText = `✅ Simple Interest = ${SI.toFixed(2)}`;
+  } else if (isNaN(P)) {
+    P = (SI * 100) / (R * T);
+    explanation = `P = (SI × 100) / (R × T)\n   = (${SI} × 100) / (${R} × ${T})\n   = ${P.toFixed(2)}`;
+    document.getElementById("siOutput").innerText = `✅ Principal = ${P.toFixed(2)}`;
+  } else if (isNaN(R)) {
+    R = (SI * 100) / (P * T);
+    explanation = `R = (SI × 100) / (P × T)\n   = (${SI} × 100) / (${P} × ${T})\n   = ${R.toFixed(2)}%`;
+    document.getElementById("siOutput").innerText = `✅ Rate = ${R.toFixed(2)}%`;
+  } else if (isNaN(T)) {
+    T = (SI * 100) / (P * R);
+    explanation = `T = (SI × 100) / (P × R)\n   = (${SI} × 100) / (${P} × ${R})\n   = ${T.toFixed(2)} years`;
+    document.getElementById("siOutput").innerText = `✅ Time = ${T.toFixed(2)} years`;
+  }
+  document.getElementById("siSteps").innerText = explanation;
+}
+
+
+
+
+function calculateCIAnyUnknown() {
+  let P = parseFloat(document.getElementById("ci_p").value);
+  let A = parseFloat(document.getElementById("ci_a").value);
+  let r = parseFloat(document.getElementById("ci_r").value);
+  let t = parseFloat(document.getElementById("ci_t").value);
+  let n = parseInt(document.getElementById("ci_n").value);
+
+  const isPUnknown = isNaN(P);
+  const isAUnknown = isNaN(A);
+  const isrUnknown = isNaN(r);
+  const istUnknown = isNaN(t);
+
+  let steps = "";
+
+  if (([isPUnknown, isAUnknown, isrUnknown, istUnknown].filter(Boolean).length) !== 1) {
+    document.getElementById("ci_result").innerHTML = "<span style='color:red;'>❌ Leave exactly one field blank to calculate it.</span>";
+    return;
+  }
+
+  if (isAUnknown) {
+    // A = P * (1 + r/n)^(nt)
+    const R = r / 100;
+    const A_calc = P * Math.pow(1 + R / n, n * t);
+    steps += `Step 1: Convert rate to decimal → r = ${R.toFixed(4)}\n`;
+    steps += `Step 2: A = ${P} × (1 + ${R}/${n}) ^ (${n}×${t})\n`;
+    steps += `A = ${A_calc.toFixed(2)}\n`;
+    steps += `✅ Final Amount (A) = <strong>${A_calc.toFixed(2)}</strong>`;
+    document.getElementById("ci_result").innerHTML = steps.replace(/\n/g, "<br>");
+    return;
+  }
+
+  if (isPUnknown) {
+    // P = A / (1 + r/n)^(nt)
+    const R = r / 100;
+    const P_calc = A / Math.pow(1 + R / n, n * t);
+    steps += `Step 1: Convert rate to decimal → r = ${R.toFixed(4)}\n`;
+    steps += `Step 2: P = ${A} ÷ (1 + ${R}/${n}) ^ (${n}×${t})\n`;
+    steps += `P = ${P_calc.toFixed(2)}\n`;
+    steps += `✅ Principal (P) = <strong>${P_calc.toFixed(2)}</strong>`;
+    document.getElementById("ci_result").innerHTML = steps.replace(/\n/g, "<br>");
+    return;
+  }
+
+  if (isrUnknown) {
+    // Solve r: A = P * (1 + r/n)^(nt)
+    const base = Math.pow(A / P, 1 / (n * t));
+    const R_calc = (base - 1) * n * 100;
+    steps += `Step 1: A/P = ${A}/${P} = ${(A / P).toFixed(4)}\n`;
+    steps += `Step 2: Take (A/P)^(1/nt) = ${base.toFixed(4)}\n`;
+    steps += `Step 3: r = (${base.toFixed(4)} - 1) × ${n} × 100 = ${R_calc.toFixed(2)}%\n`;
+    steps += `✅ Rate (r) = <strong>${R_calc.toFixed(2)}%</strong>`;
+    document.getElementById("ci_result").innerHTML = steps.replace(/\n/g, "<br>");
+    return;
+  }
+
+  if (istUnknown) {
+    // Solve t: A = P * (1 + r/n)^(nt)
+    const R = r / 100;
+    const base = 1 + R / n;
+    const T_calc = (Math.log(A / P) / Math.log(base)) / n;
+    steps += `Step 1: A/P = ${A}/${P} = ${(A / P).toFixed(4)}\n`;
+    steps += `Step 2: log(A/P) / log(1 + r/n) = log(${(A / P).toFixed(4)}) / log(${base.toFixed(4)})\n`;
+    steps += `Step 3: t = ${T_calc.toFixed(2)} years\n`;
+    steps += `✅ Time (t) = <strong>${T_calc.toFixed(2)} years</strong>`;
+    document.getElementById("ci_result").innerHTML = steps.replace(/\n/g, "<br>");
+    return;
+  }
+}
+
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
+

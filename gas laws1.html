@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gas Laws Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { width: 400px; margin: auto; }
+        input, select { width: 100%; padding: 5px; margin: 5px 0; display: block; }
+        button { width: 100%; padding: 10px; margin-top: 10px; background: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background: #218838; }
+        .steps { margin-top: 15px; padding: 10px; background: #f8f9fa; border-left: 5px solid #28a745; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Gas Laws Calculator</h2>
+    
+    <label for="law">Select Gas Law:</label>
+    <select id="law" onchange="showInputs()">
+        <option value="">-- Select --</option>
+        <option value="boyle">Boyle's Law (P₁V₁ = P₂V₂)</option>
+        <option value="charles">Charles' Law (V₁/T₁ = V₂/T₂)</option>
+        <option value="combined">Combined Gas Law (P₁V₁/T₁ = P₂V₂/T₂)</option>
+       
+    </select>
+
+    <div id="inputs" class="hidden">
+        <!-- Boyle's Law Inputs -->
+        <div id="boyle_inputs" class="hidden">
+            <input type="number" id="p1" placeholder="P₁ (Pressure 1)">
+            <input type="number" id="v1_boyle" placeholder="V₁ (Volume 1)">
+            <input type="number" id="p2" placeholder="P₂ (Pressure 2)">
+            <input type="number" id="v2_boyle" placeholder="V₂ (Volume 2)">
+        </div>
+
+        <!-- Charles' Law Inputs -->
+        <div id="charles_inputs" class="hidden">
+            <input type="number" id="v1_charles" placeholder="V₁ (Volume 1)">
+            <input type="number" id="t1" placeholder="T₁ (Temperature 1)">
+            <input type="number" id="v2_charles" placeholder="V₂ (Volume 2)">
+            <input type="number" id="t2" placeholder="T₂ (Temperature 2)">
+        </div>
+
+        <!-- Combined Gas Law Inputs -->
+        <div id="combined_inputs" class="hidden">
+            <input type="number" id="p1_combined" placeholder="P₁ (Pressure 1)">
+            <input type="number" id="v1_combined" placeholder="V₁ (Volume 1)">
+            <input type="number" id="t1_combined" placeholder="T₁ (Temperature 1)">
+            <input type="number" id="p2_combined" placeholder="P₂ (Pressure 2)">
+            <input type="number" id="v2_combined" placeholder="V₂ (Volume 2)">
+            <input type="number" id="t2_combined" placeholder="T₂ (Temperature 2)">
+        </div>
+
+        <!-- Graham's Law Inputs -->
+        <div id="graham_inputs" class="hidden">
+            <input type="number" id="r1" placeholder="Rate 1">
+            <input type="number" id="r2" placeholder="Rate 2">
+            <input type="number" id="m1" placeholder="Molecular Mass 1">
+            <input type="number" id="m2" placeholder="Molecular Mass 2">
+        </div>
+    </div>
+
+    <button onclick="calculate()">Calculate</button>
+    
+    <h3 id="result"></h3>
+    <div id="steps" class="steps"></div>
+</div>
+
+<script>
+
+
+    
+function showInputs() {
+    let law = document.getElementById("law").value;
+    
+    // Hide all input sections
+    document.getElementById("inputs").classList.add("hidden");
+    document.getElementById("boyle_inputs").classList.add("hidden");
+    document.getElementById("charles_inputs").classList.add("hidden");
+    document.getElementById("combined_inputs").classList.add("hidden");
+    document.getElementById("graham_inputs").classList.add("hidden");
+
+    // Show relevant inputs
+    if (law) {
+        document.getElementById("inputs").classList.remove("hidden");
+        let inputDiv = document.getElementById(law + "_inputs");
+        if (inputDiv) inputDiv.classList.remove("hidden");
+    }
+}
+
+function getValue(id) {
+    let val = document.getElementById(id);
+    return val && val.value ? parseFloat(val.value) : null;
+}
+
+function calculate() {
+    let law = document.getElementById("law").value;
+    let result = "";
+    let steps = "";
+
+    if (law === "boyle") {
+        let p1 = getValue("p1"), v1 = getValue("v1_boyle"), p2 = getValue("p2"), v2 = getValue("v2_boyle");
+
+        if (p1 === null && v1 !== null && p2 !== null && v2 !== null) {
+            result = (p2 * v2) / v1;
+            steps = `P₁ = (P₂ × V₂) ÷ V₁ = (${p2} × ${v2}) ÷ ${v1} = ${result}`;
+        } else if (v1 === null && p1 !== null && p2 !== null && v2 !== null) {
+            result = (p2 * v2) / p1;
+            steps = `V₁ = (P₂ × V₂) ÷ P₁ = (${p2} × ${v2}) ÷ ${p1} = ${result}`;
+        } else if (p2 === null && p1 !== null && v1 !== null && v2 !== null) {
+            result = (p1 * v1) / v2;
+            steps = `P₂ = (P₁ × V₁) ÷ V₂ = (${p1} × ${v1}) ÷ ${v2} = ${result}`;
+        } else if (v2 === null && p1 !== null && v1 !== null && p2 !== null) {
+            result = (p1 * v1) / p2;
+            steps = `V₂ = (P₁ × V₁) ÷ P₂ = (${p1} × ${v1}) ÷ ${p2} = ${result}`;
+        }
+    } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    else if (law === "charles") {
+        let v1 = getValue("v1_charles"), t1 = getValue("t1");
+        let v2 = getValue("v2_charles"), t2 = getValue("t2");
+
+        if (v1 === null) {
+            result = (v2 * t1) / t2;
+            steps = `V₁ = (V₂ × T₁) ÷ T₂ = (${v2} × ${t1}) ÷ ${t2} = ${result}`;
+        } else if (t1 === null) {
+            result = (v1 * t2) / v2;
+            steps = `T₁ = (V₁ × T₂) ÷ V₂ = (${v1} × ${t2}) ÷ ${v2} = ${result}`;
+        } else if (v2 === null) {
+            result = (v1 * t2) / t1;
+            steps = `V₂ = (V₁ × T₂) ÷ T₁ = (${v1} × ${t2}) ÷ ${t1} = ${result}`;
+        } else if (t2 === null) {
+            result = (v2 * t1) / v1;
+            steps = `T₂ = (V₂ × T₁) ÷ V₁ = (${v2} × ${t1}) ÷ ${v1} = ${result}`;
+        }
+    } 
+    
+    else if (law === "combined") {
+        let p1 = getValue("p1_combined"), v1 = getValue("v1_combined"), t1 = getValue("t1_combined");
+        let p2 = getValue("p2_combined"), v2 = getValue("v2_combined"), t2 = getValue("t2_combined");
+
+        if (p1 === null) {
+            result = (p2 * v2 * t1) / (v1 * t2);
+            steps = `P₁ = (P₂ × V₂ × T₁) ÷ (V₁ × T₂) = (${p2} × ${v2} × ${t1}) ÷ (${v1} × ${t2}) = ${result}`;
+        } else if (v1 === null) {
+            result = (p2 * v2 * t1) / (p1 * t2);
+            steps = `V₁ = (P₂ × V₂ × T₁) ÷ (P₁ × T₂) = (${p2} × ${v2} × ${t1}) ÷ (${p1} × ${t2}) = ${result}`;
+        } else if (t1 === null) {
+            result = (p1 * v1 * t2) / (p2 * v2);
+            steps = `T₁ = (P₁ × V₁ × T₂) ÷ (P₂ × V₂) = (${p1} × ${v1} × ${t2}) ÷ (${p2} × ${v2}) = ${result}`;
+        } else if (p2 === null) {
+            result = (p1 * v1 * t2) / (v2 * t1);
+            steps = `P₂ = (P₁ × V₁ × T₂) ÷ (V₂ × T₁) = (${p1} × ${v1} × ${t2}) ÷ (${v2} × ${t1}) = ${result}`;
+        } else if (v2 === null) {
+            result = (p1 * v1 * t2) / (p2 * t1);
+            steps = `V₂ = (P₁ × V₁ × T₂) ÷ (P₂ × T₁) = (${p1} × ${v1} × ${t2}) ÷ (${p2} × ${t1}) = ${result}`;
+        } else if (t2 === null) {
+            result = (p2 * v2 * t1) / (p1 * v1);
+            steps = `T₂ = (P₂ × V₂ × T₁) ÷ (P₁ × V₁) = (${p2} × ${v2} × ${t1}) ÷ (${p1} × ${v1}) = ${result}`;
+        }
+    } 
+    
+    else if (law === "graham") {
+    let r1 = getValue("r1"), r2 = getValue("r2");
+    let m1 = getValue("m1"), m2 = getValue("m2");
+
+    // Graham's Law: Rate & Molecular Mass
+    if (r1 === null) {
+        result = r2 * Math.sqrt(m2 / m1);
+        steps = `R₁ = R₂ × √(M₂ ÷ M₁) = ${r2} × √(${m2} ÷ ${m1}) = ${result.toFixed(2)}`;
+    } else if (r2 === null) {
+        result = r1 * Math.sqrt(m1 / m2);
+        steps = `R₂ = R₁ × √(M₁ ÷ M₂) = ${r1} × √(${m1} ÷ ${m2}) = ${result.toFixed(2)}`;
+    } else if (m1 === null) {
+        result = (m2 * Math.pow(r2 / r1, 2));
+        steps = `M₁ = M₂ × (R₂ ÷ R₁)² = ${m2} × (${r2} ÷ ${r1})² = ${result.toFixed(2)}`;
+    } else if (m2 === null) {
+        result = (m1 * Math.pow(r1 / r2, 2));
+        steps = `M₂ = M₁ × (R₁ ÷ R₂)² = ${m1} × (${r1} ÷ ${r2})² = ${result.toFixed(2)}`;
+    }
+}
+
+// Independent Time Relationship Calculation
+else if (law === "time") {
+    let t1 = getValue("t1"), t2 = getValue("t2");
+    let r1 = getValue("r1"), r2 = getValue("r2");
+
+    if (t1 === null) {
+        result = (t2 * r1) / r2;
+        steps = `T₁ = (T₂ × R₁) ÷ R₂ = (${t2} × ${r1}) ÷ ${r2} = ${result.toFixed(2)}`;
+    } else if (t2 === null) {
+        result = (t1 * r2) / r1;
+        steps = `T₂ = (T₁ × R₂) ÷ R₁ = (${t1} × ${r2}) ÷ ${r1} = ${result.toFixed(2)}`;
+    }
+}
+
+if (result !== "") {
+    document.getElementById("result").innerHTML = `<b>Result: ${result}</b>`;
+    document.getElementById("steps").innerHTML = steps;
+} else {
+    document.getElementById("result").innerHTML = "<b>Fill at least 3 values to calculate the missing one.</b>";
+    document.getElementById("steps").innerHTML = "";
+    }
+}
+</script>
+
+</body>
+</html>
+

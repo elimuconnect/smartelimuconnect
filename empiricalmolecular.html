@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Empirical and Molecular Formula Calculator</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    input, select {
+      padding: 5px;
+      margin: 5px;
+    }
+    button {
+      padding: 10px;
+      margin: 10px 0;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .step {
+      margin-bottom: 10px;
+    }
+    .formula {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    #results {
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #ccc;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Empirical and Molecular Formula Calculator</h2>
+  <p>Enter element symbols, their masses or % compositions, and their molar masses:</p>
+
+  <div id="elementInputs"></div>
+
+  <button onclick="addElement()">+ Add Element</button>
+  <button onclick="removeElement()">- Remove</button>
+  <br>
+  <label>Molar Mass of compound (for molecular formula, optional): </label>
+  <input type="number" id="compoundMass" step="any"> g/mol
+
+  <br><br>
+  <button onclick="calculateFormulas()">Calculate</button>
+
+  <div id="results"></div>
+
+  <script>
+
+    
+    let elementCount = 2;
+
+    function formatNumber(n, decimals = 4) {
+      return parseFloat(n.toFixed(decimals)).toString();
+    }
+
+    function createElementInputs() {
+      const container = document.getElementById("elementInputs");
+      container.innerHTML = '';
+      for (let i = 0; i < elementCount; i++) {
+        container.innerHTML += `
+          <div>
+            <strong>Element ${i + 1}:</strong><br>
+            Symbol: <input type="text" id="symbol${i}" maxlength="2" size="3">
+            Mass or %: <input type="number" id="mass${i}" step="any"> g or %
+            Molar Mass: <input type="number" id="molarMass${i}" step="any"> g/mol
+          </div><br>
+        `;
+      }
+    }
+
+    function addElement() {
+      if (elementCount < 4) {
+        elementCount++;
+        createElementInputs();
+      }
+    }
+
+    function removeElement() {
+      if (elementCount > 2) {
+        elementCount--;
+        createElementInputs();
+      }
+    }
+
+    function calculateFormulas() {
+      let elements = [];
+      for (let i = 0; i < elementCount; i++) {
+        const symbol = document.getElementById(`symbol${i}`).value.trim();
+        const mass = parseFloat(document.getElementById(`mass${i}`).value);
+        const molarMass = parseFloat(document.getElementById(`molarMass${i}`).value);
+        if (!symbol || isNaN(mass) || isNaN(molarMass)) {
+          alert(`Please fill all fields for Element ${i + 1}`);
+          return;
+        }
+        elements.push({ symbol, mass, molarMass });
+      }
+
+      const steps = [];
+      steps.push(`<div class='step formula'>Step 1: Convert mass or % to moles</div>`);
+      let minMoles = Infinity;
+
+      elements.forEach(el => {
+        el.moles = el.mass / el.molarMass;
+        steps.push(`<div class='step'>${el.symbol}: ${formatNumber(el.mass)} ÷ ${formatNumber(el.molarMass)} = ${formatNumber(el.moles)} mol</div>`);
+        if (el.moles < minMoles) minMoles = el.moles;
+      });
+
+      steps.push(`<div class='step formula'>Step 2: Divide by the smallest number of moles</div>`);
+      elements.forEach(el => {
+        el.ratio = el.moles / minMoles;
+        steps.push(`<div class='step'>${el.symbol}: ${formatNumber(el.moles)} ÷ ${formatNumber(minMoles)} = ${formatNumber(el.ratio)}</div>`);
+      });
+
+      steps.push(`<div class='step formula'>Step 3: Round mole ratios to nearest whole numbers</div>`);
+      elements.forEach(el => {
+        el.ratioRounded = parseFloat(el.ratio.toFixed(3));
+        if (Math.abs(el.ratioRounded - Math.round(el.ratioRounded)) < 0.1) {
+          el.wholeRatio = Math.round(el.ratioRounded);
+        } else if (Math.abs(el.ratioRounded * 2 - Math.round(el.ratioRounded * 2)) < 0.1) {
+          elements.forEach(e => e.wholeRatio = Math.round(e.ratio * 2));
+        } else if (Math.abs(el.ratioRounded * 3 - Math.round(el.ratioRounded * 3)) < 0.1) {
+          elements.forEach(e => e.wholeRatio = Math.round(e.ratio * 3));
+        } else {
+          alert("Non-simple ratios encountered. Please check input.");
+          return;
+        }
+      });
+
+      const empiricalFormula = elements.map(e => e.symbol + (e.wholeRatio > 1 ? e.wholeRatio : '')).join('');
+      steps.push(`<div class='step'><strong>Empirical Formula:</strong> ${empiricalFormula}</div>`);
+
+      const compoundMass = parseFloat(document.getElementById("compoundMass").value);
+      let molecularFormula = '';
+      if (!isNaN(compoundMass) && compoundMass > 0) {
+        const empiricalMass = elements.reduce((sum, e) => sum + (e.molarMass * e.wholeRatio), 0);
+        const multiple = Math.round(compoundMass / empiricalMass);
+        molecularFormula = elements.map(e => e.symbol + (e.wholeRatio * multiple > 1 ? e.wholeRatio * multiple : '')).join('');
+        steps.push(`<div class='step formula'>Step 4: Molecular Formula</div>`);
+        steps.push(`<div class='step'>Empirical Mass = ${formatNumber(empiricalMass, 2)} g/mol</div>`);
+        steps.push(`<div class='step'>Compound Mass ÷ Empirical Mass = ${formatNumber(compoundMass)} ÷ ${formatNumber(empiricalMass, 2)} = ${multiple}</div>`);
+        steps.push(`<div class='step'><strong>Molecular Formula:</strong> ${molecularFormula}</div>`);
+      }
+
+      document.getElementById("results").innerHTML = steps.join('');
+    }
+
+    createElementInputs();
+  </script>
+</body>
+</html>
+

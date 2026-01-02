@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Titration Simulator</title>
+<style>
+  /* Global Styles */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to bottom, #e0f7ff, #ffffff);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #003366;
+    text-shadow: 1px 1px 2px #aaa;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .controls label {
+    background: #ffffffcc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 1px 1px 5px #aaa;
+    font-size: 1rem;
+  }
+
+  .controls input, .controls select {
+    width: 80px;
+    margin-left: 5px;
+    padding: 4px 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+
+  canvas {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border: 2px solid #003366;
+    border-radius: 10px;
+    box-shadow: 3px 3px 10px #aaa;
+    background: #f0f8ff;
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    color: #003366;
+  }
+
+  .note { font-size:0.95rem; color:#024; margin-top:6px; }
+
+  @media (max-width: 500px) {
+    .controls label { font-size: 0.9rem; padding: 6px 8px; }
+    .controls input, .controls select { width: 60px; }
+    h1 { font-size: 1.5rem; }
+    p { font-size: 1rem; }
+  }
+
+
+
+
+
+
+
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 8px #0078D7; }
+  50% { box-shadow: 0 0 18px #00aaff; }
+  100% { box-shadow: 0 0 8px #0078D7; }
+}
+
+
+
+
+
+  
+</style>
+</head>
+<body>
+<h1>Titration Simulator</h1>
+  <h3> NOTE: Base used is sodium hydroxide, copy the values used and obtained to be used in calculations</h3>
+<a href="https://elimuconnect.github.io/ELIMU-CONNECT-/titrations"
+   id="proceedCalcBtn"
+   style="display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%);
+          background:#0078D7; color:#fff; padding:10px 20px; border-radius:6px;
+          text-decoration:none; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.2);
+          font-family:Segoe UI, sans-serif; letter-spacing:0.5px;
+          animation:pulseGlow 1.5s infinite; cursor:pointer;">
+  Proceed to Calculations <span style="display:inline-block; transition:transform 0.3s;">➜</span>
+</a>
+
+<div class="controls">
+
+
+<label>Acid Type: 
+  <select id="acidType">
+    <option value="HCl">HCl</option>
+    <option value="H2SO4">H₂SO₄</option>
+  </select>
+</label>
+<label>Base Conc (M): 
+  <input type="number" id="baseConc" value="0.100" step="0.001" min="0">
+</label>
+
+<label>Base Vol (mL): 
+  <input type="number" id="baseVol" value="25" step="1" min="0">
+</label>
+
+<label>Acid Conc (M): 
+  <input type="number" id="acidConc" value="0.100" step="0.001" min="0">
+</label>
+
+  
+  <label>Indicator: 
+    <select id="indicator">
+      <option value="phenolphthalein">Phenolphthalein</option>
+      <option value="methylorange">Methyl Orange</option>
+    </select>
+  </label>
+</div>
+
+<div class="note">Acid volume is fixed at <strong>50.0 mL</strong> (not editable).</div>
+
+<canvas id="labCanvas" width="400" height="500"></canvas>
+<p>Current pH: <span id="pH">12.0</span></p>
+
+
+
+<script>
+
+  
+// Responsive canvas handling
+const canvas = document.getElementById('labCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() {
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.width * 1.25; // maintain aspect ratio
+  drawApparatus();
+}
+window.addEventListener('resize', resizeCanvas);
+
+// Variables
+let acidVolumeAdded = 0;         // volume (mL) taken out of the burette / added to flask
+const dropVolume = 0.5;
+let drops = [];
+const indicatorSelect = document.getElementById('indicator');
+
+// FIXED acid total volume (not editable)
+let acidVol = 50.0; // mL - fixed
+
+const indicatorData = {
+  "phenolphthalein": {base: [255,182,193], acid: [255,245,245], pH: 9.5},
+  "methylorange": {base: [255,255,0], acid: [255,0,0], pH: 3.5}
+};
+
+// Read inputs dynamically
+let baseConc = 0.1, baseVol = 25, acidConc = 0.1;
+function updateInputs(){
+  baseConc = parseFloat(document.getElementById('baseConc').value) || 0;
+  baseVol  = parseFloat(document.getElementById('baseVol').value)  || 0;
+  acidConc = parseFloat(document.getElementById('acidConc').value) || 0;
+  // acidVol remains fixed at 50 mL (do not overwrite)
+}
+
+// Calculate pH (base molarity fixed; acid tracked by moles added)
+function calculatePH(){
+  updateInputs(); 
+  const acidType = document.getElementById('acidType').value;
+
+  // Base moles (NaOH) from molarity × initial base volume
+  const baseMoles = baseConc * baseVol / 1000;
+
+  // Acid moles added so far (acidConc × acidVolumeAdded) × nFactor
+  const nFactor = (acidType === "H2SO4") ? 2 : 1;
+  const acidMolesAdded = acidConc * acidVolumeAdded / 1000 * nFactor;
+
+  // Net moles = base - acid (positive => excess base)
+  const netMoles = baseMoles - acidMolesAdded;
+
+  // Total volume after mixing (L)
+  const totalVolL = (baseVol + acidVolumeAdded) / 1000;
+
+  let pH;
+
+  if (totalVolL <= 0) return 7; // safety
+
+  if (netMoles > 0) {
+    // excess OH−
+    const concOH = netMoles / totalVolL;
+    // Avoid log(0) or negative
+    if(concOH <= 0) pH = 7;
+    else pH = 14 + Math.log10(concOH);
+  } 
+  else if (netMoles < 0) {
+    // excess H+
+    const excessH = -netMoles; // positive
+    const concH = excessH / totalVolL;
+    if(concH <= 0) pH = 7;
+    else pH = -Math.log10(concH);
+  } 
+  else {
+    pH = 7; // equivalence
+  }
+
+  // clamp
+  return Math.max(0, Math.min(14, pH));
+}
+
+// Color interpolation
+function interpolateColor(start, end, factor){
+  const r = Math.round(start[0] + (end[0]-start[0])*factor);
+  const g = Math.round(start[1] + (end[1]-start[1])*factor);
+  const b = Math.round(start[2] + (end[2]-start[2])*factor);
+  return `rgb(${r},${g},${b})`;
+}
+
+// Flask color
+function getFlaskColor(pH){
+  const ind = indicatorSelect.value;
+  const data = indicatorData[ind];
+  let factor = 0;
+
+  if(ind === "phenolphthalein"){
+    factor = Math.max(0, Math.min(1, (pH - data.pH + 1.5)/1.5));
+    return interpolateColor(data.acid, data.base, factor); // pink → colourless
+  } else if(ind === "methylorange"){
+    const pH_max = 12;
+    factor = Math.max(0, Math.min(1, (pH_max - pH)/(pH_max - data.pH)));
+    return interpolateColor(data.base, data.acid, factor); // yellow → red
+  }
+  return "lightblue";
+}
+
+// Draw apparatus
+function drawApparatus(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const scale = canvas.width/400; // scaling factor
+
+  // --- Cylindrical Burette ---
+  const buretteX = 200 * scale;
+  const buretteTop = 20 * scale;
+  const buretteHeight = 300 * scale;
+  const radiusX = 20 * scale;
+  const radiusY = 8 * scale;
+
+  // Outer glass
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = '#000';
+  ctx.fillStyle = '#f8ffffaa';
+  ctx.beginPath();
+  ctx.ellipse(buretteX, buretteTop, radiusX, radiusY, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+
+  // Draw the cylindrical body
+  ctx.beginPath();
+  ctx.moveTo(buretteX - radiusX, buretteTop);
+  ctx.lineTo(buretteX - radiusX, buretteTop + buretteHeight);
+  ctx.moveTo(buretteX + radiusX, buretteTop);
+  ctx.lineTo(buretteX + radiusX, buretteTop + buretteHeight);
+  ctx.stroke();
+
+  // Bottom ellipse (base of cylinder)
+  ctx.beginPath();
+  ctx.ellipse(buretteX, buretteTop + buretteHeight, radiusX, radiusY, 0, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // --- Acid level (uses fixed acidVol as max) ---
+  const acidHeight = Math.max(0, buretteHeight * (1 - acidVolumeAdded / acidVol));
+  const acidTop = buretteTop + (buretteHeight - acidHeight);
+  ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+
+  // Acid inside the cylinder
+  ctx.beginPath();
+  ctx.ellipse(buretteX, acidTop, radiusX - 3, radiusY - 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.fillRect(buretteX - radiusX + 3, acidTop, 2 * (radiusX - 3), acidHeight);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(buretteX, buretteTop + buretteHeight, radiusX - 3, radiusY - 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+ // --- Burette Graduations ---
+ctx.strokeStyle = '#000';
+ctx.fillStyle = '#000';
+ctx.font = `${10 * scale}px Arial`;
+
+const totalTicks = 50;
+for (let i = 0; i <= totalTicks; i++) {
+  const y = buretteTop + (i * buretteHeight) / totalTicks;
+  const tickLength = (i % 5 === 0) ? 10 : 5;
+  ctx.beginPath();
+  ctx.moveTo(buretteX - radiusX - tickLength * scale, y);
+  ctx.lineTo(buretteX - radiusX, y);
+  ctx.stroke();
+
+  if (i % 5 === 0) {
+    // label ticks proportionally to the fixed 50 cm³ total
+    const label = Math.round((i / totalTicks) * acidVol);
+    ctx.fillText(label + ' cm³', buretteX - radiusX - 45 * scale, y + 3);
+  }
+}
+
+
+  // Tap
+  ctx.fillStyle='#888';
+  ctx.fillRect((buretteX - 25), (buretteTop + buretteHeight - 10), 50*scale/1.2, 10*scale/1.2);
+
+  // small arrow toward tap
+  ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo((buretteX + 30), (buretteTop + buretteHeight - 10));
+  ctx.lineTo((buretteX + 2), (buretteTop + buretteHeight + 10));
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo((buretteX + 2), (buretteTop + buretteHeight + 10));
+  ctx.lineTo((buretteX - 2), (buretteTop + buretteHeight + 2));
+  ctx.lineTo((buretteX + 6), (buretteTop + buretteHeight + 2));
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.font=`${14*scale}px Arial`;
+  ctx.fillText('Tap to add drops', (buretteX + 40), (buretteTop + buretteHeight - 20));
+  ctx.font=`${12*scale}px Arial`;
+  ctx.fillText('Volume added: ' + acidVolumeAdded.toFixed(1) + ' mL', (buretteX + 40), (buretteTop + buretteHeight));
+
+  // FLASK (simple conical)
+  ctx.strokeStyle='#000'; ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(150*scale,450*scale); ctx.lineTo(250*scale,450*scale);
+  ctx.lineTo(220*scale,330*scale); ctx.lineTo(180*scale,330*scale); ctx.closePath(); ctx.stroke();
+
+  const pH = Math.max(0,Math.min(14,calculatePH()));
+  const color = getFlaskColor(pH);
+  const liquidHeight = Math.min(100,(baseVol + acidVolumeAdded)/100*100);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(180*scale,450*scale);
+  ctx.lineTo(220*scale,450*scale);
+  ctx.lineTo(200*scale + (liquidHeight/100)*20*scale,330*scale + (100-liquidHeight)*1.2*scale);
+  ctx.lineTo(200*scale - (liquidHeight/100)*20*scale,330*scale + (100-liquidHeight)*1.2*scale);
+  ctx.closePath();
+  ctx.fill();
+
+  // Drops
+  for(let i=drops.length-1;i>=0;i--){
+    const d = drops[i];
+    ctx.fillStyle='red';
+    ctx.beginPath(); ctx.arc(d.x*scale,d.y*scale,5*scale,0,Math.PI*2); ctx.fill();
+  }
+
+  // Labels
+  ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.font=`${14*scale}px Arial`;
+  ctx.beginPath(); ctx.moveTo(220*scale,60*scale); ctx.lineTo(300*scale,60*scale); ctx.stroke();
+  ctx.fillText(document.getElementById('acidType').value + ' Burette', 305*scale,65*scale);
+
+  ctx.beginPath(); ctx.moveTo(200*scale,450*scale); ctx.lineTo(300*scale,460*scale); ctx.stroke();
+  ctx.fillText('Conical Flask', 305*scale,465*scale);
+}
+
+
+
+
+
+
+
+
+// Show Proceed button when endpoint (pH ~ 7) reached
+function checkEndpointAndShowButton() {
+  const pH = calculatePH();
+  if (pH >= 6.8 && pH <= 7.2) {
+    const btn = document.getElementById("proceedCalcBtn");
+    if (btn.style.display === "none") {
+      btn.style.display = "inline-block";
+      btn.style.opacity = 0;
+      btn.style.transition = "opacity 0.6s, transform 0.4s";
+      requestAnimationFrame(() => {
+        btn.style.opacity = 1;
+        btn.style.transform = "translate(-50%, 5px)";
+      });
+      // Make arrow move slightly on hover
+      btn.onmouseenter = () => btn.querySelector("span").style.transform = "translateX(6px)";
+      btn.onmouseleave = () => btn.querySelector("span").style.transform = "translateX(0)";
+    }
+  }
+}
+
+
+
+
+
+
+  
+// Animate drops
+function animateDrops(){
+  for(let i=drops.length-1;i>=0;i--){
+    const d = drops[i];
+    d.y += 5;
+    if(d.y>330) drops.splice(i,1);
+  }
+  updateFlask();
+  requestAnimationFrame(animateDrops);
+}
+
+
+
+
+// Update display
+function updateFlask(){
+  updateInputs();
+  document.getElementById('pH').textContent = calculatePH().toFixed(2);
+  drawApparatus();
+  checkEndpointAndShowButton(); // 👈 new line
+}
+
+// Click on canvas to add drops (manual titration)
+canvas.addEventListener('click', ()=>{
+  // only allow adding while there is acid left in burette
+  if(acidVolumeAdded + dropVolume <= acidVol){
+    acidVolumeAdded += dropVolume;
+    drops.push({x:200, y:315});
+  } else {
+    // if last partial drop possible, allow exact amount to reach acidVol
+    const remaining = acidVol - acidVolumeAdded;
+    if(remaining > 0 && remaining < dropVolume){
+      acidVolumeAdded += remaining;
+      drops.push({x:200, y:315});
+    }
+  }
+});
+  
+
+// Event listeners
+document.getElementById('acidType').addEventListener('change', updateFlask);
+document.getElementById('baseConc').addEventListener('input', updateFlask);
+document.getElementById('baseVol').addEventListener('input', updateFlask);
+document.getElementById('acidConc').addEventListener('input', updateFlask);
+indicatorSelect.addEventListener('change', updateFlask);
+
+// Initialize
+resizeCanvas();
+animateDrops();
+updateFlask();
+</script>
+</body>
+</html>

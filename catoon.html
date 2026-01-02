@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Smart Tutor – Count 1 to 100</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fce4ec);
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    #toolbar {
+      padding: 15px;
+      background: #1976d2;
+      color: white;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    #toolbar button {
+      background: white;
+      color: #1976d2;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #editor {
+      flex: 1;
+      padding: 40px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      max-width: 800px;
+      width: 100%;
+      padding: 30px;
+      background: white;
+      border-radius: 25px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      text-align: center;
+    }
+    .big-number {
+      font-size: 160px;
+      font-weight: bold;
+      color: #d81b60;
+      margin: 20px auto;
+    }
+    .big-word {
+      font-size: 80px;
+      font-weight: bold;
+      color: #1a237e;
+      margin: 20px 0;
+    }
+    .cartoon-img {
+      width: 300px;
+      max-width: 100%;
+      margin-top: 20px;
+      border-radius: 20px;
+    }
+    #status {
+      padding: 15px;
+      background: #388e3c;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* Animations */
+    .animate { animation-duration: 1s; animation-fill-mode: both; }
+    @keyframes zoomIn { 0% { transform: scale(0.1); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes zoomOut { 0% { transform: scale(2); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes slideInLeft { 0% { transform: translateX(-100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes slideInRight { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes rotateIn { 0% { transform: rotate(-360deg); opacity: 0; } 100% { transform: rotate(0); opacity: 1; } }
+
+    .zoomIn { animation-name: zoomIn; }
+    .zoomOut { animation-name: zoomOut; }
+    .slideInLeft { animation-name: slideInLeft; }
+    .slideInRight { animation-name: slideInRight; }
+    .rotateIn { animation-name: rotateIn; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="toolbar">
+    <button onclick="startTutor()">▶️ Start Tutor</button>
+    <button onclick="prevLesson()">⬅️ Back</button>
+    <button onclick="nextLesson()">➡️ Forward</button>
+  </div>
+  <div id="editor">
+    <div class="card">
+      <h2>Welcome to Smart Tutor</h2>
+      <p>Click "Start Tutor" to learn numbers from 1 to 100 with animation and voice.</p>
+    </div>
+  </div>
+  <div id="status">Ready</div>
+</div>
+
+<script>
+const numberAnimations = ["zoomIn", "zoomOut", "slideInLeft", "slideInRight", "rotateIn"];
+const cartoonImages = [
+  "https://cdn.pixabay.com/photo/2023/08/03/11/02/woman-8166855_640.png",
+  "https://openclipart.org/image/800px/327338",
+  "https://openclipart.org/image/800px/325250",
+  "https://openclipart.org/image/800px/17447",
+  "https://openclipart.org/image/800px/182877",
+  "https://openclipart.org/image/800px/352179",
+  "https://openclipart.org/image/800px/352162",
+  "https://openclipart.org/image/800px/323111",
+  "https://openclipart.org/image/800px/307491",
+  "https://openclipart.org/image/800px/306696"
+];
+
+let currentLesson = 1;
+let selectedVoice = null;
+let tutorStarted = false;
+
+const editor = document.getElementById("editor");
+const status = document.getElementById("status");
+
+function getVoice() {
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v => v.lang.toLowerCase().startsWith("en-ke") && v.name.toLowerCase().includes("female")) ||
+         voices.find(v => v.lang.toLowerCase().startsWith("en-ng")) ||
+         voices.find(v => v.lang.toLowerCase().startsWith("en-us")) ||
+         voices.find(v => v.lang.toLowerCase().startsWith("en")) ||
+         voices[0];
+}
+
+function speak(text, onEnd) {
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.voice = selectedVoice;
+  utter.rate = 0.88;
+  utter.onend = onEnd;
+  speechSynthesis.speak(utter);
+}
+
+function numberToWords(n) {
+  const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+  const b = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+  const c = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+  if (n <= 9) return a[n];
+  if (n >= 10 && n <= 19) return b[n - 10];
+  if (n % 10 === 0) return c[Math.floor(n / 10)];
+  if (n < 100) return `${c[Math.floor(n / 10)]} ${a[n % 10]}`;
+  return "One Hundred";
+}
+
+function showLesson(n) {
+  if (n > 100) {
+    editor.innerHTML = `<div class="card"><h2>🎉 All Numbers Complete!</h2><p>Great job! You've counted to 100!</p></div>`;
+    status.textContent = "✅ Done.";
+    return;
+  }
+
+  const word = numberToWords(n);
+  const animation = numberAnimations[Math.floor(Math.random() * numberAnimations.length)];
+  let cartoon = cartoonImages[n % cartoonImages.length];
+
+  editor.innerHTML = `
+    <div class="card">
+      <h2>Let's Learn the Number</h2>
+      <div id="num" class="big-number ${animation} animate">${n}</div>
+      <div class="big-word">${word}</div>
+      <img src="${cartoon}" class="cartoon-img" alt="Cartoon Image" />
+    </div>
+  `;
+
+  const el = document.getElementById("num");
+
+  function animateAndSpeak(times) {
+    if (times <= 0) {
+      currentLesson++;
+      setTimeout(() => showLesson(currentLesson), 1500);
+      return;
+    }
+
+    el.classList.remove("animate");
+    void el.offsetWidth;
+    el.classList.add("animate");
+
+    speak(word, () => setTimeout(() => animateAndSpeak(times - 1), 500));
+  }
+
+  status.textContent = `🔢 Lesson ${n}`;
+  setTimeout(() => animateAndSpeak(3), 600);
+}
+
+function startTutor() {
+  if (tutorStarted) return;
+  tutorStarted = true;
+
+  speechSynthesis.onvoiceschanged = () => {
+    selectedVoice = getVoice();
+  };
+
+  const voiceCheck = setInterval(() => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      clearInterval(voiceCheck);
+      selectedVoice = getVoice();
+      showLesson(currentLesson);
+    }
+  }, 200);
+
+  status.textContent = "🔊 Starting Tutor...";
+}
+
+function nextLesson() {
+  if (currentLesson < 100) {
+    currentLesson++;
+    showLesson(currentLesson);
+  }
+}
+
+function prevLesson() {
+  if (currentLesson > 1) {
+    currentLesson--;
+    showLesson(currentLesson);
+  }
+}
+</script>
+</body>
+</html>

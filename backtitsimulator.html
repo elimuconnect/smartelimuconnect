@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Back Titration — Two Phase Simulator</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(180deg,#eaf6ff,#ffffff);
+    display:flex;flex-direction:column;align-items:center;padding:20px;min-height:100vh;
+    color:#033a63;
+  }
+  h1{
+    color:#033a63;
+    margin-bottom:12px;
+    text-shadow:1px 1px 3px #bcd;
+    text-align:center;
+    font-size:1.6rem;
+  }
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    justify-content:center;
+    margin-bottom:16px;
+  }
+  .controls label{
+    background:#ffffffdd;
+    padding:8px 12px;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    font-weight:500;
+  }
+  .controls input,.controls select{
+    margin-left:6px;
+    padding:4px 8px;
+    border-radius:6px;
+    border:1px solid #cbd;
+    width:90px;
+  }
+  #info{
+    width:100%;
+    max-width:900px;
+    margin:12px 0;
+    padding:14px;
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 3px 12px rgba(0,0,0,0.06);
+    font-size:0.95rem;
+  }
+  #stageButtons{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin-bottom:14px;
+  }
+  button{
+    background:#036;
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:0.2s;
+  }
+  button:hover:not([disabled]){ background:#024a80; }
+  button[disabled]{ opacity:0.5; cursor:default; }
+  #canvasWrap{width:100%;max-width:650px; margin-bottom:12px;}
+  canvas{
+    width:100%;
+    height:auto;
+    border:2px solid #033a63;
+    border-radius:12px;
+    background:#f6fbff;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+  }
+  .small{font-size:0.9rem;color:#013;}
+  @media(max-width:520px){ 
+    .controls label{font-size:0.9rem} 
+    .controls input{width:70px} 
+    button{padding:6px 10px} 
+  }
+</style>
+</head>
+<body>
+
+<h1>Back Titration Simulator — Two Phase</h1>
+
+<div class="controls">
+  <label>Solid:
+    <select id="solidSelect">
+      <option value="Na2CO3">Sodium carbonate (Na₂CO₃)</option>
+      <option value="CaCO3">Calcium carbonate (CaCO₃)</option>
+      <option value="MgO">Magnesium oxide (MgO)</option>
+    </select>
+  </label>
+  <label>Mass (g): <input id="solidMass" type="number" step="0.01" value="2.00"></label>
+  <label>Acid:
+  <select id="acidSelect">
+    <option value="HCl">HCl</option>
+    <option value="H2SO4">H₂SO₄</option>
+  </select>
+</label>
+<label>Acid Conc (M): <input id="acidConc" type="number" step="0.01" value="0.50"></label>
+
+<label>Acid Vol (mL): <input id="acidVol" type="number" step="1" value="100"></label>
+
+</div>
+
+<div id="stageButtons">
+  <button id="startReactionBtn">Start Reaction (Beaker)</button>
+ 
+ 
+ <a href="https://elimuconnect.github.io/ELIMU-CONNECT-/adirecttitback"
+   id="proceedBtn"
+   style="display:none; position:fixed; top:10px; left:50%; transform:translateX(-50%);
+          background:#0078D7; color:#fff; padding:10px 20px; border-radius:6px;
+          text-decoration:none; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.2);
+          font-family:Segoe UI, sans-serif; letter-spacing:0.5px;">
+  Proceed to Titration <span style="display:inline-block; transition:transform 0.3s;">➜</span>
+</a>
+
+  <button id="resetBtn">Reset</button>
+</div>
+
+<div id="info" class="small">
+  <p><strong>Phase:</strong> <span id="phaseLabel">Ready — start reaction</span></p>
+  <p><strong>Solid moles:</strong> <span id="molesSolid">—</span> mol &nbsp; | &nbsp;
+     <strong>Acid initial moles:</strong> <span id="molesAcidInit">—</span> mol &nbsp; | &nbsp;
+     <strong>Acid consumed:</strong> <span id="molesAcidConsumed">—</span> mol</p>
+  <p><strong>Remaining acid (moles):</strong> <span id="molesAcidRemain">—</span> mol</p>
+  <p><strong>New molarity of the acid:</strong> <span id="newMol">—</span></p>
+  
+
+
+  
+</div>
+
+<div id="canvasWrap"><canvas id="labCanvas" width="650" height="500"></canvas></div>
+<p class="small">Smart Elimu Connect practicals</p>
+
+
+
+
+<script>
+
+
+ 
+// Define acids and their H+ per molecule
+const acids = {
+  "HCl": { name: "Hydrochloric acid", hPerMolecule: 1 },
+  "H2SO4": { name: "Sulfuric acid", hPerMolecule: 2 }
+};
+
+// Mole ratio table: acid moles needed per mole of solid
+const moleRatios = {
+  "Na2CO3": { "HCl": 2, "H2SO4": 1 },
+  "CaCO3":  { "HCl": 2, "H2SO4": 1 },
+  "MgO":    { "HCl": 2, "H2SO4": 1 }
+};
+
+
+
+/* ---------- State ---------- */
+const solids = {
+  "Na2CO3": { name: "Sodium carbonate (Na₂CO₃)", molarMass: 106.00, hPerMolecule: 2 },
+  "CaCO3": { name: "Calcium carbonate (CaCO₃)", molarMass: 100.00, hPerMolecule: 2 },
+  "MgO":    { name: "Magnesium oxide (MgO)", molarMass: 40.00,  hPerMolecule: 2 }
+};
+
+let phase = "ready"; // ready, reacting, reacted
+let reactionProgress = 0; 
+let reactionAnimReq = null;
+
+let solidKey = "Na2CO3";
+let solidMass = 2.0;
+let acidConc = 0.5;
+let acidVol = 100;
+
+let molesSolid = 0;
+let molesAcidInitial = 0;
+let molesAcidConsumed = 0;
+let molesAcidRemaining = 0;
+
+/* ---------- Elements ---------- */
+const canvas = document.getElementById('labCanvas');
+const ctx = canvas.getContext('2d');
+
+const solidSelect = document.getElementById('solidSelect');
+const solidMassInput = document.getElementById('solidMass');
+const acidConcInput = document.getElementById('acidConc');
+const acidVolInput = document.getElementById('acidVol');
+
+const startReactionBtn = document.getElementById('startReactionBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+const phaseLabel = document.getElementById('phaseLabel');
+const molesSolidEl = document.getElementById('molesSolid');
+const molesAcidInitEl = document.getElementById('molesAcidInit');
+const molesAcidConsumedEl = document.getElementById('molesAcidConsumed');
+const molesAcidRemainEl = document.getElementById('molesAcidRemain');
+
+const acidSelect = document.getElementById('acidSelect');
+
+
+
+
+
+
+
+
+function readInputs(){
+  solidKey = solidSelect.value;
+  solidMass = Math.max(0, parseFloat(solidMassInput.value) || 0);
+  acidKey = acidSelect.value;
+  acidConc = Math.max(0, parseFloat(acidConcInput.value) || 0);
+
+  // Now acidVol is editable
+  acidVol = Math.max(0, parseFloat(acidVolInput.value) || 0);
+}
+
+function computeReactionValues() {
+  readInputs();
+
+  const { molarMass } = solids[solidKey];
+  molesSolid = solidMass / molarMass;
+
+  // Use mole ratio table to calculate acid consumed
+  const ratio = moleRatios[solidKey][acidKey]; 
+  molesAcidConsumed = molesSolid * ratio;
+
+  molesAcidInitial = acidConc * acidVol / 1000; // in liters
+  molesAcidRemaining = molesAcidInitial - molesAcidConsumed;
+
+  return { molesSolid, molesAcidInitial, molesAcidConsumed, molesAcidRemaining };
+}
+
+
+
+function updateInfoUI() {
+  const { molesSolid, molesAcidInitial, molesAcidConsumed, molesAcidRemaining } = computeReactionValues();
+
+  // Display with 4 significant figures
+  molesSolidEl.textContent = Number(molesSolid).toPrecision(4);
+  molesAcidInitEl.textContent = Number(molesAcidInitial).toPrecision(4);
+
+  if (phase === "reacted") {
+    molesAcidConsumedEl.textContent = Number(molesAcidConsumed).toPrecision(4);
+    molesAcidRemainEl.textContent = Number(molesAcidRemaining).toPrecision(4);
+
+    const acidVolL = acidVol / 1000; // mL → L
+    const newMolarity = molesAcidRemaining / acidVolL;
+    document.getElementById("newMol").textContent = Number(newMolarity).toPrecision(4);
+  } else {
+    molesAcidConsumedEl.textContent = "—";
+    molesAcidRemainEl.textContent = "—";
+    document.getElementById("newMol").textContent = "—";
+  }
+}
+
+
+
+/* ---------- Canvas Drawing ---------- */
+function resizeCanvas(){
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.width*0.8;
+  draw();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const w=canvas.width, h=canvas.height, pad=20;
+/* --- Cylindrical Beaker (shorter & wider) --- */
+ctx.save();
+ctx.strokeStyle="#045"; 
+ctx.lineWidth=3;
+
+const beakerHeight = h * 0.5;       // shorter: 50% of canvas height
+const beakerTop = pad + h*0.2;      // move it a bit down
+const beakerBottom = beakerTop + beakerHeight;
+
+const beakerX = w*0.5;
+const radiusX = 80;                  // wider: increase radius
+
+// top ellipse
+ctx.beginPath();
+ctx.ellipse(beakerX, beakerTop, radiusX, 20, 0, 0, 2*Math.PI);
+ctx.stroke();
+
+// sides
+ctx.beginPath();
+ctx.moveTo(beakerX-radiusX, beakerTop);
+ctx.lineTo(beakerX-radiusX, beakerBottom);
+ctx.moveTo(beakerX+radiusX, beakerTop);
+ctx.lineTo(beakerX+radiusX, beakerBottom);
+ctx.stroke();
+
+// bottom ellipse
+ctx.beginPath();
+ctx.ellipse(beakerX, beakerBottom, radiusX, 16, 0, 0, Math.PI);
+ctx.stroke();
+
+// Arrow label
+ctx.strokeStyle="#036"; 
+ctx.fillStyle="#036"; 
+ctx.lineWidth=2;
+ctx.beginPath();
+ctx.moveTo(beakerX+radiusX+20, beakerTop+20);
+ctx.lineTo(beakerX+radiusX+5, beakerTop+5);
+ctx.stroke();
+ctx.font="16px Arial"; 
+ctx.fillText("Beaker", beakerX+radiusX+25, beakerTop+25);
+
+ctx.restore();
+
+  
+  
+  /* --- Acid --- */
+  const acidHeight = Math.min(1, acidVol/200)*(beakerBottom-beakerTop-15);
+  const acidTop = beakerBottom - acidHeight;
+  ctx.fillStyle="rgba(255,100,100,0.7)";
+  ctx.beginPath();
+  ctx.ellipse(beakerX, acidTop, radiusX-4, 7, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillRect(beakerX-radiusX+4, acidTop, 2*(radiusX-4), acidHeight);
+
+  ctx.fillStyle="#012"; ctx.font="14px Arial";
+  ctx.fillText("Acid", beakerX+radiusX+28, acidTop+10);
+  
+  
+  
+  
+/* --- Solid --- */
+const s = solids[solidKey];
+let solidColor = "#fff"; 
+if(solidKey==="MgO") solidColor="#f0f0f0";
+ctx.fillStyle=solidColor;
+const dropRadius = 25;
+
+// FALLING: start at top of beaker, end at bottom of acid
+const startY = beakerTop - dropRadius/2;  // slightly above top
+const endY = acidTop + acidHeight - dropRadius; // solid lands on acid
+const dropY = startY + (endY - startY) * reactionProgress;
+
+ctx.beginPath(); 
+ctx.arc(beakerX, dropY, dropRadius, 0, Math.PI*2); 
+ctx.fill();
+ctx.fillStyle="#000"; 
+ctx.font="14px Arial"; 
+ctx.fillText(s.name, beakerX + dropRadius + 6, dropY);
+
+
+  ctx.restore();
+}
+
+/* ---------- Reaction Animation ---------- */
+function startReaction(){
+  if(phase==="reacting") return;
+  readInputs();
+  phase="reacting"; reactionProgress=0;
+  phaseLabel.textContent="Reaction in progress...";
+  startReactionBtn.disabled=true;
+
+  const duration=2500, startTime=performance.now();
+
+  function anim(now){
+    const t = Math.min(1,(now-startTime)/duration);
+    reactionProgress = t;
+    draw();
+    if(t<1) reactionAnimReq = requestAnimationFrame(anim);
+    else { reactionProgress=1; finalizeReaction(); draw(); }
+  }
+  reactionAnimReq=requestAnimationFrame(anim);
+}
+
+
+
+
+
+
+
+function finalizeReaction() {
+  computeReactionValues();
+  phase = "reacted";
+  phaseLabel.textContent = "Reaction complete — copy New acid molarity then click ,proceed to titration.";
+  updateInfoUI();
+
+  const btn = document.getElementById("proceedBtn");
+  btn.style.display = "inline-block";
+  btn.style.opacity = 0;
+  btn.style.transition = "opacity 0.6s";
+  requestAnimationFrame(() => btn.style.opacity = 1);
+
+  // Add hover animation
+  btn.onmouseenter = () => btn.querySelector("span").style.transform = "translateX(6px)";
+  btn.onmouseleave = () => btn.querySelector("span").style.transform = "translateX(0)";
+}
+
+
+/* ---------- Reset ---------- */
+function resetAll(){
+  if(reactionAnimReq) cancelAnimationFrame(reactionAnimReq);
+  phase="ready"; reactionProgress=0;
+  startReactionBtn.disabled=false;
+  phaseLabel.textContent="Ready — start reaction";
+  solidSelect.value="Na2CO3"; solidMassInput.value="2.00";
+  acidConcInput.value="0.50"; acidVolInput.value="100";
+  updateInfoUI();
+  draw();
+}
+
+/* ---------- Wiring ---------- */
+startReactionBtn.addEventListener('click', ()=>{ updateInfoUI(); startReaction(); });
+resetBtn.addEventListener('click', ()=>{ resetAll(); });
+
+[solidSelect, solidMassInput, acidConcInput, acidVolInput].forEach(el=>{
+  el.addEventListener('input',()=>{ updateInfoUI(); draw(); });
+});
+
+/* ---------- Initialize ---------- */
+resetAll();
+resizeCanvas();
+
+
+
+
+
+[solidSelect, solidMassInput, acidSelect, acidConcInput, acidVolInput].forEach(el=>{
+  el.addEventListener('input',()=>{ updateInfoUI(); draw(); });
+});
+
+
+
+
+
+</script>
+
+</body>
+</html>
+

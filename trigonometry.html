@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trigonometry Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #unitCircleCanvas {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #ccc;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #result, #explanation {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trigonometry Tool for Secondary School</h1>
+        
+        <!-- Input for Angle -->
+        <label for="angle">Enter Angle (in degrees):</label>
+        <input type="number" id="angle" placeholder="e.g., 30" required>
+        
+        <!-- Choose Trigonometric Function -->
+        <div>
+            <button onclick="calculateTrig('sin')">Sine (sin)</button>
+            <button onclick="calculateTrig('cos')">Cosine (cos)</button>
+            <button onclick="calculateTrig('tan')">Tangent (tan)</button>
+        </div>
+        
+        <!-- Results and Explanation -->
+        <div id="result"></div>
+        <div id="explanation"></div>
+
+        <!-- Unit Circle Visualization -->
+        <h2>Unit Circle Visualization</h2>
+        <canvas id="unitCircleCanvas" width="400" height="400"></canvas>
+    </div>
+
+    <script>
+
+        // Calculate Trigonometric Functions
+        function calculateTrig(functionType) {
+            let angle = parseFloat(document.getElementById('angle').value);
+
+            // Normalize the angle to be between 0° and 360°
+            angle = angle % 360;  // This will bring angles like 450° to 90°.
+
+            const radians = angle * (Math.PI / 180); // Convert angle to radians
+
+            let result;
+            let explanation;
+
+            // Check for undefined tan(90°) and tan(270°) and other possible undefined cases
+            if (functionType === 'tan' && (angle === 90 || angle === 270)) {
+                result = "undefined";
+                explanation = `tan(${angle}°) is undefined because cos(${angle}°) = 0.`;
+            } else {
+                switch (functionType) {
+                    case 'sin':
+                        result = Math.sin(radians).toFixed(4);
+                        explanation = `sin(${angle}°) = ${result}<br><br><strong>How to use the Sine Table:</strong><br>Look up the sine value for the given angle (or the closest available value).`;
+                        break;
+                    case 'cos':
+                        result = Math.cos(radians).toFixed(4);
+                        explanation = `cos(${angle}°) = ${result}<br><br><strong>How to use the Cosine Table:</strong><br>Look up the cosine value for the given angle (or the closest available value).`;
+                        break;
+                    case 'tan':
+                        result = Math.tan(radians).toFixed(4);
+                        if (result === "Infinity" || result === "-Infinity") {
+                            result = "undefined";
+                            explanation = `tan(${angle}°) is undefined because cos(${angle}°) = 0.`;
+                        } else {
+                            explanation = `tan(${angle}°) = ${result}<br><br><strong>How to use the Tangent Table:</strong><br>Look up the tangent value for the given angle (or the closest available value).`;
+                        }
+                        break;
+                    default:
+                        result = "Invalid function.";
+                        explanation = "Please select a valid trigonometric function.";
+                }
+            }
+
+            // Display the result and explanation
+            document.getElementById('result').innerHTML = `<strong>Result:</strong> ${result}`;
+            document.getElementById('explanation').innerHTML = explanation;
+
+            // Visualize the Unit Circle (Make sure to define this function elsewhere or remove it)
+            visualizeUnitCircle(angle, functionType);
+        }
+
+        // Visualize Unit Circle
+        function visualizeUnitCircle(angle, functionType) {
+            const canvas = document.getElementById('unitCircleCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const radius = 150; // Radius of the unit circle
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw the unit circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw axis lines
+            ctx.beginPath();
+            ctx.moveTo(centerX, 0);
+            ctx.lineTo(centerX, canvas.height);
+            ctx.moveTo(0, centerY);
+            ctx.lineTo(canvas.width, centerY);
+            ctx.strokeStyle = '#ccc';
+            ctx.stroke();
+
+            // Angle in radians
+            const angleRadians = angle * (Math.PI / 180);
+
+            // Calculate point on the unit circle
+            const x = centerX + radius * Math.cos(angleRadians);
+            const y = centerY - radius * Math.sin(angleRadians);
+
+            // Draw the point on the unit circle
+            ctx.beginPath();
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+
+            // Label the angle
+            ctx.font = '16px Arial';
+            ctx.fillText(`${angle}°`, x + 10, y - 10);
+
+            // Draw the sine and cosine projections
+            if (functionType === 'sin' || functionType === 'cos' || functionType === 'tan') {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, centerY); // Projection of cosine
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(x, centerY);
+                ctx.lineTo(x, y); // Projection of sine
+                ctx.strokeStyle = 'green';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Draw the angle line
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);  // From center to point on the circle
+            ctx.lineTo(x, y);  // Line representing the angle
+            ctx.strokeStyle = 'orange';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Add arc to show the angle visually
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, angleRadians);  // Arc from center to the point on the circle
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = 'orange';
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dashed line for other elements
+        }
+    </script>
+</body>
+</html>
+

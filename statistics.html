@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	
+    <title>Statistics Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        input, button { margin: 5px; padding: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 5px; text-align: center; }
+    </style>
+	
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <h1>Statistics Calculator</h1>
+
+   
+   <h2>Ungrouped Data</h2>
+<label>Enter numbers (comma-separated):</label>
+<input type="text" id="ungroupedData">
+<button onclick="calculateMeanUngrouped()">Mean</button>
+<button onclick="calculateMedianUngrouped()">Median</button>
+<button onclick="calculateVarianceUngrouped()">Variance</button>
+<button onclick="calculateStdDevUngrouped()">Standard Deviation</button>
+<button onclick="calculateQuartilesUngrouped()">Quartiles</button>
+<button onclick="calculateDecilesUngrouped()">Deciles</button>
+<button onclick="calculatePercentilesUngrouped()">Percentiles</button>
+
+<h3>Results:</h3>
+<p id="ungroupedResults"></p>
+	
+	
+	
+	
+	
+	 <h2>Grouped Data Input</h2>
+    <textarea id="groupedDataInput" placeholder="Example: 10-20,5 | 20-30,8 | 30-40,12"></textarea>
+
+    <h3>Mean Calculation</h3>
+    <button onclick="calculateMeanGrouped()">Mean (Simple Method)</button>
+    <button onclick="calculateMeanAssumed()">Mean (Assumed Mean Method)</button>
+	
+	 <h3>Median,variance,standard variation Calculation</h3>
+	<button onclick="calculateGroupedMedian()">Median</button>
+    <button onclick="calculateGroupedVariance()">Variance</button>
+    <button onclick="calculateGroupedStdDev()">Standard Deviation</button>
+
+
+    <h3>Quartiles, Deciles, Percentiles</h3>
+    <button onclick="calculateQDP('Quartiles')">Calculate Quartiles</button>
+    <button onclick="calculateQDP('Deciles')">Calculate Deciles</button>
+    <button onclick="calculateQDP('Percentiles')">Calculate Percentiles</button>
+
+    <h3>Results</h3>
+    <div id="results" class="result-box"></div>
+	
+    
+	
+	
+	
+
+    <script>
+
+        function calculateMeanUngrouped() {
+            let input = document.getElementById("ungroupedData").value;
+            let numbers = input.split(",").map(Number);
+            let sum = numbers.reduce((acc, num) => acc + num, 0);
+            let mean = sum / numbers.length;
+
+            let steps = `
+                <b>Step-by-Step Mean Calculation:</b><br>
+                Sum of numbers: ${sum} <br>
+                Number of values: ${numbers.length} <br>
+                Mean = Sum / Count = ${sum} / ${numbers.length} = <b>${mean.toFixed(2)}</b>
+            `;
+
+            document.getElementById("ungroupedResults").innerHTML = steps;
+        }
+
+        function calculateMedianUngrouped() {
+            let input = document.getElementById("ungroupedData").value;
+            let numbers = input.split(",").map(Number).sort((a, b) => a - b);
+            let median;
+            let n = numbers.length;
+
+            if (n % 2 === 0) {
+                median = (numbers[n / 2 - 1] + numbers[n / 2]) / 2;
+            } else {
+                median = numbers[Math.floor(n / 2)];
+            }
+
+            let steps = `
+                <b>Step-by-Step Median Calculation:</b><br>
+                Sorted Data: ${numbers.join(", ")} <br>
+                ${n % 2 === 0 
+                    ? `Median = Average of middle values (${numbers[n / 2 - 1]} and ${numbers[n / 2]}) = <b>${median.toFixed(2)}</b>` 
+                    : `Median = Middle value = <b>${median.toFixed(2)}</b>`}
+            `;
+
+            document.getElementById("ungroupedResults").innerHTML = steps;
+        }
+
+        function calculateVarianceUngrouped() {
+            let input = document.getElementById("ungroupedData").value;
+            let numbers = input.split(",").map(Number);
+            let sum = numbers.reduce((acc, num) => acc + num, 0);
+            let mean = sum / numbers.length;
+
+            let squaredDiffs = numbers.map(num => Math.pow(num - mean, 2));
+            let variance = squaredDiffs.reduce((acc, num) => acc + num, 0) / numbers.length;
+
+            let steps = `
+                <b>Step-by-Step Variance Calculation:</b><br>
+                Mean = ${mean.toFixed(2)} <br>
+                Squared Differences: ${squaredDiffs.map(d => d.toFixed(2)).join(", ")} <br>
+                Variance = Sum of Squared Differences / Count = ${variance.toFixed(2)}
+            `;
+
+            document.getElementById("ungroupedResults").innerHTML = steps;
+        }
+
+        function calculateStdDevUngrouped() {
+            let input = document.getElementById("ungroupedData").value;
+            let numbers = input.split(",").map(Number);
+            let sum = numbers.reduce((acc, num) => acc + num, 0);
+            let mean = sum / numbers.length;
+
+            let squaredDiffs = numbers.map(num => Math.pow(num - mean, 2));
+            let variance = squaredDiffs.reduce((acc, num) => acc + num, 0) / numbers.length;
+            let stdDev = Math.sqrt(variance);
+
+            let steps = `
+                <b>Step-by-Step Standard Deviation Calculation:</b><br>
+                Variance = ${variance.toFixed(2)} <br>
+                Standard Deviation = √Variance = √${variance.toFixed(2)} = <b>${stdDev.toFixed(2)}</b>
+            `;
+
+            document.getElementById("ungroupedResults").innerHTML = steps;
+        }
+		
+		
+		
+		
+		
+		
+		// Function to calculate Quartiles for Ungrouped Data
+function calculateQuartilesUngrouped() {
+    let input = document.getElementById("ungroupedData").value;
+    let numbers = input.split(",").map(Number).sort((a, b) => a - b);
+    let n = numbers.length;
+
+    let q1 = getPercentile(numbers, 25);
+    let q2 = getPercentile(numbers, 50); // Median
+    let q3 = getPercentile(numbers, 75);
+
+    let result = `
+        <b>Step-by-Step Quartile Calculation:</b><br>
+        Sorted Data: ${numbers.join(", ")}<br>
+        Q1 (25th percentile) = <b>${q1.toFixed(2)}</b><br>
+        Q2 (Median) = <b>${q2.toFixed(2)}</b><br>
+        Q3 (75th percentile) = <b>${q3.toFixed(2)}</b>
+    `;
+
+    document.getElementById("ungroupedResults").innerHTML = result;
+}
+
+// Function to calculate Deciles for Ungrouped Data
+function calculateDecilesUngrouped() {
+    let input = document.getElementById("ungroupedData").value;
+    let numbers = input.split(",").map(Number).sort((a, b) => a - b);
+    
+    let results = `<b>Step-by-Step Decile Calculation:</b><br>Sorted Data: ${numbers.join(", ")}<br>`;
+    for (let i = 1; i <= 9; i++) {
+        results += `D${i} (Position ${i * 10}%) = <b>${getPercentile(numbers, i * 10).toFixed(2)}</b><br>`;
+    }
+
+    document.getElementById("ungroupedResults").innerHTML = results;
+}
+
+// Function to calculate Percentiles for Ungrouped Data
+function calculatePercentilesUngrouped() {
+    let input = document.getElementById("ungroupedData").value;
+    let numbers = input.split(",").map(Number).sort((a, b) => a - b);
+    
+    let results = `<b>Step-by-Step Percentile Calculation:</b><br>Sorted Data: ${numbers.join(", ")}<br>`;
+    for (let i = 10; i <= 90; i += 10) {
+        results += `P${i} (Position ${i}%) = <b>${getPercentile(numbers, i).toFixed(2)}</b><br>`;
+    }
+
+    document.getElementById("ungroupedResults").innerHTML = results;
+}
+
+// Function to find percentile in sorted array
+function getPercentile(numbers, percentile) {
+    let index = (percentile / 100) * (numbers.length - 1);
+    let lowerIndex = Math.floor(index);
+    let upperIndex = Math.ceil(index);
+
+    if (lowerIndex === upperIndex) return numbers[lowerIndex];
+
+    return numbers[lowerIndex] + (index - lowerIndex) * (numbers[upperIndex] - numbers[lowerIndex]);
+}
+		
+		
+		
+
+		
+		
+		 // Function to parse grouped data from textarea input (supports "145-149,2|150-154,5|155-159,16|")
+function parseGroupedData() {
+    let inputData = document.getElementById("groupedDataInput").value.trim().split("|").filter(row => row);
+    let intervals = [], frequencies = [], cumulativeFreq = [0], N = 0, sumFX = 0, assumedMean = 0;
+
+    inputData.forEach(row => {
+        let parts = row.split(",");
+        let range = parts[0].split("-");
+        let lower = parseFloat(range[0]);
+        let upper = parseFloat(range[1]);
+        let freq = parseInt(parts[1]);
+        let mid = (lower + upper) / 2;
+
+        intervals.push([lower, upper]);
+        frequencies.push(freq);
+        N += freq;
+        cumulativeFreq.push(N);
+        sumFX += mid * freq;
+    });
+
+    assumedMean = (intervals[Math.floor(intervals.length / 2)][0] + intervals[Math.floor(intervals.length / 2)][1]) / 2;
+
+    return { intervals, frequencies, cumulativeFreq, N, sumFX, assumedMean };
+}
+
+
+
+
+
+
+
+  let histogramChart, frequencyPolygonChart, ogiveChart;
+
+        function clearChart(chart) {
+            if (chart) {
+                chart.destroy();
+            }
+        }
+
+        function generateAllGraphs() {
+            generateHistogram();
+            generateFrequencyPolygon();
+            generateOgive();
+        }
+
+        function generateHistogram() {
+            let input = document.getElementById("groupedDataInput").value.trim();
+            if (!input) return alert("Enter valid grouped data.");
+
+            let data = input.split("|").map(row => row.trim().split(","));
+            let labels = [], frequencies = [];
+
+            data.forEach(row => {
+                let [range, freq] = row;
+                let [lower, upper] = range.split("-").map(Number);
+                labels.push(`${lower}-${upper}`);
+                frequencies.push(parseInt(freq));
+            });
+
+            let ctx = document.getElementById("histogramChart").getContext("2d");
+            clearChart(histogramChart);
+            histogramChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Frequency",
+                        data: frequencies,
+                        backgroundColor: "rgba(75, 192, 192, 0.6)",
+                        borderColor: "rgba(75, 192, 192, 1)",
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function generateFrequencyPolygon() {
+            let input = document.getElementById("groupedDataInput").value.trim();
+            if (!input) return alert("Enter valid grouped data.");
+
+            let data = input.split("|").map(row => row.trim().split(","));
+            let midpoints = [], frequencies = [];
+
+            data.forEach(row => {
+                let [range, freq] = row;
+                let [lower, upper] = range.split("-").map(Number);
+                let midpoint = (lower + upper) / 2;
+                midpoints.push(midpoint);
+                frequencies.push(parseInt(freq));
+            });
+
+            let ctx = document.getElementById("frequencyPolygonChart").getContext("2d");
+            clearChart(frequencyPolygonChart);
+            frequencyPolygonChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: midpoints,
+                    datasets: [{
+                        label: "Frequency Polygon",
+                        data: frequencies,
+                        borderColor: "blue",
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function generateOgive() {
+            let input = document.getElementById("groupedDataInput").value.trim();
+            if (!input) return alert("Enter valid grouped data.");
+
+            let data = input.split("|").map(row => row.trim().split(","));
+            let upperBounds = [], cumulativeFreqs = [];
+            let cumulativeSum = 0;
+
+            data.forEach(row => {
+                let [range, freq] = row;
+                let [lower, upper] = range.split("-").map(Number);
+                cumulativeSum += parseInt(freq);
+                upperBounds.push(upper);
+                cumulativeFreqs.push(cumulativeSum);
+            });
+
+            let ctx = document.getElementById("ogiveChart").getContext("2d");
+            clearChart(ogiveChart);
+            ogiveChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: upperBounds,
+                    datasets: [{
+                        label: "Cumulative Frequency (Ogive)",
+                        data: cumulativeFreqs,
+                        borderColor: "red",
+                        borderWidth: 2,
+                        fill: false
+                    }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function calculateMeanGrouped() {
+            let input = document.getElementById("groupedDataInput").value.trim();
+            if (!input) {
+                document.getElementById("results").innerHTML = "Please enter valid grouped data.";
+                return;
+            }
+
+            let lines = input.split("|").map(line => line.trim());
+            let sumFX = 0, sumF = 0;
+            let tableData = "<b>Step-by-Step Grouped Mean Calculation:</b><br><table border='1'><tr><th>Class Interval</th><th>Midpoint (x)</th><th>Frequency (f)</th><th>f × x</th></tr>";
+
+            lines.forEach(line => {
+                let [range, freq] = line.split(",");
+                if (!range || !freq) return;
+
+                let [lower, upper] = range.split("-").map(Number);
+                let f = Number(freq.trim());
+
+                if (isNaN(lower) || isNaN(upper) || isNaN(f)) return;
+
+                let midpoint = (lower + upper) / 2;
+                sumFX += f * midpoint;
+                sumF += f;
+
+                tableData += `<tr><td>${lower}-${upper}</td><td>${midpoint}</td><td>${f}</td><td>${(f * midpoint).toFixed(2)}</td></tr>`;
+            });
+
+            if (sumF === 0) {
+                document.getElementById("results").innerHTML = "Error: Sum of frequencies cannot be zero.";
+                return;
+            }
+
+            let mean = sumFX / sumF;
+
+            tableData += `</table><br>Sum (f × x) = ${sumFX.toFixed(2)} <br>Sum (f) = ${sumF} <br>`;
+            tableData += `Mean = Sum (f × x) / Sum (f) = ${sumFX.toFixed(2)} / ${sumF} = <b>${mean.toFixed(2)}</b>`;
+
+            document.getElementById("results").innerHTML = tableData;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       function calculateMeanGrouped() {
+    let input = document.getElementById("groupedDataInput").value.trim();
+    if (!input) {
+        document.getElementById("results").innerHTML = "Please enter valid grouped data.";
+        return;
+    }
+
+    let lines = input.split("|").map(line => line.trim());
+    let sumFX = 0, sumF = 0;
+    let tableData = "<b>Step-by-Step Grouped Mean Calculation:</b><br><table><tr><th>Class Interval</th><th>Midpoint (x)</th><th>Frequency (f)</th><th>f × x</th></tr>";
+
+    lines.forEach(line => {
+        let [range, freq] = line.split(",");
+        if (!range || !freq) return;
+
+        let [lower, upper] = range.split("-").map(Number);
+        let f = Number(freq.trim());
+
+        if (isNaN(lower) || isNaN(upper) || isNaN(f)) return;
+
+        let midpoint = (lower + upper) / 2;
+        sumFX += f * midpoint;
+        sumF += f;
+
+        tableData += `<tr><td>${lower}-${upper}</td><td>${midpoint}</td><td>${f}</td><td>${(f * midpoint).toFixed(2)}</td></tr>`;
+    });
+
+    if (sumF === 0) {
+        document.getElementById("results").innerHTML = "Error: Sum of frequencies cannot be zero.";
+        return;
+    }
+
+    let mean = sumFX / sumF;
+
+    tableData += `</table><br>Sum (f × x) = ${sumFX.toFixed(2)} <br>Sum (f) = ${sumF} <br>`;
+    tableData += `Mean = Sum (f × x) / Sum (f) = ${sumFX.toFixed(2)} / ${sumF} = <b>${mean.toFixed(2)}</b>`;
+
+    document.getElementById("results").innerHTML = tableData;
+}
+
+
+
+
+function calculateMeanAssumed() {
+    let inputData = document.getElementById("groupedDataInput").value.trim().split("|").filter(row => row);
+
+    if (inputData.length === 0) {
+        document.getElementById("results").innerHTML = "Please enter valid grouped data.";
+        return;
+    }
+
+    let intervals = [], frequencies = [], midpoints = [], N = 0;
+
+    // Parse input data
+    inputData.forEach(row => {
+        let parts = row.split(",");
+        let range = parts[0].split("-");
+        let lower = parseFloat(range[0]);
+        let upper = parseFloat(range[1]);
+        let freq = parseInt(parts[1]);
+
+        let midpoint = (lower + upper) / 2;
+        
+        intervals.push([lower, upper]);
+        frequencies.push(freq);
+        midpoints.push(midpoint);
+        N += freq;
+    });
+
+    // Choose Assumed Mean (A) as the midpoint of the middle class
+    let medianClassIndex = Math.floor(intervals.length / 2);
+    let assumedMean = midpoints[medianClassIndex];
+
+    let sumFD = 0, sumF = 0;
+    let tableData = "<b>Step-by-Step Assumed Mean Calculation:</b><br><table border='1'><tr><th>Class Interval</th><th>Midpoint (x)</th><th>Frequency (f)</th><th>d = x - A</th><th>f × d</th></tr>";
+
+    for (let i = 0; i < intervals.length; i++) {
+        let x = midpoints[i];
+        let f = frequencies[i];
+        let d = x - assumedMean;  // Deviation
+        let fd = f * d;
+
+        sumF += f;
+        sumFD += fd;
+
+        tableData += `<tr><td>${intervals[i][0]}-${intervals[i][1]}</td><td>${x}</td><td>${f}</td><td>${d.toFixed(2)}</td><td>${fd.toFixed(2)}</td></tr>`;
+    }
+
+    // Compute mean using the simplified formula
+    let mean = assumedMean + (sumFD / sumF);
+
+    // Display step-by-step calculations
+    tableData += `</table><br>Assumed Mean (A) = ${assumedMean} <br>`;
+    tableData += `Sum of (f × d) = ${sumFD.toFixed(2)} <br>Sum of f = ${sumF} <br>`;
+    tableData += `Mean = A + (Σ(f × d) / Σf) <br>`;
+    tableData += `Mean = ${assumedMean} + (${sumFD.toFixed(2)} / ${sumF}) <br>`;
+    tableData += `<b>Final Mean = ${mean.toFixed(2)}</b>`;
+
+    document.getElementById("results").innerHTML = tableData;
+
+
+
+
+}
+
+
+
+
+function parseGroupedData() {
+            let input = document.getElementById("groupedDataInput").value.trim().split("|").filter(row => row);
+            let intervals = [], frequencies = [], cumulativeFreq = [0], N = 0, sumFX = 0;
+
+            input.forEach(row => {
+                let parts = row.split(",");
+                let range = parts[0].split("-");
+                let lower = parseFloat(range[0]);
+                let upper = parseFloat(range[1]);
+                let freq = parseInt(parts[1]);
+                let mid = (lower + upper) / 2;
+
+                intervals.push([lower, upper]);
+                frequencies.push(freq);
+                N += freq;
+                cumulativeFreq.push(N);
+                sumFX += mid * freq;
+            });
+
+            return { intervals, frequencies, cumulativeFreq, N, sumFX };
+        }
+
+        function calculateGroupedMedian() {
+            let { intervals, frequencies, cumulativeFreq, N } = parseGroupedData();
+            if (!intervals.length) return;
+
+            let medianClassIndex = cumulativeFreq.findIndex(cf => cf >= N / 2) - 1;
+            let L = intervals[medianClassIndex][0];  // Lower boundary
+            let F = cumulativeFreq[medianClassIndex]; // Cumulative frequency before median class
+            let f = frequencies[medianClassIndex];    // Frequency of median class
+            let h = intervals[medianClassIndex][1] - intervals[medianClassIndex][0]; // Class width
+
+            let median = L + ((N / 2 - F) / f) * h;
+
+            let result = `<b>Step-by-Step Median Calculation:</b><br>
+                Total Frequency (N) = ${N} <br>
+                Median Class = ${intervals[medianClassIndex][0]} - ${intervals[medianClassIndex][1]} <br>
+                Lower Boundary (L) = ${L} <br>
+                Cumulative Frequency before Median Class (F) = ${F} <br>
+                Frequency of Median Class (f) = ${f} <br>
+                Class Width (h) = ${h} <br>
+                Median = L + ((N/2 - F) / f) × h <br>
+                = ${L} + ((${N / 2} - ${F}) / ${f}) × ${h} <br>
+                = <b>${median.toFixed(2)}</b>`;
+
+            document.getElementById("results").innerHTML = result;
+        }
+
+        function calculateGroupedVariance() {
+            let { intervals, frequencies, N, sumFX } = parseGroupedData();
+            if (!intervals.length) return;
+
+            let mean = sumFX / N;
+            let sumFD2 = 0;
+
+            let result = `<b>Step-by-Step Variance Calculation:</b><br>
+                Mean (μ) = Sum(f × x) / Sum(f) = ${sumFX.toFixed(2)} / ${N} = ${mean.toFixed(2)} <br>
+                <table><tr><th>Class Interval</th><th>Midpoint (x)</th><th>f</th><th>(x - μ)²</th><th>f × (x - μ)²</th></tr>`;
+
+            for (let i = 0; i < intervals.length; i++) {
+                let midpoint = (intervals[i][0] + intervals[i][1]) / 2;
+                let f = frequencies[i];
+                let deviationSquared = Math.pow(midpoint - mean, 2);
+                let fD2 = f * deviationSquared;
+                sumFD2 += fD2;
+
+                result += `<tr><td>${intervals[i][0]}-${intervals[i][1]}</td><td>${midpoint}</td><td>${f}</td><td>${deviationSquared.toFixed(2)}</td><td>${fD2.toFixed(2)}</td></tr>`;
+            }
+
+            let variance = sumFD2 / N;
+            result += `</table><br>
+                Sum(f × (x - μ)²) = ${sumFD2.toFixed(2)} <br>
+                Variance (σ²) = Sum(f × (x - μ)²) / Sum(f) <br>
+                = ${sumFD2.toFixed(2)} / ${N} <br>
+                = <b>${variance.toFixed(2)}</b>`;
+
+            document.getElementById("results").innerHTML = result;
+        }
+
+        function calculateGroupedStdDev() {
+            let { intervals, frequencies, N, sumFX } = parseGroupedData();
+            if (!intervals.length) return;
+
+            let mean = sumFX / N;
+            let sumFD2 = 0;
+
+            let result = `<b>Step-by-Step Standard Deviation Calculation:</b><br>
+                Mean (μ) = ${mean.toFixed(2)} <br>
+                <table><tr><th>Class Interval</th><th>Midpoint (x)</th><th>f</th><th>(x - μ)²</th><th>f × (x - μ)²</th></tr>`;
+
+            for (let i = 0; i < intervals.length; i++) {
+                let midpoint = (intervals[i][0] + intervals[i][1]) / 2;
+                let f = frequencies[i];
+                let deviationSquared = Math.pow(midpoint - mean, 2);
+                let fD2 = f * deviationSquared;
+                sumFD2 += fD2;
+
+                result += `<tr><td>${intervals[i][0]}-${intervals[i][1]}</td><td>${midpoint}</td><td>${f}</td><td>${deviationSquared.toFixed(2)}</td><td>${fD2.toFixed(2)}</td></tr>`;
+            }
+
+            let variance = sumFD2 / N;
+            let stdDev = Math.sqrt(variance);
+            result += `</table><br>
+                Variance (σ²) = ${variance.toFixed(2)} <br>
+                Standard Deviation (σ) = √Variance = √${variance.toFixed(2)} <br>
+                = <b>${stdDev.toFixed(2)}</b>`;
+
+            document.getElementById("results").innerHTML = result;
+        }
+
+
+
+
+
+
+
+// Function to calculate Quartiles, Deciles, Percentiles
+function calculateQDP(type) {
+    let { intervals, frequencies, cumulativeFreq, N } = parseGroupedData();
+    let resultsHTML = `<b>Step-by-Step ${type} Calculation:</b><br>`;
+
+    let divisions = type === "Quartiles" ? [1, 2, 3] : 
+                    type === "Deciles" ? Array.from({ length: 9 }, (_, i) => i + 1) : 
+                    Array.from({ length: 9 }, (_, i) => (i + 1) * 10);
+
+    let divisor = type === "Quartiles" ? 4 : type === "Deciles" ? 10 : 100;
+
+    for (let value of divisions) {
+        let position = (value / divisor) * N;
+        let dataClass = findClass(position, intervals, frequencies, cumulativeFreq);
+        let resultValue = dataClass.L + ((position - dataClass.F) / dataClass.f) * dataClass.h;
+
+        resultsHTML += `${type.charAt(0)}${value} Position = (${value}/${divisor}) × ${N} = ${position.toFixed(2)}<br>`;
+        resultsHTML += `${type.charAt(0)}${value} = ${dataClass.L} + ((${position.toFixed(2)} - ${dataClass.F}) / ${dataClass.f}) × ${dataClass.h} = <b>${resultValue.toFixed(2)}</b><br><br>`;
+    }
+
+    document.getElementById("results").innerHTML = resultsHTML;
+}
+
+
+
+
+
+
+
+
+// Function to find the class containing a given position
+function findClass(pos, intervals, frequencies, cumulativeFreq) {
+    for (let i = 0; i < intervals.length; i++) {
+        if (cumulativeFreq[i] < pos && pos <= cumulativeFreq[i + 1]) {
+            return {
+                L: intervals[i][0],  // Lower boundary
+                F: cumulativeFreq[i], // Cumulative frequency before class
+                f: frequencies[i], // Frequency of class
+                h: intervals[i][1] - intervals[i][0] // Class width
+            };
+        }
+    }
+}
+		 		
+    </script>
+
+</body>
+</html>
+

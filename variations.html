@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Variation Laws Tool</title>
+  <style>
+    body {
+      font-family: Arial;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+    h2 {
+      color: #2e6da4;
+    }
+    label, select, input {
+      margin-top: 8px;
+      display: block;
+    }
+    input[type="number"] {
+      width: 120px;
+    }
+    #output {
+      background: #fff;
+      padding: 15px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h2>Variation Law Solver</h2>
+
+  <label for="variationType">Select variation type:</label>
+  <select id="variationType">
+    <option value="direct">Direct (yᵐ ∝ xⁿ)</option>
+    <option value="inverse">Inverse (yᵐ ∝ 1/xⁿ)</option>
+    <option value="joint">Joint (yᵐ ∝ xⁿ·zᵖ)</option>
+    <option value="partial">Partial (y = kx + c)</option>
+  </select>
+
+  <div id="vars">
+    <label>Enter x:</label>
+    <input type="number" id="x" step="any">
+    <label>Enter y:</label>
+    <input type="number" id="y" step="any">
+    <label id="zLabel" style="display:none;">Enter z:</label>
+    <input type="number" id="z" step="any" style="display:none;">
+
+    <label id="xPowerLabel">Power of x (n):</label>
+    <input type="number" id="xPower" value="1" step="any">
+    <label id="yPowerLabel">Power of y (m):</label>
+    <input type="number" id="yPower" value="1" step="any">
+    <label id="zPowerLabel" style="display:none;">Power of z (p):</label>
+    <input type="number" id="zPower" value="1" step="any" style="display:none;">
+  </div>
+
+  <div id="partialInputs" style="display:none;">
+  <label>Pair 1:</label>
+  <input type="number" id="pair1x" placeholder="x₁" step="any">
+  <input type="number" id="pair1y" placeholder="y₁" step="any"><br>
+  
+  <label>Pair 2:</label>
+  <input type="number" id="pair2x" placeholder="x₂" step="any">
+  <input type="number" id="pair2y" placeholder="y₂" step="any">
+</div>
+
+  <button onclick="deduceVariation()">Solve Variation</button>
+
+  <div id="output"></div>
+
+  <script>
+
+
+    function fmt(num) {
+      return num.toFixed(4).replace(/\.?0+$/, '');
+    }
+
+    document.getElementById("variationType").addEventListener("change", function() {
+      const t = this.value;
+      const isJoint = t === "joint";
+      const isPartial = t === "partial";
+
+      document.getElementById("vars").style.display = isPartial ? "block" : "block";
+      document.getElementById("zLabel").style.display = isJoint ? "block" : "none";
+      document.getElementById("z").style.display = isJoint ? "inline-block" : "none";
+      document.getElementById("zPowerLabel").style.display = isJoint ? "block" : "none";
+      document.getElementById("zPower").style.display = isJoint ? "inline-block" : "none";
+
+      const powerLabels = ["xPowerLabel", "xPower", "yPowerLabel", "yPower"];
+      powerLabels.forEach(id => document.getElementById(id).style.display = isPartial ? "none" : "block");
+
+      document.getElementById("partialInputs").style.display = isPartial ? "block" : "none";
+    });
+
+    function deduceVariation() {
+      const t = document.getElementById("variationType").value;
+      let steps = "", finalEq = "";
+
+      if (t === "direct") {
+        const x = +document.getElementById("x").value;
+        const y = +document.getElementById("y").value;
+        const n = +document.getElementById("xPower").value;
+        const m = +document.getElementById("yPower").value;
+        const num = Math.pow(y, m), den = Math.pow(x, n), k = num/den;
+        steps += `Step 1: Write the variation → y^${m} ∝ x^${n}\n`;
+        steps += `Step 2: Introduce constant k → y^${m} = k·x^${n}\n`;
+        steps += `Step 3: Substitute values: ${y}^${m} = k·${x}^${n}\n`;
+        steps += `⇒ k = ${fmt(num)} / ${fmt(den)} = ${fmt(k)}\n`;
+        finalEq = m === 1
+          ? `Final equation: y = ${fmt(k)}x${n !== 1 ? " power " + n : ""}`
+          : `Final equation: y = (${fmt(k)}x${n !== 1 ? "^" + n : ""})^(1/${m})`;
+      }
+      else if (t === "inverse") {
+        const x = +document.getElementById("x").value;
+        const y = +document.getElementById("y").value;
+        const n = +document.getElementById("xPower").value;
+        const m = +document.getElementById("yPower").value;
+        const num = Math.pow(y, m), mul = Math.pow(x, n), k = num*mul;
+        steps += `Step 1: Write the variation → y^${m} ∝ 1/x^${n}\n`;
+        steps += `Step 2: Introduce constant k → y^${m} = k / x^${n}\n`;
+        steps += `Step 3: Substitute values: ${y}^${m} = k / ${x}^${n}\n`;
+        steps += `⇒ k = ${fmt(num)} × ${fmt(mul)} = ${fmt(k)}\n`;
+        finalEq = m === 1
+          ? `Final equation: y = ${fmt(k)}/x${n !== 1 ? " power " + n : ""}`
+          : `Final equation: y = (${fmt(k)}/x${n !== 1 ? "^" + n : ""})^(1/${m})`;
+      }
+      else if (t === "joint") {
+        const x = +document.getElementById("x").value;
+        const y = +document.getElementById("y").value;
+        const z = +document.getElementById("z").value;
+        const n = +document.getElementById("xPower").value;
+        const m = +document.getElementById("yPower").value;
+        const p = +document.getElementById("zPower").value;
+        const num = Math.pow(y, m);
+        const denom = Math.pow(x, n) * Math.pow(z, p);
+        const k = num / denom;
+        steps += `Step 1: Write the variation → y^${m} ∝ x^${n} · z^${p}\n`;
+        steps += `Step 2: Introduce constant k → y^${m} = k · x^${n} · z^${p}\n`;
+        steps += `Step 3: Substitute values: ${y}^${m} = k · ${x}^${n} · ${z}^${p}\n`;
+        steps += `⇒ k = ${fmt(num)} / (${fmt(Math.pow(x, n))} · ${fmt(Math.pow(z, p))}) = ${fmt(k)}\n`;
+        finalEq = m === 1
+          ? `Final equation: y = ${fmt(k)}x${n !== 1 ? " power " + n : ""}z${p !== 1 ? " power " + p : ""}`
+          : `Final equation: y = (${fmt(k)}x^${n}z^${p})^(1/${m})`;
+      }
+    else if (t === "partial") {
+  const x1 = +document.getElementById("pair1x").value;
+  const y1 = +document.getElementById("pair1y").value;
+  const x2 = +document.getElementById("pair2x").value;
+  const y2 = +document.getElementById("pair2y").value;
+
+  const k = (y2 - y1) / (x2 - x1);
+  const c = y1 - k * x1;
+
+  steps += `Step 1: Use form → y = kx + c\n`;
+  steps += `Step 2: Use:\n  Pair 1: (${x1}, ${y1})\n  Pair 2: (${x2}, ${y2})\n`;
+  steps += `Step 3: Find k:\n  k = (${y2} - ${y1}) / (${x2} - ${x1}) = ${fmt(k)}\n`;
+  steps += `Step 4: Find c:\n  c = ${y1} - (${fmt(k)} × ${x1}) = ${fmt(c)}\n`;
+  finalEq = `Final equation: y = ${fmt(k)}x + ${fmt(c)}`;
+}
+
+      document.getElementById("output").innerText = steps + "\n" + finalEq;
+    }
+  </script>
+</body>
+</html>
+

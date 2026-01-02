@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Shape Transformation Tool</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    canvas { border: 1px solid black; margin-top: 10px; }
+    .controls { margin: 10px 0; }
+    .point-group { margin: 5px 0; }
+    input { width: 50px; }
+  </style>
+</head>
+<body>
+
+  <h2>Shape Transformation Tool (Points A–E)</h2>
+
+  <div class="controls">
+    <div class="point-group">
+      <label>A(x, y): </label>
+      <input type="number" id="Ax" value="0">
+      <input type="number" id="Ay" value="0">
+    </div>
+    <div class="point-group">
+      <label>B(x, y): </label>
+      <input type="number" id="Bx" value="2">
+      <input type="number" id="By" value="0">
+    </div>
+    <div class="point-group">
+      <label>C(x, y): </label>
+      <input type="number" id="Cx" value="2">
+      <input type="number" id="Cy" value="1">
+    </div>
+    <div class="point-group">
+      <label>D(x, y): </label>
+      <input type="number" id="Dx" value="1">
+      <input type="number" id="Dy" value="2">
+    </div>
+    <div class="point-group">
+      <label>E(x, y): </label>
+      <input type="number" id="Ex" value="0">
+      <input type="number" id="Ey" value="1">
+    </div>
+    <button onclick="loadShape()">Load Shape</button>
+  </div>
+
+  <div class="controls">
+    <label>Reflect Across (x= or y=):</label>
+    <input type="text" id="reflectionLine" placeholder="e.g. y=2 or x=1">
+    <button onclick="reflect()">Reflect</button><br><br>
+
+    <label>Rotate Around (x, y):</label>
+    <input type="number" id="rotateX" value="0">
+    <input type="number" id="rotateY" value="0">
+    <label>Angle (°):</label>
+    <input type="number" id="angle" value="90">
+    <button onclick="rotate()">Rotate</button><br><br>
+
+    <label>Enlarge From (x, y):</label>
+    <input type="number" id="scaleX" value="0">
+    <input type="number" id="scaleY" value="0">
+    <label>Scale:</label>
+    <input type="number" id="scale" value="2">
+    <button onclick="enlarge()">Enlarge</button>
+  </div>
+
+  <canvas id="canvas" width="900" height="900"></canvas>
+
+  <script>
+
+    
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const gridSize = 40;
+    const gridRange = 20;
+
+    let originalShape = [];
+    let transformedShape = [];
+    let transformType = null;
+    let transformCenter = null;
+
+    function canvasCoords(p) {
+      return {
+        x: canvas.width / 2 + p.x * gridSize,
+        y: canvas.height / 2 - p.y * gridSize
+      };
+    }
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = "#ccc";
+
+      for (let i = -gridRange; i <= gridRange; i++) {
+        let x = canvasCoords({ x: i, y: 0 }).x;
+        let y = canvasCoords({ x: 0, y: i }).y;
+
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+
+        if (i !== 0) {
+          ctx.fillText(i, x, canvas.height / 2 + 10);
+          ctx.fillText(i, canvas.width / 2 - 10, y);
+        }
+      }
+
+      ctx.strokeStyle = "#000";
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height / 2);
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+    }
+
+    function drawShape(shape, color) {
+      if (shape.length < 3) return;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color + "88";
+      ctx.beginPath();
+      const start = canvasCoords(shape[0]);
+      ctx.moveTo(start.x, start.y);
+      for (let i = 1; i < shape.length; i++) {
+        const pt = canvasCoords(shape[i]);
+        ctx.lineTo(pt.x, pt.y);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawDashedLines(type = null, center = null) {
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = "gray";
+      for (let i = 0; i < transformedShape.length; i++) {
+        let start, end;
+        if (type === "rotation" || type === "enlargement") {
+          start = canvasCoords(center);
+          ctx.beginPath();
+          ctx.moveTo(start.x, start.y);
+          ctx.lineTo(canvasCoords(originalShape[i]).x, canvasCoords(originalShape[i]).y);
+          ctx.stroke();
+
+          end = canvasCoords(transformedShape[i]);
+          ctx.beginPath();
+          ctx.moveTo(start.x, start.y);
+          ctx.lineTo(end.x, end.y);
+          ctx.stroke();
+        } else {
+          start = canvasCoords(originalShape[i]);
+          end = canvasCoords(transformedShape[i]);
+          ctx.beginPath();
+          ctx.moveTo(start.x, start.y);
+          ctx.lineTo(end.x, end.y);
+          ctx.stroke();
+        }
+      }
+      ctx.setLineDash([]);
+    }
+
+    function draw() {
+      drawGrid();
+      drawShape(originalShape, "blue");
+      drawDashedLines(transformType, transformCenter);
+      drawShape(transformedShape, "red");
+    }
+
+    function getPoint(id) {
+      const x = parseFloat(document.getElementById(id + "x").value);
+      const y = parseFloat(document.getElementById(id + "y").value);
+      return isNaN(x) || isNaN(y) ? null : { x, y };
+    }
+
+    function loadShape() {
+      const points = ["A", "B", "C", "D", "E"].map(getPoint).filter(p => p);
+      if (points.length >= 3) {
+        originalShape = points;
+        transformedShape = JSON.parse(JSON.stringify(originalShape));
+        transformType = null;
+        draw();
+      } else {
+        alert("Enter at least 3 valid points.");
+      }
+    }
+
+    function reflect() {
+      let line = document.getElementById("reflectionLine").value.trim();
+      if (line.startsWith("y=")) {
+        let yVal = parseFloat(line.split("=")[1]);
+        transformedShape = originalShape.map(p => ({ x: p.x, y: 2 * yVal - p.y }));
+      } else if (line.startsWith("x=")) {
+        let xVal = parseFloat(line.split("=")[1]);
+        transformedShape = originalShape.map(p => ({ x: 2 * xVal - p.x, y: p.y }));
+      }
+      transformType = "reflection";
+      transformCenter = null;
+      draw();
+    }
+
+    function rotate() {
+      let angle = parseFloat(document.getElementById("angle").value);
+      let cx = parseFloat(document.getElementById("rotateX").value);
+      let cy = parseFloat(document.getElementById("rotateY").value);
+      let rad = angle * Math.PI / 180;
+      transformedShape = originalShape.map(p => ({
+        x: cx + (p.x - cx) * Math.cos(rad) - (p.y - cy) * Math.sin(rad),
+        y: cy + (p.x - cx) * Math.sin(rad) + (p.y - cy) * Math.cos(rad)
+      }));
+      transformType = "rotation";
+      transformCenter = { x: cx, y: cy };
+      draw();
+    }
+
+    function enlarge() {
+      let scale = parseFloat(document.getElementById("scale").value);
+      let cx = parseFloat(document.getElementById("scaleX").value);
+      let cy = parseFloat(document.getElementById("scaleY").value);
+      transformedShape = originalShape.map(p => ({
+        x: cx + (p.x - cx) * scale,
+        y: cy + (p.y - cy) * scale
+      }));
+      transformType = "enlargement";
+      transformCenter = { x: cx, y: cy };
+      draw();
+    }
+
+    loadShape(); // Draw initial shape
+  </script>
+
+</body>
+</html>
+

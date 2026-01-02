@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Income Tax Calculator (Full)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    table, th, td {
+      border: 1px solid #444;
+      border-collapse: collapse;
+      padding: 5px;
+    }
+    input {
+      width: 120px;
+    }
+    #taxResult {
+      margin-top: 20px;
+      background: #f9f9f9;
+      padding: 15px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Income Tax Calculator (With Allowances & Other Deductions)</h2>
+
+  <table id="taxTable">
+    <thead>
+      <tr>
+        <th>Lower Limit</th>
+        <th>Upper Limit</th>
+        <th>Tax Rate (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="number" value="0" /></td>
+        <td><input type="number" value="24000" /></td>
+        <td><input type="number" value="10" /></td>
+      </tr>
+      <tr>
+        <td><input type="number" value="24000" /></td>
+        <td><input type="number" value="32333" /></td>
+        <td><input type="number" value="25" /></td>
+      </tr>
+      <tr>
+        <td><input type="number" value="32333" /></td>
+        <td><input type="text" value="Infinity" /></td>
+        <td><input type="number" value="30" /></td>
+      </tr>
+    </tbody>
+  </table>
+  <button onclick="addTaxRow()">➕ Add Band</button><br><br>
+
+  <label>Basic Salary: 
+    <input type="number" id="basicSalary" />
+  </label><br>
+  <label>Allowances: 
+    <input type="number" id="allowances" value="0" />
+  </label><br>
+  <label>Other Deductions: 
+    <input type="number" id="otherDeductions" value="0" />
+  </label><br>
+  <label>Or Enter Tax Paid (instead of salary): 
+    <input type="number" id="taxPaid" />
+  </label><br>
+  <label>Personal Relief (KES): 
+    <input type="number" id="personalRelief" value="2400" />
+  </label><br><br>
+
+  <button onclick="calculateTax()">Calculate</button>
+
+  <div id="taxResult"></div>
+
+  <script>
+
+    
+  function addTaxRow() {
+    const table = document.getElementById("taxTable").getElementsByTagName("tbody")[0];
+    const row = table.insertRow();
+    for (let i = 0; i < 3; i++) {
+      const cell = row.insertCell();
+      const input = document.createElement("input");
+      input.type = (i === 1 && table.rows.length > 2) ? "text" : "number";
+      if (i === 2) input.value = "0";
+      if (i === 1) input.placeholder = "Infinity";
+      cell.appendChild(input);
+    }
+  }
+
+  function parseTaxBands() {
+    const rows = document.querySelectorAll("#taxTable tbody tr");
+    let bands = [];
+    for (let row of rows) {
+      const inputs = row.querySelectorAll("input");
+      let lower = parseFloat(inputs[0].value);
+      let upperVal = inputs[1].value.trim().toLowerCase();
+      let upper = (upperVal === "infinity" || upperVal === "") ? Infinity : parseFloat(upperVal);
+      let rate = parseFloat(inputs[2].value);
+      bands.push({ lower, upper, rate });
+    }
+    // Sort bands by upper limit
+    return bands.sort((a, b) => a.upper - b.upper);
+  }
+
+  function calculateTax() {
+    const basic = parseFloat(document.getElementById("basicSalary").value) || 0;
+    const allow = parseFloat(document.getElementById("allowances").value) || 0;
+    const otherDeduct = parseFloat(document.getElementById("otherDeductions").value) || 0;
+    const taxKnown = parseFloat(document.getElementById("taxPaid").value);
+    const relief = parseFloat(document.getElementById("personalRelief").value) || 0;
+    const bands = parseTaxBands();
+
+    const taxableIncome = basic + allow;
+    let result = "";
+    let breakdown = "";
+
+    if ((basic || allow) && isNaN(taxKnown)) {
+      let tax = 0;
+      let previousUpper = 0;
+
+      for (let i = 0; i < bands.length; i++) {
+        const band = bands[i];
+        const currentUpper = band.upper;
+
+        const range = (currentUpper === Infinity)
+          ? taxableIncome - previousUpper
+          : Math.min(taxableIncome - previousUpper, currentUpper - previousUpper);
+
+        if (range > 0) {
+          const taxThisBand = range * band.rate / 100;
+          tax += taxThisBand;
+          breakdown += `Tax ${band.rate}% on ${range.toFixed(2)} = ${taxThisBand.toFixed(2)}<br>`;
+        }
+
+        if (taxableIncome <= currentUpper) break;
+        previousUpper = currentUpper;
+      }
+
+      const netTax = Math.max(0, tax - relief);
+      const netPay = taxableIncome - netTax - otherDeduct;
+
+      result += `<strong>Basic Salary: ${basic.toFixed(2)}</strong><br>`;
+      result += `<strong>Allowances: ${allow.toFixed(2)}</strong><br>`;
+      result += `<strong>Taxable Income: ${taxableIncome.toFixed(2)}</strong><br><br>`;
+
+      result += `<strong>Computed Tax: ${tax.toFixed(2)}</strong><br>`;
+      result += `Less Personal Relief: ${relief.toFixed(2)}<br>`;
+      result += `<strong>Net Tax Payable: ${netTax.toFixed(2)}</strong><br>`;
+      result += `Other Deductions: ${otherDeduct.toFixed(2)}<br>`;
+      result += `<strong>Net Pay: ${netPay.toFixed(2)}</strong><br><br>`;
+
+      document.getElementById("taxResult").innerHTML = result + "<hr>" + breakdown;
+    }
+
+    else if (!isNaN(taxKnown) && !basic && !allow) {
+      let estimated = 0;
+      let totalTax = 0;
+      let previousUpper = 0;
+
+      for (let i = 0; i < bands.length; i++) {
+        const band = bands[i];
+        const currentUpper = band.upper;
+        const range = (currentUpper === Infinity) ? Infinity : currentUpper - previousUpper;
+        const maxTax = (range === Infinity) ? Infinity : range * band.rate / 100;
+
+        if (taxKnown > totalTax + maxTax) {
+          estimated += range;
+          totalTax += maxTax;
+        } else {
+          let remainingTax = taxKnown - totalTax;
+          let taxableAmount = remainingTax * 100 / band.rate;
+          estimated += taxableAmount;
+          totalTax += remainingTax;
+          break;
+        }
+
+        previousUpper = currentUpper;
+      }
+
+      result = `<strong>Estimated Taxable Income: ${estimated.toFixed(2)}</strong><br>`;
+      result += `From Tax Paid: ${taxKnown.toFixed(2)}<br>`;
+      document.getElementById("taxResult").innerHTML = result;
+    }
+
+    else {
+      document.getElementById("taxResult").innerHTML =
+        `<span style="color:red;">❌ Please fill either salary/allowances or tax paid — not both.</span>`;
+    }
+  }
+</script>
+</body>
+</html>
+
