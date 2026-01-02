@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parent Portal – Student Performance Viewer</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f9fb;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      padding: 30px 40px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #004080;
+    }
+
+    p.description {
+      text-align: center;
+      color: #555;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+
+    input, button {
+      padding: 12px 14px;
+      width: 100%;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #004080;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0066cc;
+    }
+
+    .results {
+      margin-top: 30px;
+    }
+
+    .result {
+      background: #f9f9f9;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-left: 5px solid #004080;
+      border-radius: 8px;
+    }
+
+    .result b {
+      color: #222;
+    }
+
+    .error {
+      color: #cc0000;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>👨‍👩‍👧 Parent Portal</h1>
+    <p class="description">
+      Kindly enter your child's registered name to view their academic performance and quiz history.
+    </p>
+
+    <input type="text" id="parentStudentName" placeholder="Enter student name (e.g. JohnDoe)" />
+    <button onclick="viewResults()">View Student Results</button>
+
+    <div id="parentResults" class="results"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCqVbwAOuZ2DlrX4WyB3YoyxoY1BVJesU4",
+      authDomain: "bodmas-game.firebaseapp.com",
+      databaseURL: "https://bodmas-game-default-rtdb.firebaseio.com",
+      projectId: "bodmas-game",
+      storageBucket: "bodmas-game.appspot.com",
+      messagingSenderId: "744829563877",
+      appId: "1:744829563877:web:9dffb888825b7075ee350c",
+      measurementId: "G-RKCNXCV8NV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+   window.viewResults = function () {
+  const rawStudentName = document.getElementById("parentStudentName").value.trim();
+  const studentName = rawStudentName.toLowerCase(); // 🔁 Normalize for Firebase lookup
+  const resultsDiv = document.getElementById("parentResults");
+  resultsDiv.innerHTML = "";
+
+  if (!rawStudentName) {
+    resultsDiv.innerHTML = `<p class="error">⚠️ Please enter a valid student name.</p>`;
+    return;
+  }
+
+  const resultRef = ref(db, `results/${studentName}`);
+  onValue(resultRef, (snapshot) => {
+    if (!snapshot.exists()) {
+      resultsDiv.innerHTML = `<p class="error">❌ No records found for <b>${rawStudentName}</b>.</p>`;
+      return;
+    }
+
+    const results = snapshot.val();
+    let output = `<h3>📋 Performance Summary for <b>${rawStudentName}</b>:</h3>`;
+
+    Object.values(results).forEach(result => {
+      output += `
+        <div class="result mt-2 p-3 bg-gray-100 rounded-lg shadow-sm">
+          <b>Subject:</b> ${result.subject}<br/>
+          <b>Quiz:</b> ${result.quiz}<br/>
+          <b>Score:</b> ${result.score}<br/>
+          <b>Date:</b> ${new Date(result.date).toLocaleString()}
+        </div>
+      `;
+    });
+
+    resultsDiv.innerHTML = output;
+  }, {
+    onlyOnce: true
+  });
+};
+
+  </script>
+
+</body>
+</html>
