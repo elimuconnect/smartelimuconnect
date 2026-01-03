@@ -80,9 +80,10 @@
 </head>
 
 <body>
-  <h2>📘 Tutor Lesson Loader</h2>
-<p><strong>Note:</strong> 
-Use a laptop with a projector for reading aloud. For Kenyan female or Swahili voices, open this page in Microsoft Edge.</p>
+  <h2>📘Classroom Voice Teacher</h2>
+<p><strong>Note:</strong>
+Use a laptop with a projector for reading aloud.  
+For Kenyan female, Swahili, German, French, or Arabic voices, open this page in Microsoft Edge.</p>
 
   <label for="lessonText">Paste your custom lesson content here:</label>
   <textarea id="lessonText" placeholder="Lesson 1: Intro to Math..."></textarea>
@@ -103,12 +104,15 @@ Use a laptop with a projector for reading aloud. For Kenyan female or Swahili vo
 
   <input type="file" id="imageUpload" accept="image/*">
 
-  <!-- Voice selection -->
-  <label for="voiceLang">Select voice language:</label>
-  <select id="voiceLang" onchange="loadVoices()">
-    <option value="en" selected>English</option>
-    <option value="sw">Swahili</option>
-  </select>
+ <label for="voiceLang">Select voice language:</label>
+<select id="voiceLang" onchange="loadVoices()">
+  <option value="en" selected>English</option>
+  <option value="sw">Swahili</option>
+  <option value="de">German</option>
+  <option value="fr">French</option>
+  <option value="ar">Arabic</option>
+</select>
+
 
   <br>
 
@@ -260,9 +264,12 @@ function loadVoices() { voices = speechSynthesis.getVoices(); }
 if (speechSynthesis.onvoiceschanged !== undefined)
   speechSynthesis.onvoiceschanged = loadVoices;
 
+
+
 function getPreferredVoice() {
   const selectedLang = document.getElementById("voiceLang").value;
 
+  // --- Swahili (keep as is) ---
   if (selectedLang === "sw") {
     let sw =
       voices.find(v => v.lang.toLowerCase().startsWith("sw-ke")) ||
@@ -270,25 +277,57 @@ function getPreferredVoice() {
     if (sw) return sw;
   }
 
+  // --- German ---
+  if (selectedLang === "de") {
+    let de =
+      voices.find(v => v.lang.toLowerCase().startsWith("de-de")) ||
+      voices.find(v => v.lang.toLowerCase().startsWith("de"));
+    if (de) return de;
+  }
+
+  // --- French ---
+  if (selectedLang === "fr") {
+    let fr =
+      voices.find(v => v.lang.toLowerCase().startsWith("fr-fr")) ||
+      voices.find(v => v.lang.toLowerCase().startsWith("fr"));
+    if (fr) return fr;
+  }
+
+  // --- Arabic ---
+  if (selectedLang === "ar") {
+    let ar =
+      voices.find(v => v.lang.toLowerCase().startsWith("ar-sa")) ||
+      voices.find(v => v.lang.toLowerCase().startsWith("ar"));
+    if (ar) return ar;
+  }
+
+  // --- Kenyan English female (keep as is) ---
   let kenyanFemale =
-    voices.find(v =>
-      v.lang.toLowerCase().startsWith("en-ke") &&
-      v.name.toLowerCase().includes("female")
+    voices.find(
+      v =>
+        v.lang.toLowerCase().startsWith("en-ke") &&
+        v.name.toLowerCase().includes("female")
     ) ||
     voices.find(v => v.lang.toLowerCase().startsWith("en-ke"));
 
   if (kenyanFemale) return kenyanFemale;
 
+  // --- Other English female fallback (keep as is) ---
   let englishFemale =
-    voices.find(v =>
-      v.lang.toLowerCase().startsWith("en") &&
-      v.name.toLowerCase().includes("female")
+    voices.find(
+      v =>
+        v.lang.toLowerCase().startsWith("en") &&
+        v.name.toLowerCase().includes("female")
     );
 
   if (englishFemale) return englishFemale;
 
+  // final fallback
   return voices[0] || null;
 }
+
+
+
 
 function splitText(text, maxLength = 200) {
   const chunks = [];
