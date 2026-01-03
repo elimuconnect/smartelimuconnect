@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CBC Portfolio & CBL — Multi-school</title>
+  <meta name="description" content="CBC Portfolio & Community-Based Learning tool for multiple schools. Cloudinary media + Firebase Realtime DB." />
+
+  <!-- Firebase Realtime DB (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --brand: #0b6efd;
+      --muted: #6b7280;
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --radius: 12px;
+      --accent: #0b4cd6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, system-ui, Segoe UI, Arial;
+      margin: 0;
+      background: var(--bg);
+      color: #0b1724;
+    }
+    .wrap { max-width: 1100px; margin: 28px auto; padding: 20px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    h1 { font-size: 20px; margin: 0; }
+    .card { background: var(--card); border-radius: var(--radius); padding: 18px; box-shadow: 0 6px 18px rgba(20,30,60,0.06); margin-bottom: 16px; }
+    .row { display: flex; gap: 12px; }
+    .col { flex: 1; }
+    label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+    input[type=text], select, textarea, input[type=file] { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6eefc; background: #fff; font-size: 14px; }
+    textarea { min-height: 90px; }
+    button { background: var(--brand); color: #fff; padding: 10px 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    button.ghost { background: #eef6ff; color: var(--brand); }
+    .small { font-size: 13px; color: var(--muted); }
+    .uploader { display: flex; align-items: center; gap: 12px; }
+    .preview { max-width: 220px; max-height: 170px; border-radius: 8px; border: 1px dashed #e6eefc; padding: 6px; object-fit: cover; background: #fbfeff; }
+    .submissions { margin-top: 12px; }
+    .submission { border: 1px solid #eef3ff; padding: 12px; border-radius: 8px; margin-bottom: 12px; background: #fcfeff; }
+    .meta { font-size: 12px; color: var(--muted); }
+    .pill { padding: 6px 10px; border-radius: 999px; background: #eef6ff; font-size: 12px; color: var(--brand); display: inline-block; }
+    .hint { font-size: 12px; color: #9aa7bf; }
+    .role-pill { display: inline-block; padding: 12px 18px; border-radius: 12px; background: #fff; border: 1px solid #dfe9ff; cursor: pointer; margin-right: 8px; font-weight: 700; }
+    .role-pill:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(11,108,237,0.08); }
+    .role-pill.active { background: var(--brand); color: #fff; border-color: transparent; }
+    .top-actions { display: flex; gap: 12px; align-items: center; }
+    .grid { display: grid; grid-template-columns: 1fr 360px; gap: 12px; }
+    .student-list { max-height: 420px; overflow: auto; }
+    .student-row { padding: 10px; border-bottom: 1px solid #f0f4fb; display: flex; justify-content: space-between; align-items: center; }
+    .btn-ghost { background: #eef5ff; color: var(--brand); border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+    .center { text-align: center; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 520px) {
+      header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    /* locked badge */
+    .locked { font-size: 12px; color: #fff; background: #f97316; padding: 6px 8px; border-radius: 8px; display: inline-block; }
+    /* role landing */
+    .role-landing { display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 10px; }
+    .role-button { padding: 18px 30px; border-radius: 14px; background: #fff; border: 2px solid #e6eefc; cursor: pointer; font-weight: 700; font-size: 16px; }
+    .role-button:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>CBC Portfolio & Community-Based Learning — Multi-school</h1>
+        <div class="small">Students upload evidence — Teachers review and give feedback</div>
+      </div>
+      <div class="top-actions" id="topActions">
+        <!-- Username / role area will be injected here -->
+      </div>
+    </header>
+
+    <!-- ROLE LANDING (first page) -->
+    <section id="landingCard" class="card">
+      <h3 style="margin-top:0">Choose your role</h3>
+      <div class="role-landing">
+        <div id="btnStudent" class="role-button" data-role="student">🎓 Student</div>
+        <div id="btnTeacher" class="role-button" data-role="teacher">👩‍🏫 Teacher</div>
+      </div>
+
+      <!-- After picking role: username + small form appears -->
+      <div id="accountBox" style="margin-top:18px;display:none">
+        <div class="row" style="align-items:center;gap:10px;">
+          <div class="col">
+            <label>Choose a unique username (lowercase / letters & numbers)</label>
+            <input id="usernameInput" placeholder="e.g. marywambui123 / teacherkamau" />
+            <div id="usernameHint" class="small hint" style="margin-top:6px">Usernames are permanent. Admin can reset in Firebase console.</div>
+          </div>
+          <div style="width:160px">
+            <label style="visibility:hidden">.</label>
+            <button id="createAccountBtn">Create account</button>
+          </div>
+        </div>
+
+        <!-- Teacher extra inputs (only when teacher role chosen) -->
+        <div id="teacherExtras" style="margin-top:12px;display:none">
+          <div class="row">
+            <div class="col">
+              <label>School name</label>
+              <input id="signupSchool" placeholder="e.g. Nairobi Primary" />
+            </div>
+            <div class="col" style="max-width:240px">
+              <label>Grade / Class</label>
+              <input id="signupGrade" placeholder="e.g. Grade 6 Blue" />
+            </div>
+          </div>
+        </div>
+
+        <div id="accountMsg" class="small" style="margin-top:10px;color:green"></div>
+      </div>
+    </section>
+
+    <!-- TEACHER SETUP (create school + grade / teacher-only controls) -->
+    <section id="teacherSetup" class="card" style="display:none">
+      <h3>Teacher — Create / Select School & Grade</h3>
+      <div class="row" style="align-items:flex-end">
+        <div class="col">
+          <label>School name</label>
+          <input id="teacherSchool" type="text" placeholder="e.g. Nairobi Primary" />
+        </div>
+        <div class="col" style="max-width:280px">
+          <label>Grade / Class</label>
+          <input id="teacherGrade" type="text" placeholder="e.g. Grade 6 Blue" />
+        </div>
+        <div style="min-width:140px">
+          <button id="createSchoolGradeBtn">Create / Use</button>
+        </div>
+      </div>
+      <div id="teacherMsg" class="small" style="margin-top:8px;color:green"></div>
+      <div style="margin-top:12px" id="teacherControls" class="small"></div>
+    </section>
+
+    <div class="grid">
+      <!-- STUDENT UI -->
+      <div>
+        <section id="studentSection" class="card" style="display:none">
+          <h3>Student — Submit Evidence <span id="studentLockedBadge" class="locked" style="display:none">Locked</span></h3>
+          <div class="row">
+            <div class="col">
+              <label>School</label>
+              <select id="schoolSelect"><option value="">-- select school --</option></select>
+            </div>
+            <div class="col" style="max-width:240px">
+              <label>Grade / Class</label>
+              <select id="gradeSelect"><option value="">-- select grade --</option></select>
+            </div>
+            <div style="min-width:180px">
+              <label>Student name (your full name)</label>
+              <input id="studentName" placeholder="e.g. Jane Wanjiru" type="text" />
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="row">
+            <div class="col">
+              <label>File (photo / short video / audio / pdf)</label>
+              <input id="fileInput" type="file" accept="image/*,video/*,audio/*,application/pdf" />
+              <div id="previewWrap" class="uploader" style="margin-top:8px;">
+                <img id="imgPreview" class="preview" src="" style="display:none" />
+                <div>
+                  <div class="small hint">Images preferred. Videos ideally &lt; 60s.</div>
+                  <div class="small" style="margin-top:6px">Selected: <span id="selectedName">none</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <label>Subject</label>
+              <select id="subjectSelect">
+                <option value="">-- select subject --</option>
+                <option>Science</option>
+                <option>Mathematics</option>
+                <option>English</option>
+                <option>Kiswahili</option>
+                <option>Agriculture</option>
+                <option>Social Studies</option>
+                <option>Arts & Crafts</option>
+              </select>
+              <label style="margin-top:8px">Strand / Sub-strand</label>
+              <input id="strandInput" type="text" placeholder="e.g. Plant growth / Fieldwork" />
+              <label style="margin-top:8px">Competency</label>
+              <select id="competencySelect">
+                <option value="">-- select competency --</option>
+                <option>Critical Thinking</option>
+                <option>Collaboration</option>
+                <option>Creativity</option>
+                <option>Communication</option>
+                <option>Digital Literacy</option>
+              </select>
+            </div>
+          </div>
+
+          <label style="margin-top:8px">Reflection (what I did / what I learned / community benefit)</label>
+          <textarea id="reflection"></textarea>
+
+          <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+            <input id="isCommunity" type="checkbox" />
+            <label for="isCommunity">Mark as Community-Based Learning (CBL)</label>
+            <div style="flex:1"></div>
+            <button id="submitBtn">Upload Submission</button>
+          </div>
+
+          <div id="studentMsg" class="small" style="margin-top:10px;color:green"></div>
+        </section>
+
+        <!-- Optional: quick view of student's own submissions (by school/grade/name) -->
+        <section id="studentPortfolio" class="card" style="margin-top:12px;display:none">
+          <h4>Your submissions</h4>
+          <div id="studentOwnList" class="submissions"></div>
+          <div style="margin-top:8px"><button id="refreshOwn" class="ghost">Refresh My Submissions</button></div>
+        </section>
+      </div>
+
+      <!-- TEACHER DASHBOARD (right column) -->
+      <aside>
+        <section id="teacherSection" class="card" style="display:none">
+          <h3>Teacher Dashboard — Grade view <span id="teacherLockedBadge" class="locked" style="display:none">Locked</span></h3>
+          <label>Select School</label>
+          <select id="teacherSchoolSelect"><option value="">-- select school --</option></select>
+          <label style="margin-top:8px">Select Grade</label>
+          <select id="teacherGradeSelect"><option value="">-- select grade --</option></select>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button id="loadStudentsBtn" class="btn-ghost">Load Students</button>
+            <button id="refreshStudentsBtn">Refresh</button>
+          </div>
+          <div style="margin-top:12px">
+            <input id="teacherFilter" placeholder="Filter student name" />
+          </div>
+          <div style="margin-top:12px">
+            <strong>Students in grade</strong>
+            <div class="student-list" id="studentList"></div>
+          </div>
+        </section>
+
+        <!-- Student submissions viewer -->
+        <section id="submissionsViewer" class="card" style="display:none">
+          <h4 id="viewerTitle">Submissions</h4>
+          <div id="viewerList" class="submissions"></div>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="small" id="appFooter">© CBC Portfolio & CBL Tool</footer>
+  </div>
+
+
+  <script>
+
+    /************ CONFIG ************/
+    // Firebase config (cbc-general)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCAiOSHmURDyAAYm5EmoomLkZ_Aud7iXIQ",
+      authDomain: "cbc-general.firebaseapp.com",
+      projectId: "cbc-general",
+      storageBucket: "cbc-general.firebasestorage.app",
+      messagingSenderId: "764732839741",
+      appId: "1:764732839741:web:ab829af54839de91359754"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Cloudinary
+    const CLOUDINARY_CLOUD_NAME = 'dwvt4e9o2';
+    const CLOUDINARY_UPLOAD_PRESET = 'unsigned_upload';
+
+    /************ HELPERS & STATE ************/
+    function slugify(s){ return (s||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+    function studentId(name){ return (name||'').toLowerCase().trim().replace(/\s+/g,'_'); }
+    function escapeHTML(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // UI refs (landing)
+    const landingCard = document.getElementById('landingCard');
+    const btnStudent = document.getElementById('btnStudent');
+    const btnTeacher = document.getElementById('btnTeacher');
+  
+    const accountBox = document.getElementById('accountBox');
+    const usernameInput = document.getElementById('usernameInput');
+    const createAccountBtn = document.getElementById('createAccountBtn');
+    const teacherExtras = document.getElementById('teacherExtras');
+    const signupSchool = document.getElementById('signupSchool');
+    const signupGrade = document.getElementById('signupGrade');
+    const accountMsg = document.getElementById('accountMsg');
+    let pickedRole = null;
+
+    // UI refs (rest - unchanged)
+    const topActions = document.getElementById('topActions');
+    const userCard = document.getElementById('userCard'); // not used now but kept
+    const rolePick = document.getElementById('rolePick'); // legacy
+    const rolePills = rolePick ? rolePick.querySelectorAll('.role-pill') : [];
+    const userMsg = document.getElementById('userMsg');
+
+    const teacherSetup = document.getElementById('teacherSetup');
+    const teacherMsg = document.getElementById('teacherMsg');
+
+    const schoolSelect = document.getElementById('schoolSelect');
+    const gradeSelect = document.getElementById('gradeSelect');
+    const studentNameInput = document.getElementById('studentName');
+    const fileInput = document.getElementById('fileInput');
+    const imgPreview = document.getElementById('imgPreview');
+    const selectedName = document.getElementById('selectedName');
+    const subjectSelect = document.getElementById('subjectSelect');
+    const strandInput = document.getElementById('strandInput');
+    const competencySelect = document.getElementById('competencySelect');
+    const reflection = document.getElementById('reflection');
+    const isCommunity = document.getElementById('isCommunity');
+    const submitBtn = document.getElementById('submitBtn');
+    const studentMsg = document.getElementById('studentMsg');
+    const studentOwnList = document.getElementById('studentOwnList');
+    const refreshOwn = document.getElementById('refreshOwn');
+
+    const teacherSection = document.getElementById('teacherSection');
+    const teacherSchoolSelect = document.getElementById('teacherSchoolSelect');
+    const teacherGradeSelect = document.getElementById('teacherGradeSelect');
+    const createSchoolGradeBtn = document.getElementById('createSchoolGradeBtn');
+    const teacherSchool = document.getElementById('teacherSchool');
+    const teacherGrade = document.getElementById('teacherGrade');
+    const loadStudentsBtn = document.getElementById('loadStudentsBtn');
+    const refreshStudentsBtn = document.getElementById('refreshStudentsBtn');
+    const studentList = document.getElementById('studentList');
+    const teacherFilter = document.getElementById('teacherFilter');
+
+    const submissionsViewer = document.getElementById('submissionsViewer');
+    const viewerTitle = document.getElementById('viewerTitle');
+    const viewerList = document.getElementById('viewerList');
+
+    const studentSection = document.getElementById('studentSection');
+    const studentPortfolio = document.getElementById('studentPortfolio');
+    const studentLockedBadge = document.getElementById('studentLockedBadge');
+    const teacherLockedBadge = document.getElementById('teacherLockedBadge');
+
+    // state
+    let username = null;
+    let usernameKey = null; // slugified lower-case used as DB key
+    let currentRole = null;
+    let schoolsCache = {}; // id -> name
+    let gradesCache = {};  // schoolId -> { gradeId -> name }
+
+    /************ Landing role selection handlers ************/
+    btnStudent.addEventListener('click', ()=> onPickRole('student'));
+    btnTeacher.addEventListener('click', ()=> onPickRole('teacher'));
+   
+
+    function onPickRole(role){
+      pickedRole = role;
+      // show account box & teacher extras if teacher
+      accountBox.style.display = 'block';
+      teacherExtras.style.display = (role === 'teacher') ? 'block' : 'none';
+      // highlight chosen button
+      [btnStudent, btnTeacher].forEach(b=> b.classList.remove('active'));
+      if(role==='student') btnStudent.classList.add('active');
+      if(role==='teacher') btnTeacher.classList.add('active');
+      
+      // scroll to account box
+      accountBox.scrollIntoView({behavior:'smooth'});
+    }
+
+    // username uniqueness helper (case-insensitive)
+    function usernameToKey(u){
+      return slugify(u); // lower-case slug
+    }
+
+    // Create account (username + optional school/grade)
+    createAccountBtn.addEventListener('click', async ()=>{
+      const raw = (usernameInput.value||'').trim();
+      if(!raw) return alert('Enter a username');
+      if(!pickedRole) return alert('Pick a role first (Student / Teacher / Parent)');
+      const key = usernameToKey(raw);
+      usernameKey = key;
+      username = raw;
+      accountMsg.style.color = 'var(--brand)';
+      accountMsg.textContent = 'Checking username...';
+
+      try{
+        // check if username exists (direct key check)
+        const snap = await db.ref(`users/${usernameKey}`).get();
+        if(snap.exists()){
+          accountMsg.style.color = 'crimson';
+          accountMsg.textContent = 'Username already taken. Choose another.';
+          return;
+        }
+
+        // Prepare user object
+        const userObj = { role: pickedRole, createdAt: Date.now(), username: raw };
+
+        // If teacher, require school+grade in the account creation step
+        if(pickedRole === 'teacher'){
+          const schoolName = (signupSchool.value||'').trim();
+          const gradeName = (signupGrade.value||'').trim();
+          if(!schoolName || !gradeName) return alert('Teachers must enter School and Grade when creating account.');
+          const sid = slugify(schoolName);
+          const gid = slugify(gradeName);
+          // create school/grade (idempotent)
+          await db.ref(`schools/${sid}`).update({ name: schoolName, updatedAt: Date.now() });
+          await db.ref(`schools/${sid}/grades/${gid}`).update({ name: gradeName, createdAt: Date.now() });
+          // assign to user
+          userObj.schoolId = sid;
+          userObj.gradeId = gid;
+          userObj.schoolName = schoolName;
+          userObj.gradeName = gradeName;
+        }
+
+        // Save user under slug key (locks role)
+        await db.ref(`users/${usernameKey}`).set(userObj);
+
+        accountMsg.style.color = 'green';
+        accountMsg.textContent = 'Account created and saved — loading your dashboard...';
+
+        // Preload schools & grades and then lock UI to role
+        await loadSchools();
+        lockToRole(pickedRole, userObj);
+
+        // show top user badge
+        showTopUser();
+
+      }catch(err){
+        console.error(err);
+        accountMsg.style.color = 'crimson';
+        accountMsg.textContent = 'Error creating account: ' + err.message;
+      }
+    });
+
+    /************ showTopUser ************/
+    function showTopUser(){
+      topActions.innerHTML = '';
+      if(!username) return;
+      const div = document.createElement('div');
+      div.innerHTML = `<div class="small">User: <strong>${escapeHTML(username)}</strong></div>`;
+      topActions.appendChild(div);
+      if(currentRole){
+        const b = document.createElement('div');
+        b.innerHTML = `<div class="pill">${escapeHTML(currentRole)}</div>`;
+        topActions.appendChild(b);
+      }
+      // small logout/reset button (client-side)
+      const logoutBtn = document.createElement('button');
+      logoutBtn.textContent = 'Sign out';
+      logoutBtn.style.marginLeft = '12px';
+      logoutBtn.onclick = ()=> {
+        // clear client state and show landing again (note: DB role remains locked)
+        username = null; usernameKey = null; currentRole = null;
+        topActions.innerHTML = '';
+        // reset UI states:
+        accountBox.style.display = 'none';
+        landingCard.style.display = 'block';
+        document.getElementById('accountMsg').textContent = '';
+        // show a toast
+        alert('Signed out locally. To switch permanently contact admin to reset your role.');
+        // reload page to clear locks
+        location.reload();
+      };
+      topActions.appendChild(logoutBtn);
+    }
+
+    /************ Lock UI to role (after account created or on return) ************/
+    async function lockToRole(role, userRecord){
+      currentRole = role;
+      // hide landing card
+      landingCard.style.display = 'none';
+      // show teacher setup or student UI depending on role
+      if(role === 'teacher'){
+        teacherSetup.style.display = 'block';
+        teacherSection.style.display = 'block';
+        submissionsViewer.style.display = 'block';
+        studentSection.style.display = 'none';
+        studentPortfolio.style.display = 'none';
+        // If userRecord provided and has school assignment -> lock selects
+        if(userRecord && userRecord.schoolId){
+          teacherLockedBadge.style.display='inline-block';
+          await loadSchools();
+          teacherSchoolSelect.value = userRecord.schoolId || '';
+          await loadGradesForTeacher(teacherSchoolSelect.value);
+          teacherGradeSelect.value = userRecord.gradeId || '';
+          teacherSchoolSelect.disabled = true;
+          teacherGradeSelect.disabled = true;
+        } else {
+          await loadSchools();
+        }
+      } else if(role === 'student'){
+        studentSection.style.display = 'block';
+        studentPortfolio.style.display = 'block';
+        teacherSetup.style.display = 'none';
+        teacherSection.style.display = 'none';
+        submissionsViewer.style.display = 'none';
+        if(userRecord && userRecord.schoolId){
+          studentLockedBadge.style.display='inline-block';
+          await loadSchools();
+          schoolSelect.value = userRecord.schoolId || '';
+          await loadGradesForStudent(schoolSelect.value);
+          gradeSelect.value = userRecord.gradeId || '';
+          schoolSelect.disabled = true;
+          gradeSelect.disabled = true;
+       } else {
+      await loadSchools();
+    }
+  }
+
+  showTopUser();
+}
+
+    /************ CLOUDINARY UPLOAD ************/
+    async function uploadToCloudinary(file){
+      const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      const res = await fetch(url, { method:'POST', body:fd });
+      if(!res.ok) throw new Error('Cloudinary upload failed: ' + res.statusText);
+      return await res.json();
+    }
+
+    /************ TEACHER: create school+grade ************/
+    createSchoolGradeBtn.addEventListener('click', async ()=>{
+      const schoolName = (document.getElementById('teacherSchool').value||'').trim();
+      const gradeName = (document.getElementById('teacherGrade').value||'').trim();
+      if(!schoolName || !gradeName) return alert('Enter school and grade.');
+      const sid = slugify(schoolName);
+      const gid = slugify(gradeName);
+      teacherMsg.textContent = 'Saving...';
+      try{
+        await db.ref(`schools/${sid}`).update({ name: schoolName, updatedAt: Date.now() });
+        await db.ref(`schools/${sid}/grades/${gid}`).update({ name: gradeName, createdAt: Date.now() });
+        // if user is teacher and logged in, save assignment to user record (lock them)
+        if(usernameKey && currentRole === 'teacher'){
+          await db.ref(`users/${usernameKey}`).update({ schoolId: sid, gradeId: gid, schoolName: schoolName, gradeName: gradeName });
+          teacherMsg.style.color='green'; teacherMsg.textContent = `Saved ${schoolName} → ${gradeName} and assigned to your account (locked).`;
+          // lock teacher selects
+          await loadSchools();
+          teacherSchoolSelect.value = sid; await loadGradesForTeacher(sid); teacherGradeSelect.value = gid;
+          teacherSchoolSelect.disabled = true; teacherGradeSelect.disabled = true;
+          teacherLockedBadge.style.display='inline-block';
+        } else {
+          teacherMsg.style.color='green'; teacherMsg.textContent = `Saved ${schoolName} → ${gradeName}`;
+          await loadSchools();
+        }
+      }catch(e){ console.error(e); teacherMsg.style.color='crimson'; teacherMsg.textContent = 'Save failed: '+e.message; }
+    });
+
+    /************ LOAD SCHOOLS & GRADES ************/
+    async function loadSchools(){
+      const snap = await db.ref('schools').get();
+      schoolsCache = {};
+      gradesCache = {};
+      schoolSelect.innerHTML = '<option value="">-- select school --</option>';
+      teacherSchoolSelect.innerHTML = '<option value="">-- select school --</option>';
+      if(snap.exists()){
+        const val = snap.val();
+        Object.entries(val).forEach(([id, obj])=>{
+          schoolsCache[id] = obj.name || id;
+          schoolSelect.innerHTML += `<option value="${id}">${escapeHTML(obj.name||id)}</option>`;
+          teacherSchoolSelect.innerHTML += `<option value="${id}">${escapeHTML(obj.name||id)}</option>`;
+          if(obj.grades) gradesCache[id] = obj.grades;
+        });
+      }
+    }
+
+    async function loadGradesForStudent(sid){
+      gradeSelect.innerHTML = '<option value="">-- select grade --</option>';
+      if(!sid) return;
+      if(gradesCache[sid]){
+        Object.entries(gradesCache[sid]).forEach(([gid, gobj])=>{
+          gradeSelect.innerHTML += `<option value="${gid}">${escapeHTML(gobj.name||gid)}</option>`;
+        });
+      } else {
+        const snap = await db.ref(`schools/${sid}/grades`).get();
+        if(snap.exists()){
+          const val = snap.val();
+          gradesCache[sid] = val;
+          Object.entries(val).forEach(([gid,gobj])=>{
+            gradeSelect.innerHTML += `<option value="${gid}">${escapeHTML(gobj.name||gid)}</option>`;
+          });
+        }
+      }
+    }
+
+    async function loadGradesForTeacher(sid){
+      teacherGradeSelect.innerHTML = '<option value="">-- select grade --</option>';
+      if(!sid) return;
+      if(gradesCache[sid]){
+        Object.entries(gradesCache[sid]).forEach(([gid, gobj])=>{
+          teacherGradeSelect.innerHTML += `<option value="${gid}">${escapeHTML(gobj.name||gid)}</option>`;
+        });
+      } else {
+        const snap = await db.ref(`schools/${sid}/grades`).get();
+        if(snap.exists()){
+          const val = snap.val();
+          gradesCache[sid] = val;
+          Object.entries(val).forEach(([gid,gobj])=>{
+            teacherGradeSelect.innerHTML += `<option value="${gid}">${escapeHTML(gobj.name||gid)}</option>`;
+          });
+        }
+      }
+    }
+
+    // hook selects
+    schoolSelect.addEventListener('change', async ()=>{ await loadGradesForStudent(schoolSelect.value); });
+    teacherSchoolSelect.addEventListener('change', async ()=>{ await loadGradesForTeacher(teacherSchoolSelect.value); });
+
+    /************ STUDENT SUBMIT ************/
+    fileInput.addEventListener('change', ()=>{
+      const f = fileInput.files[0];
+      if(!f) return;
+      selectedName.textContent = f.name;
+      if(f.type.startsWith('image/')){
+        if(imgPreview) imgPreview.src = URL.createObjectURL(f);
+        if(imgPreview) imgPreview.style.display = 'block';
+      } else { if(imgPreview) imgPreview.style.display = 'none'; }
+    });
+
+    submitBtn.addEventListener('click', async ()=>{
+      const schoolId = schoolSelect.value;
+      const gradeId = gradeSelect.value;
+      const studentName = (studentNameInput.value||'').trim();
+      if(!schoolId || !gradeId) return alert('Choose school and grade (ask your teacher to create them first).');
+      if(!studentName) return alert('Enter student name.');
+      const file = fileInput.files[0];
+      if(!file) return alert('Choose a file to upload.');
+
+      studentMsg.style.color= 'var(--brand)'; studentMsg.textContent = 'Uploading media...';
+
+      try{
+        const cloud = await uploadToCloudinary(file);
+        const sid = schoolId;
+        const gid = gradeId;
+        const stId = studentId(studentName);
+        const submission = {
+          createdAt: Date.now(),
+          filename: file.name,
+          fileUrl: cloud.secure_url || cloud.url,
+          fileType: file.type,
+          subject: subjectSelect.value || 'Unspecified',
+          strand: strandInput.value || '',
+          competency: competencySelect.value || '',
+          reflection: reflection.value || '',
+          isCommunity: !!isCommunity.checked,
+          uploaderName: studentName,
+          status: 'pending',
+          feedback: null,
+          rating: 0
+        };
+        // create student record and push submission
+        const studentRef = db.ref(`schools/${sid}/grades/${gid}/students/${stId}`);
+        await studentRef.update({ name: studentName, updatedAt: Date.now() });
+        const subRef = studentRef.child('submissions').push();
+        await subRef.set(submission);
+
+        // if username exists and is a student without assignment, assign and lock them
+        if(usernameKey){
+          const userSnap = await db.ref(`users/${usernameKey}`).get();
+          if(userSnap.exists()){
+            const u = userSnap.val();
+            if(u.role === 'student' && (!u.schoolId || !u.gradeId)){
+              await db.ref(`users/${usernameKey}`).update({ schoolId: sid, gradeId: gid, schoolName: schoolsCache[sid] || sid, gradeName: (gradesCache[sid] && gradesCache[sid][gid] && gradesCache[sid][gid].name) ? gradesCache[sid][gid].name : gid });
+              // lock selects
+              schoolSelect.disabled = true; gradeSelect.disabled = true;
+              studentLockedBadge.style.display='inline-block';
+            }
+          }
+        }
+
+        studentMsg.style.color='green'; studentMsg.textContent = 'Uploaded ✔️';
+        // reset minimal fields
+        fileInput.value=''; if(imgPreview) imgPreview.style.display='none'; selectedName.textContent='none'; reflection.value=''; isCommunity.checked=false;
+      }catch(e){ console.error(e); studentMsg.style.color='crimson'; studentMsg.textContent = 'Upload failed: '+e.message; }
+    });
+
+    /************ STUDENT: view own submissions ************/
+    refreshOwn.addEventListener('click', async ()=>{
+      const sid = schoolSelect.value; const gid = gradeSelect.value; const sname = (studentNameInput.value||'').trim();
+      if(!sid || !gid || !sname) return alert('Choose school + grade and enter your name to view your submissions.');
+      studentOwnList.innerHTML = 'Loading...';
+      const stId = studentId(sname);
+      const snap = await db.ref(`schools/${sid}/grades/${gid}/students/${stId}/submissions`).get();
+      if(!snap.exists()){ studentOwnList.innerHTML = '<div class="small">No submissions found.</div>'; return; }
+      const data = snap.val();
+      studentOwnList.innerHTML = '';
+      Object.entries(data).sort((a,b)=> b[1].createdAt - a[1].createdAt).forEach(([id,item])=>{
+        const d = document.createElement('div'); d.className='submission';
+        d.innerHTML = `<div class="meta">${new Date(item.createdAt).toLocaleString()} • ${escapeHTML(item.subject)}</div>
+                       <div style="margin-top:6px"><a href="${item.fileUrl}" target="_blank">Open file</a></div>
+                       <div style="margin-top:6px">${escapeHTML(item.reflection||'')}</div>
+                       <div style="margin-top:6px" class="meta">Feedback: ${escapeHTML(item.feedback||'None')} • Rating: ${escapeHTML(item.rating||0)}</div>`;
+        studentOwnList.appendChild(d);
+      });
+    });
+
+   let studentsListeners = {};
+
+async function watchGradeSubmissions(sid, gid) {
+  // Clear previous listeners
+  if (studentsListeners[sid]) {
+    Object.values(studentsListeners[sid]).forEach(unsub => unsub());
+  }
+  studentsListeners[sid] = {};
+
+  const studentsRef = db.ref(`schools/${sid}/grades/${gid}/students`);
+
+  studentsRef.on('child_added', (snap) => {
+    const stid = snap.key;
+    const srec = snap.val();
+    addOrUpdateStudentRow(sid, gid, stid, srec.name || stid);
+  });
+
+  studentsRef.on('child_changed', (snap) => {
+    const stid = snap.key;
+    const srec = snap.val();
+    addOrUpdateStudentRow(sid, gid, stid, srec.name || stid);
+  });
+}
+
+function addOrUpdateStudentRow(sid, gid, stid, studentName) {
+  let row = Array.from(studentList.children).find(ch => ch.querySelector('button')?.dataset.stid === stid);
+  if (!row) {
+    // create row
+    row = document.createElement('div'); 
+    row.className = 'student-row';
+    row.innerHTML = `<div>${escapeHTML(studentName)}</div><div><button class="btn-ghost" data-stid="${stid}">View</button></div>`;
+    studentList.appendChild(row);
+    row.querySelector('button').addEventListener('click', ()=> loadStudentSubmissions(sid, gid, stid, studentName));
+  } else {
+    row.querySelector('div:first-child').textContent = studentName;
+  }
+}
+
+
+
+
+// 3️⃣ Add the listener for grade selection (this is where you put your snippet)
+teacherGradeSelect.addEventListener('change', ()=>{
+  const sid = teacherSchoolSelect.value;
+  const gid = teacherGradeSelect.value;
+  if(!sid || !gid) return;
+  studentList.innerHTML = '';
+  watchGradeSubmissions(sid, gid);
+});
+
+
+
+
+
+// 3️⃣ Listener variable
+let studentSubListener = null;
+
+// 4️⃣ Function to watch student's submissions
+function watchStudentSubmissions(sid, gid, sname) {
+  const stId = studentId(sname);
+  const submissionsRef = db.ref(`schools/${sid}/grades/${gid}/students/${stId}/submissions`);
+  
+  if(studentSubListener) submissionsRef.off('value', studentSubListener);
+
+  studentSubListener = submissionsRef.on('value', snap => {
+    const data = snap.exists() ? snap.val() : {};
+    studentOwnList.innerHTML = '';
+    Object.entries(data)
+      .sort((a,b)=> b[1].createdAt - a[1].createdAt)
+      .forEach(([id,item])=>{
+        const d = document.createElement('div'); 
+        d.className='submission';
+        d.innerHTML = `
+          <div class="meta">${new Date(item.createdAt).toLocaleString()} • ${escapeHTML(item.subject)}</div>
+          <div style="margin-top:6px"><a href="${item.fileUrl}" target="_blank">Open file</a></div>
+          <div style="margin-top:6px">${escapeHTML(item.reflection||'')}</div>
+          <div style="margin-top:6px" class="meta">Feedback: ${escapeHTML(item.feedback||'None')} • Rating: ${escapeHTML(item.rating||0)}</div>
+        `;
+        studentOwnList.appendChild(d);
+      });
+  });
+}
+
+// 5️⃣ Call whenever student school/grade/name are set
+schoolSelect.addEventListener('change', ()=>{ tryWatchStudent(); });
+gradeSelect.addEventListener('change', ()=>{ tryWatchStudent(); });
+studentNameInput.addEventListener('input', ()=>{ tryWatchStudent(); });
+
+function tryWatchStudent() {
+  const sid = schoolSelect.value; 
+  const gid = gradeSelect.value; 
+  const sname = studentNameInput.value.trim();
+  if(sid && gid && sname) watchStudentSubmissions(sid, gid, sname);
+}
+
+
+/************ TEACHER: load students list for chosen grade ************/
+    loadStudentsBtn.addEventListener('click', async ()=>{
+      const sid = teacherSchoolSelect.value; const gid = teacherGradeSelect.value;
+      if(!sid || !gid) return alert('Select school and grade.');
+      studentList.innerHTML = 'Loading...';
+      const snap = await db.ref(`schools/${sid}/grades/${gid}/students`).get();
+      const val = snap.exists()? snap.val() : {};
+      studentList.innerHTML = '';
+      const rows = Object.entries(val || {}).sort((a,b)=> (a[1].name||'').localeCompare(b[1].name||''));
+      if(rows.length===0){ studentList.innerHTML = '<div class="small">No students found.</div>'; return; }
+      rows.forEach(([stid, srec])=>{
+        const row = document.createElement('div'); row.className='student-row';
+        row.innerHTML = `<div>${escapeHTML(srec.name||stid)}</div><div><button class="btn-ghost" data-stid="${stid}">View</button></div>`;
+        studentList.appendChild(row);
+        row.querySelector('button').addEventListener('click', ()=> loadStudentSubmissions(sid, gid, stid, srec.name||stid));
+      });
+    });
+
+    // client-side filter
+    teacherFilter.addEventListener('input', ()=>{
+      const q = teacherFilter.value.trim().toLowerCase();
+      Array.from(studentList.children).forEach(ch=>{
+        if(!q) ch.style.display='flex';
+        else ch.style.display = ch.textContent.toLowerCase().includes(q)? 'flex' : 'none';
+      });
+    });
+
+    refreshStudentsBtn.addEventListener('click', ()=> loadStudentsBtn.click());
+
+
+
+
+
+
+
+
+
+
+/************ TEACHER: view & feedback ************/
+async function loadStudentSubmissions(sid, gid, stid, studentName) {
+  viewerTitle.textContent = `Submissions — ${escapeHTML(studentName)}`;
+  viewerList.innerHTML = 'Loading...';
+  submissionsViewer.style.display = 'block';
+
+  const snap = await db.ref(`schools/${sid}/grades/${gid}/students/${stid}/submissions`).get();
+  if(!snap.exists()) {
+    viewerList.innerHTML = '<div class="small">No submissions for this student.</div>';
+    return;
+  }
+
+  const data = snap.val();
+  viewerList.innerHTML = '';
+
+  Object.entries(data)
+    .sort((a, b) => b[1].createdAt - a[1].createdAt)
+    .forEach(([subId, item]) => {
+      const box = document.createElement('div');
+      box.className = 'submission';
+      box.innerHTML = `
+        <div class="meta">${new Date(item.createdAt).toLocaleString()} • <strong>${escapeHTML(item.subject)}</strong></div>
+        <div style="margin-top:8px"><a href="${item.fileUrl}" target="_blank">Open file</a></div>
+        <div style="margin-top:8px">${escapeHTML(item.reflection || '')}</div>
+        <div style="margin-top:8px" class="meta">Status: ${escapeHTML(item.status || 'pending')} • Rating: ${escapeHTML(item.rating || 0)}</div>
+
+        <div style="margin-top:8px">
+          <label class="small">Give rating</label>
+          <select id="rating-${subId}">
+            <option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+          </select>
+
+          <label class="small" style="margin-top:6px">Comment</label>
+          <textarea id="comment-${subId}" placeholder="Short feedback"></textarea>
+
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button id="savefb-${subId}">Save feedback</button>
+          </div>
+        </div>
+      `;
+      viewerList.appendChild(box);
+
+      if(item.rating) box.querySelector(`#rating-${subId}`).value = String(item.rating);
+      if(item.feedback) box.querySelector(`#comment-${subId}`).value = item.feedback;
+
+      // Save feedback only
+      box.querySelector(`#savefb-${subId}`).addEventListener('click', async () => {
+        const rating = +box.querySelector(`#rating-${subId}`).value;
+        const comment = box.querySelector(`#comment-${subId}`).value;
+        await db.ref(`schools/${sid}/grades/${gid}/students/${stid}/submissions/${subId}`).update({
+          feedback: comment,
+          rating: rating,
+          status: 'reviewed',
+          reviewedAt: Date.now()
+        });
+        alert('Feedback saved');
+        loadStudentSubmissions(sid, gid, stid, studentName);
+      });
+    });
+}
+
+
+
+
+
+
+
+    /************ INIT ************/
+    (async function init(){
+      // Initially show landing only. But if the user is already remembered in localStorage, load them.
+      // Check localStorage for usernameKey (persist across visits).
+      try{
+        const stored = localStorage.getItem('cbc_user_key');
+        if(stored){
+          // load user's record and lock UI to role
+          usernameKey = stored;
+          const uSnap = await db.ref(`users/${usernameKey}`).get();
+          if(uSnap.exists()){
+            const u = uSnap.val();
+            username = u.username || usernameKey;
+            currentRole = u.role;
+            lockToRole(currentRole, u);
+            showTopUser();
+            return;
+          } else {
+            localStorage.removeItem('cbc_user_key');
+          }
+        }
+      }catch(e){
+        console.warn('Init load error:', e);
+      }
+
+      // otherwise load schools so dropdowns are populated when user picks a role and proceeds
+      await loadSchools();
+      db.ref('schools').on('value', snap=>{ loadSchools(); });
+    })();
+
+    // When account is created successfully, store key in localStorage for convenience
+    // We already save under users/{usernameKey} earlier; store key there too whenever created
+    // (createAccountBtn sets usernameKey and does DB save)
+
+    // After successful account creation we store in localStorage:
+    // Add simple observer: when users/{usernameKey} exists, persist it locally (this fires after earlier set)
+    db.ref('users').on('child_added', snap=>{
+      // if this child matches usernameKey, persist
+      if(usernameKey && snap.key === usernameKey){
+        localStorage.setItem('cbc_user_key', usernameKey);
+      }
+    });
+
+    // Optional: expose admin reset (dev)
+    window.adminResetRole = async function(unameKey){
+      if(!confirm('Reset role for '+unameKey+'?')) return;
+      await db.ref(`users/${unameKey}`).remove();
+      alert('Reset done.');
+      // If local user matched, clear local storage
+      if(localStorage.getItem('cbc_user_key') === unameKey) localStorage.removeItem('cbc_user_key');
+      location.reload();
+    };
+
+  </script>
+</body>
+</html>

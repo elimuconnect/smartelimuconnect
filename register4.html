@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SMART Register – Multi-School, Multi-Grade (Single-class teacher)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin:0; padding:0; }
+  header { background:#2c3e50; color:white; padding:10px; text-align:center; }
+  nav button { margin:5px; padding:8px 12px; cursor:pointer; }
+  .module { display:none; padding:20px; }
+  .module.active { display:block; }
+  table { border-collapse: collapse; width: 100%; max-width:1200px; margin-top:10px; }
+  table, th, td { border: 1px solid #ccc; }
+  th, td { padding:8px; text-align:center; }
+  input[type=text], input[type=date], select { padding:5px; margin:5px 0; width:100%; box-sizing:border-box; }
+  button { margin:5px; padding:8px 12px; cursor:pointer; }
+  #savingMessage { color:red; font-weight:bold; display:none; }
+  .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; }
+  .controls .field { display:flex; flex-direction:column; min-width:140px; }
+  .legend { text-align:center; margin-top:10px; }
+  .footer-row td { font-weight:bold; background:#fafafa; }
+  .narrow { width: 80px; }
+  .center { text-align:center; }
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; }
+  .muted { color:#666; font-size:12px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; background:#eef2f7; font-size:12px; margin-left:6px; }
+  .hidden { display:none !important; }
+  .readonly { background:#f5f5f5; }
+</style>
+
+<!-- Firebase compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- Print / PDF helpers -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<header>
+  <h1>DIGITAL Register – Weekly Attendance & Behavior</h1>
+  <nav>
+    <button onclick="showModule('weekly')">Weekly View</button>
+    <button onclick="showModule('rewards')">Rewards</button>
+    <button onclick="signOut()">Logout</button>
+  </nav>
+
+<div id="authSection" style="padding: 20px; text-align: center;">
+  <h2>Login / Sign up (One teacher → One class)</h2>
+
+  <!-- Sign up fields now include school + class -->
+  <div style="max-width:520px;margin:0 auto;text-align:left;">
+    <label><strong>Email</strong></label>
+    <input type="email" id="email" placeholder="Email" /><br/><br/>
+    <label><strong>Password</strong></label>
+    <input type="password" id="password" placeholder="Password" /><br/><br/>
+
+    <div id="signupExtras" style="border-top:1px dashed #ddd;padding-top:10px;margin-top:10px;">
+      <p class="muted">When signing up you must enter your School and Class/Stream. This will be locked to your account.</p>
+
+      <label>School Name</label>
+      <input type="text" id="signupSchool" placeholder="e.g., Sunshine Academy" /><br/><br/>
+
+      <label>Class / Stream</label>
+      <input type="text" id="signupGrade" placeholder="e.g., 7B" /><br/><br/>
+
+      <label><strong>Account Type</strong></label>
+      <select id="signupRole">
+        <option value="teacher">Class Teacher (one stream only)</option>
+        <option value="head">Deputy / Head Teacher (whole school)</option>
+      </select>
+    </div>
+
+    <div style="margin-top:10px;">
+      <button onclick="signUp()">Sign Up</button>
+      <button onclick="signIn()">Login</button>
+      <button onclick="signOut()">Logout</button>
+    </div>
+
+    <p id="authStatus" style="color: green; font-weight: bold;"></p>
+  </div>
+</div>
+
+</header>
+
+<main style="display:none;">
+
+  <!-- top bar: school/class shown but controls will be hidden if locked -->
+  <div class="row" style="padding: 10px 20px; gap:20px; border-bottom:1px solid #eee;">
+    <div class="field" style="min-width:220px;">
+      <label for="schoolSelect">School</label>
+      <select id="schoolSelect"></select>
+      <div id="schoolAddRow" class="row" style="gap:8px;">
+        <input type="text" id="newSchoolName" placeholder="Add new school" />
+        <button onclick="addSchool()">Add</button>
+      </div>
+      <span class="muted">Stores data under <code>schools/{school}/...</code></span>
+    </div>
+
+    <div class="field" style="min-width:220px;">
+      <label for="gradeSelect">Grade / Class</label>
+      <select id="gradeSelect"></select>
+      <div id="gradeAddRow" class="row" style="gap:8px;">
+        <input type="text" id="newGradeName" placeholder="Add new grade (e.g., Grade 6 Blue)" />
+        <button onclick="addGrade()">Add</button>
+      </div>
+      <span class="muted">Each school can have many grades/classes. (Locked for teachers)</span>
+    </div>
+
+    <div class="field" style="min-width:160px;">
+      <label for="weekStart">Start of Week</label>
+      <input type="date" id="weekStart" />
+    </div>
+
+    <div class="field" style="min-width:140px;">
+      <label for="week">Week #</label>
+      <input type="number" id="week" min="1" value="1" />
+      <span class="muted">Shown on print/PDF<span class="badge" id="weekDisplay">Week 1</span></span>
+    </div>
+  </div>
+
+  <div id="weekly" class="module active">
+    <h2>Weekly Attendance & Behavior</h2>
+
+    <!-- Add Student (persistent fields) -->
+    <div class="controls">
+      <div class="field">
+        <label for="newADM">ADM/UPI</label>
+        <input type="text" id="newADM" placeholder="ADM/UPI Number"/>
+      </div>
+      <div class="field">
+        <label for="newName">Student Name</label>
+        <input type="text" id="newName" placeholder="Student Name"/>
+      </div>
+      <div class="field">
+        <label for="newDOB">Date of Birth</label>
+        <input type="date" id="newDOB"/>
+      </div>
+      <div class="field">
+        <label for="newAgeY">Age (Y)</label>
+        <select id="newAgeY">
+          <option value="">Y</option>
+          <option>3</option><option>4</option><option>5</option><option>6</option>
+          <option>7</option><option>8</option><option>9</option><option>10</option>
+          <option>11</option><option>12</option><option>13</option><option>14</option>
+          <option>15</option><option>16</option><option>17</option><option>18</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="newAgeM">Age (M)</label>
+        <select id="newAgeM">
+          <option value="">M</option>
+          <option>0</option><option>1</option><option>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option><option>7</option>
+          <option>8</option><option>9</option><option>10</option><option>11</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="newGrade">STREAM</label>
+        <input id="newGrade" placeholder="Stream e.g., Blue" />
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button onclick="addStudent()">Add Student</button>
+      </div>
+    </div>
+
+    <!-- Computed Week Header -->
+    <h3 id="computedWeekRange" class="center">Week:</h3>
+
+    <!-- REGISTER TABLE -->
+    <table id="weekTable">
+      <thead>
+        <tr>
+          <th colspan="7" id="weekHeader">Week:</th>
+          <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+          <th>Total</th>
+          <th>Behavior</th>
+          <th>Remove</th>
+        </tr>
+        <tr>
+          <th>ADM/UPI</th>
+          <th>Date of Birth</th>
+          <th>Age (Y)</th>
+          <th>Age (M)</th>
+          <th>Class Label</th>
+          <th>Student</th>
+          <th></th>
+          <th>Att</th><th>Att</th><th>Att</th><th>Att</th><th>Att</th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+      <tfoot>
+        <tr class="footer-row">
+          <td colspan="7">Present: Morning</td>
+          <td colspan="7" id="footerAM">--</td>
+          <td colspan="2"></td>
+        </tr>
+        <tr class="footer-row">
+          <td colspan="7">Present: Afternoon</td>
+          <td colspan="7" id="footerPM">--</td>
+          <td colspan="2"></td>
+        </tr>
+        <tr class="footer-row">
+          <td colspan="7">Total</td>
+          <td colspan="7" id="footerTotal">--</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p class="legend">
+      <b>KEY:</b> x = Present (AM & PM), /0 = AM Present, PM Absent, 0/ = AM Absent, PM Present, 00 = Absent Both
+    </p>
+
+   
+   
+   
+   
+   
+<!-- Buttons Block -->
+<div>
+  <button onclick="saveWeekData()">Save Week</button>
+  <button onclick="printTable()">Print This Register</button>
+  <button onclick="downloadRegister()">Download PDF</button>
+  
+  <!-- Only visible to Head/Deputy (toggled in initForUser) -->
+  <button id="printAllBtn" onclick="printAllRegisters()" style="display:none">
+    Print ALL Registers
+  </button>
+
+  <span id="savingMessage" style="display:none">Saving... Please wait</span>
+</div>
+   
+   
+   
+  </div>
+
+  <div id="rewards" class="module">
+    <h2>Rewards</h2>
+    <div id="rewardList"></div>
+  </div>
+</main>
+  
+
+<script>
+
+
+
+  
+/********************
+ * Firebase setup   *
+ ********************/
+const firebaseConfig = {
+  apiKey: "AIzaSyDR5lDNlf5yiP57BcgwlD8mZTyugD7SSng",
+  authDomain: "homework-2e4cf.firebaseapp.com",
+  databaseURL: "https://homework-2e4cf-default-rtdb.firebaseio.com",
+  projectId: "homework-2e4cf",
+  storageBucket: "homework-2e4cf.appspot.com",
+  messagingSenderId: "352776491020",
+  appId: "1:352776491020:web:65f9b37fbe5c1b0f96de29"
+};
+const app = firebase.initializeApp(firebaseConfig);
+const db  = firebase.database();
+const auth = firebase.auth();
+
+/********************
+ * Auth             *
+ ********************/
+
+
+async function signUp(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const school = document.getElementById("signupSchool").value.trim();
+  const grade  = document.getElementById("signupGrade").value.trim();
+  const role   = document.getElementById("signupRole").value;
+
+  if(!email || !password) return alert("Enter email and password");
+  if(!school) return alert("Enter School name");
+  if(role==="teacher" && !grade) return alert("Enter Class/Stream for teacher account");
+
+  try{
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    await assignSchoolAndGrade(cred.user, school, grade, role);
+    alert("Account created and assigned.");
+  }catch(e){
+    alert("Signup error: " + e.message);
+  }
+}
+
+
+
+async function signIn(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if(!email || !password) return alert("Enter email and password");
+  try{
+    await auth.signInWithEmailAndPassword(email, password);
+    console.log("Signed in");
+  }catch(e){
+    alert("Login error: " + e.message);
+  }
+}
+
+function signOut(){
+  auth.signOut().then(()=>{ alert("Signed out"); location.reload(); });
+}
+
+auth.onAuthStateChanged(async user => {
+  if(user){
+    document.getElementById("authSection").style.display = "none";
+    document.querySelector("main").style.display = "block";
+    document.getElementById("authStatus").innerText = "Logged in as " + user.email;
+    await initForUser(user);
+  } else {
+    document.getElementById("authSection").style.display = "block";
+    document.querySelector("main").style.display = "none";
+    document.getElementById("authStatus").innerText = "";
+  }
+});
+
+/********************
+ * Helpers / State  *
+ ********************/
+function slugify(s){ return (s||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''); }
+function studentId(name){ return (name||"").toLowerCase().trim().replace(/\s+/g,'_'); }
+function getWeekDates(startDate){
+  const start = new Date(startDate);
+  const dates = [];
+  for(let i=0;i<5;i++){ const d = new Date(start); d.setDate(start.getDate()+i); dates.push(d.toISOString().split('T')[0]); }
+  return dates;
+}
+function formatDatePretty(dateStr){
+  const opts = { day:'2-digit', month:'short', year:'numeric' };
+  return new Date(dateStr).toLocaleDateString('en-GB', opts);
+}
+function getWeekKey(){
+  let weekStart = document.getElementById('weekStart').value;
+  if(!weekStart){
+    const now = new Date();
+    const day = now.getDay(); // 0=Sun..6=Sat
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
+    weekStart = monday.toISOString().split('T')[0];
+    document.getElementById('weekStart').value = weekStart;
+  }
+  return weekStart;
+}
+
+let currentUser = null;
+let students = []; // current grade's students
+let schoolsCache = {}; // id -> {name}
+let gradesCache = {};  // id -> {name}
+let assigned = { schoolId: null, gradeId: null, schoolName: null, gradeName: null };
+
+function getSelectedSchoolId(){ return document.getElementById('schoolSelect').value; }
+function getSelectedGradeId(){ return document.getElementById('gradeSelect').value; }
+
+/********************
+ * UI switching     *
+ ********************/
+function showModule(module){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.getElementById(module).classList.add('active');
+  if(module==='rewards') loadRewards();
+}
+
+/********************
+ * Assign school/grade to user (one-time)
+ ********************/
+
+
+async function assignSchoolAndGrade(user, schoolName, gradeName, role){
+  const sid = slugify(schoolName);
+  const gid = gradeName ? slugify(gradeName) : null;
+
+  await db.ref(`users/${user.uid}`).set({
+    schoolId: sid,
+    gradeId: role==="teacher" ? gid : null,
+    schoolName,
+    gradeName: role==="teacher" ? gradeName : null,
+    role,
+    assignedAt: Date.now()
+  });
+
+  await db.ref(`schools/${sid}`).update({ name: schoolName, updatedAt: Date.now() });
+  if(role==="teacher" && gid){
+    await db.ref(`schools/${sid}/grades/${gid}`).update({ name: gradeName, createdAt: Date.now() });
+  }
+
+  assigned = { schoolId: sid, gradeId: gid, schoolName, gradeName, role };
+}
+
+
+
+
+
+/********************
+ * Init for user (locks to assigned school+grade)
+ ********************/
+async function initForUser(user) {
+  currentUser = user;
+
+  // fetch user's assignment
+  const userSnap = await db.ref(`users/${user.uid}`).get();
+  if (!userSnap.exists()) {
+    // legacy/edge case: prompt once to set assignment
+    const schoolName = prompt("Enter your School name (this will be locked to your account):");
+    const gradeName = prompt("Enter your Class/Stream (e.g., 7B) (leave blank if Head/Deputy):");
+    const role = prompt("Enter your role: 'teacher' or 'head'"); // fallback if signupRole missing
+
+    if (!schoolName || (!gradeName && role === "teacher")) {
+      alert("You must set School and (if Teacher) a Class to proceed. Logging out.");
+      await auth.signOut();
+      return;
+    }
+    await assignSchoolAndGrade(user, schoolName, gradeName, role);
+  } else {
+    const u = userSnap.val();
+    assigned.schoolId = u.schoolId;
+    assigned.schoolName = u.schoolName || u.schoolId;
+    assigned.role = u.role || "teacher"; // default teacher if missing
+
+    if (assigned.role === "teacher") {
+      assigned.gradeId = u.gradeId;
+      assigned.gradeName = u.gradeName || u.gradeId;
+    }
+  }
+
+  // Hide signup extras (no need to show on next load)
+  document.getElementById('signupExtras').classList.add('hidden');
+
+  // Lock UI
+  document.getElementById('schoolAddRow').classList.add('hidden');
+  document.getElementById('gradeAddRow').classList.add('hidden');
+
+  const sSel = document.getElementById('schoolSelect');
+  const gSel = document.getElementById('gradeSelect');
+
+  // If TEACHER → lock to single stream
+  if (assigned.role === "teacher") {
+    sSel.innerHTML = `<option value="${assigned.schoolId}">${assigned.schoolName}</option>`;
+    gSel.innerHTML = `<option value="${assigned.gradeId}">${assigned.gradeName}</option>`;
+    sSel.value = assigned.schoolId;
+    gSel.value = assigned.gradeId;
+
+    sSel.disabled = true;
+    gSel.disabled = true;
+
+    sSel.classList.add('readonly');
+    gSel.classList.add('readonly');
+
+    // load students for this assigned class
+    await loadStudents();
+
+  } else if (assigned.role === "head" || assigned.role === "deputy") {
+    // If HEAD/Deputy → lock only school, but allow all streams inside
+    sSel.innerHTML = `<option value="${assigned.schoolId}">${assigned.schoolName}</option>`;
+    sSel.value = assigned.schoolId;
+    sSel.disabled = true;
+    sSel.classList.add('readonly');
+
+    // populate gradeSelect with ALL grades from that school
+    const gradesSnap = await db.ref(`schools/${assigned.schoolId}/grades`).get();
+    gSel.innerHTML = "";
+
+    if (gradesSnap.exists()) {
+      gradesSnap.forEach(child => {
+        const g = child.val();
+        gSel.innerHTML += `<option value="${child.key}">${g.name || child.key}</option>`;
+      });
+    }
+
+    // allow head/deputy to switch between grades
+    gSel.disabled = false;
+    gSel.classList.remove('readonly');
+
+    // load students for the first grade by default
+    if (gSel.value) {
+      assigned.gradeId = gSel.value;
+      assigned.gradeName = gSel.options[gSel.selectedIndex].text;
+      await loadStudents();
+    }
+
+    // ✅ Show Print ALL button
+    const printAllBtn = document.getElementById('printAllBtn');
+    if (printAllBtn) {
+      printAllBtn.style.display = 'inline-block';
+    }
+  }
+}
+
+
+
+/********************
+ * Schools & Grades (regular functions still present but teachers are locked)
+ ********************/
+async function loadSchools(){
+  // If teacher is assigned, don't load the full list — just show assigned
+  if(assigned.schoolId){
+    document.getElementById('schoolSelect').innerHTML = `<option value="${assigned.schoolId}">${assigned.schoolName}</option>`;
+    await loadGrades(assigned.schoolId);
+    return;
+  }
+
+  const snap = await db.ref('schools').get();
+  const select = document.getElementById('schoolSelect');
+  select.innerHTML = '';
+  schoolsCache = {};
+  if(snap.exists()){
+    const data = snap.val();
+    Object.entries(data).forEach(([id, obj])=>{ schoolsCache[id]=obj; });
+  }
+  // Build options
+  const opts = Object.entries(schoolsCache).map(([id,obj])=>`<option value="${id}">${obj.name||id}</option>`).join('');
+  select.innerHTML = opts || '<option value="">— No schools —</option>';
+  if(select.value){ await loadGrades(select.value); }
+}
+
+async function addSchool(){
+  // If teacher assigned, prevent adding other schools
+  if(assigned.schoolId) return alert("Your account is locked to a single school and cannot add other schools.");
+  const name = document.getElementById('newSchoolName').value.trim();
+  if(!name) return alert('Enter school name');
+  const id = slugify(name);
+  await db.ref('schools/'+id).set({ name, owner: currentUser? currentUser.uid: null, createdAt: Date.now() });
+  document.getElementById('newSchoolName').value='';
+  await loadSchools();
+  document.getElementById('schoolSelect').value = id;
+  await loadGrades(id);
+}
+
+document.getElementById('schoolSelect').addEventListener('change', async ()=>{
+  const sid = getSelectedSchoolId();
+  await loadGrades(sid);
+});
+
+async function loadGrades(schoolId){
+  // If teacher assigned, only show assigned grade
+  if(assigned.gradeId && assigned.schoolId === schoolId){
+    document.getElementById('gradeSelect').innerHTML = `<option value="${assigned.gradeId}">${assigned.gradeName}</option>`;
+    return;
+  }
+  const select = document.getElementById('gradeSelect');
+  select.innerHTML = '';
+  gradesCache = {};
+  if(!schoolId){ select.innerHTML = '<option value="">— Select school —</option>'; return; }
+  const snap = await db.ref(`schools/${schoolId}/grades`).get();
+  if(snap.exists()){
+    Object.entries(snap.val()).forEach(([id,obj])=>{ gradesCache[id]=obj; });
+  }
+  const opts = Object.entries(gradesCache).map(([id,obj])=>`<option value="${id}">${obj.name||id}</option>`).join('');
+  select.innerHTML = opts || '<option value="">— No grades —</option>';
+  if(select.value){ await loadStudents(); }
+}
+
+async function addGrade(){
+  if(assigned.gradeId) return alert("Your account is locked to a single class and cannot add other grades.");
+  const sid = getSelectedSchoolId();
+  if(!sid) return alert('Select a school first');
+  const name = document.getElementById('newGradeName').value.trim();
+  if(!name) return alert('Enter grade/class name');
+  const gid = slugify(name);
+  await db.ref(`schools/${sid}/grades/${gid}`).set({ name, createdAt: Date.now() });
+  document.getElementById('newGradeName').value='';
+  await loadGrades(sid);
+  document.getElementById('gradeSelect').value = gid;
+  await loadStudents();
+}
+
+/********************
+ * Students CRUD    *
+ ********************/
+async function loadStudents(){
+  // Use assigned if present; else use current selects
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+  if(!sid || !gid){ students=[]; renderTable(); return; }
+  const snap = await db.ref(`schools/${sid}/grades/${gid}/students`).get();
+  students = snap.exists()? Object.values(snap.val()) : [];
+  students.forEach(s=>{ if(!s.id) s.id = studentId(s.name||''); });
+  renderTable();
+}
+
+async function addStudent(){
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+  if(!sid || !gid) return alert('Select a school and a grade first');
+
+  const adm   = document.getElementById('newADM').value.trim();
+  const name  = document.getElementById('newName').value.trim();
+  const dob   = document.getElementById('newDOB').value;
+  const ageY  = document.getElementById('newAgeY').value;
+  const ageM  = document.getElementById('newAgeM').value;
+  const label = document.getElementById('newGrade').value.trim();
+  if(!adm || !name) return alert('Please enter at least ADM/UPI and Student Name.');
+
+  const id = studentId(name);
+  const studentObj = { id, adm, name, dob: dob||"", ageY: ageY||"", ageM: ageM||"", classLabel: label||"" };
+  await db.ref(`schools/${sid}/grades/${gid}/students/${id}`).set(studentObj);
+
+  ['newADM','newName','newDOB','newAgeY','newAgeM','newGrade'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el.tagName==='SELECT') el.selectedIndex=0; else el.value='';
+  });
+  await loadStudents();
+}
+
+async function removeStudentById(id){
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+  if(!sid || !gid) return;
+  await db.ref(`schools/${sid}/grades/${gid}/students/${id}`).remove();
+  const wk = getWeekKey();
+  await db.ref(`schools/${sid}/grades/${gid}/weeks/${wk}/attendance/${id}`).remove().catch(()=>{});
+  await db.ref(`schools/${sid}/grades/${gid}/weeks/${wk}/behavior/${id}`).remove().catch(()=>{});
+  await loadStudents();
+}
+
+/********************
+ * Render Table     *
+ ********************/
+async function renderTable(){
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+
+  const weekKey = getWeekKey();
+  const dates = getWeekDates(weekKey);
+  const weekHeader = `Week: ${formatDatePretty(dates[0])} – ${formatDatePretty(dates[4])}`;
+  document.getElementById('computedWeekRange').textContent = weekHeader;
+  document.getElementById('weekHeader').textContent = weekHeader;
+
+  const tbody = document.querySelector('#weekTable tbody');
+  tbody.innerHTML = "";
+
+  if(!sid || !gid || students.length===0){ updateFooterTotals(); return; }
+
+  const attPath = `schools/${sid}/grades/${gid}/weeks/${weekKey}/attendance`;
+  const behPath = `schools/${sid}/grades/${gid}/weeks/${weekKey}/behavior`;
+  const attSnap = await db.ref(attPath).get();
+  const behSnap = await db.ref(behPath).get();
+
+  let footerAM=0, footerPM=0, footerTotal=0;
+
+  students.forEach(st=>{
+    const row = document.createElement('tr');
+    const sId = st.id;
+    const weekly = attSnap.exists() && attSnap.val()[sId] ? attSnap.val()[sId] : {};
+    const behVal = behSnap.exists() && behSnap.val()[sId] ? behSnap.val()[sId] : "";
+
+    let stuAM=0, stuPM=0;
+    const options = `
+      <option value=""></option>
+      <option value="x">x</option>
+      <option value="/0">/0</option>
+      <option value="0/">0/</option>
+      <option value="00">00</option>
+    `;
+
+    let html = `
+      <td><input type="text" value="${st.adm||''}" data-id="${sId}" class="adm persist"/></td>
+      <td><input type="date" value="${st.dob||''}" data-id="${sId}" class="dob persist"/></td>
+      <td>
+        <select data-id="${sId}" class="ageY persist">
+          <option value="">Y</option>
+          ${Array.from({length:16},(_,i)=>i+3).map(y=>`<option ${String(st.ageY)===String(y)?'selected':''}>${y}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select data-id="${sId}" class="ageM persist">
+          <option value="">M</option>
+          ${Array.from({length:12},(_,i)=>i).map(m=>`<option ${String(st.ageM)===String(m)?'selected':''}>${m}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="text" value="${st.classLabel||''}" data-id="${sId}" class="classLabel persist" placeholder="Stream"/></td>
+      <td><input type="text" value="${st.name||''}" data-id="${sId}" class="name persist"/></td>
+      <td></td>
+    `;
+
+    dates.forEach(d=>{
+      const val = weekly && weekly[d] ? weekly[d] : "";
+      html += `<td><select class="att" data-id="${sId}" data-date="${d}">${options.replace(`value="${val}"`,`value="${val}" selected`)}</select></td>`;
+      const code = val;
+      if(code==='x'){ stuAM++; stuPM++; }
+      else if(code==='/0'){ stuAM++; }
+      else if(code==='0/'){ stuPM++; }
+    });
+
+    const stuTotal = stuAM + stuPM;
+    footerAM += stuAM; footerPM += stuPM; footerTotal += stuTotal;
+
+    html += `<td><input type="text" class="narrow" value="${stuTotal||''}" readonly/></td>`;
+    html += `<td>
+      <select class="beh" data-id="${sId}">
+        <option value="" ${behVal===''?'selected':''}>—</option>
+        <option value="Best" ${behVal==='Best'?'selected':''}>Best</option>
+        <option value="Good" ${behVal==='Good'?'selected':''}>Good</option>
+        <option value="Improving" ${behVal==='Improving'?'selected':''}>Improving</option>
+        <option value="Bad" ${behVal==='Bad'?'selected':''}>Bad</option>
+      </select>
+    </td>`;
+    html += `<td><button onclick="removeStudentById('${sId}')">Remove</button></td>`;
+
+    row.innerHTML = html;
+    tbody.appendChild(row);
+  });
+
+  updateFooterTotals(footerAM, footerPM, footerTotal);
+  attachPersistListeners();
+}
+
+/********************
+ * Persist inline   *
+ ********************/
+function attachPersistListeners(){
+  document.querySelectorAll('.persist').forEach(el=>{
+    el.addEventListener('change', async (e)=>{
+      const sid = assigned.schoolId || getSelectedSchoolId();
+      const gid = assigned.gradeId || getSelectedGradeId();
+      if(!sid || !gid) return;
+      const id = e.target.dataset.id;
+      const ref = db.ref(`schools/${sid}/grades/${gid}/students/${id}`);
+      const c = e.target;
+      const field = c.classList.contains('adm')? 'adm':
+                    c.classList.contains('dob')? 'dob':
+                    c.classList.contains('ageY')? 'ageY':
+                    c.classList.contains('ageM')? 'ageM':
+                    c.classList.contains('classLabel')? 'classLabel':
+                    c.classList.contains('name')? 'name': null;
+      if(!field) return;
+      await ref.update({ [field]: c.value });
+    });
+  });
+}
+
+/********************
+ * Save Week        *
+ ********************/
+async function saveWeekData(){
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+  if(!sid || !gid) return alert('Select a school and grade first');
+
+  document.getElementById("savingMessage").style.display = "block";
+  const weekKey = getWeekKey();
+  try{
+    const attUpdates = {};
+    document.querySelectorAll('select.att').forEach(sel=>{
+      const s = sel.dataset.id; const d = sel.dataset.date; const v = sel.value; if(!attUpdates[s]) attUpdates[s] = {}; attUpdates[s][d] = v||"";
+    });
+    const behUpdates = {};
+    document.querySelectorAll('select.beh').forEach(sel=>{ behUpdates[sel.dataset.id] = sel.value || ""; });
+
+    await Promise.all([
+      db.ref(`schools/${sid}/grades/${gid}/weeks/${weekKey}/attendance`).update(attUpdates),
+      db.ref(`schools/${sid}/grades/${gid}/weeks/${weekKey}/behavior`).update(behUpdates),
+    ]);
+
+    document.getElementById("savingMessage").style.display = "none";
+    alert("Week data saved!");
+    renderTable();
+    loadRewards();
+  }catch(e){
+    document.getElementById("savingMessage").style.display = "none";
+    alert("Error saving data: "+e);
+    console.error(e);
+  }
+}
+
+/********************
+ * Rewards          *
+ ********************/
+
+
+
+async function loadRewards(){
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+  const weekKey = getWeekKey();
+  const listDiv = document.getElementById('rewardList');
+  listDiv.innerHTML = '';
+
+  if(!sid || !gid){ listDiv.innerHTML = '<p>Select a school and grade.</p>'; return; }
+
+  try{
+    const snap = await db.ref(`schools/${sid}/grades/${gid}/weeks/${weekKey}/behavior`).get();
+    const winners = []; // student ids
+
+    if(snap.exists()){
+      const data = snap.val();
+      Object.entries(data).forEach(([sidStudent, val])=>{
+        // if stored per-day as object, require every day's value === "Best"
+        if(typeof val === 'object' && val !== null){
+          const allBest = Object.values(val).every(v => v === "Best");
+          if(allBest) winners.push(sidStudent);
+        } else {
+          // if stored as single weekly status, require it === "Best"
+          if(val === "Best") winners.push(sidStudent);
+        }
+      });
+    }
+
+    const namesById = {}; students.forEach(s=> namesById[s.id] = s.name || s.adm || s.id);
+    listDiv.innerHTML = `<h3>Weekly Rewards</h3>`;
+    if(winners.length === 0) {
+      listDiv.innerHTML += '<p>No students had "Best" behavior for the entire week.</p>';
+    } else {
+      winners.forEach(id => {
+        listDiv.innerHTML += `<p>${namesById[id] || id} — Best all week</p>`;
+      });
+    }
+  }catch(e){
+    console.error('Load rewards failed:', e);
+    listDiv.innerHTML = '<p>Error loading rewards.</p>';
+  }
+}
+
+
+
+/********************
+ * Footer totals    *
+ ********************/
+function updateFooterTotals(am=0, pm=0, total=0){
+  document.getElementById('footerAM').textContent = am||0;
+  document.getElementById('footerPM').textContent = pm||0;
+  document.getElementById('footerTotal').textContent = total||0;
+}
+
+/********************
+ * Print & PDF      *
+ ********************/
+function currentSchoolGradeLabels(){
+  const sid = assigned.schoolId || getSelectedSchoolId();
+  const gid = assigned.gradeId || getSelectedGradeId();
+  const sName = assigned.schoolName || (schoolsCache[sid]? schoolsCache[sid].name : sid||'');
+  const gName = assigned.gradeName || (gradesCache[gid]? gradesCache[gid].name : gid||'');
+  return { sName, gName };
+}
+
+
+
+
+function printTable() {
+  const orig = document.getElementById('weekTable');
+  const table = orig.cloneNode(true);
+
+  // Replace <select> and <input> elements with their displayed values
+  table.querySelectorAll('select, input').forEach(el => {
+    const span = document.createElement('span');
+    span.textContent = el.value || '-';
+    el.parentNode.replaceChild(span, el);
+  });
+
+  // Remove last column if extra
+  table.querySelectorAll('tr').forEach(row => {
+    if (row.cells.length > 1) row.deleteCell(row.cells.length - 1);
+  });
+
+  const { sName, gName } = currentSchoolGradeLabels();
+  const weekNum = document.getElementById('week')?.value || '1'; // manual week number
+  const weekRange = document.getElementById('weekHeader')?.textContent || '';
+
+  const w = window.open("", "", "width=900,height=700");
+
+  w.document.write(`<html><head><title>Print Register</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin:0; padding:0; font-size:16px; }
+      h1,h2,h3 { text-align:center; margin:4px 0; }
+      table { border-collapse: collapse; width: 100%; max-width:1200px; margin:10px auto; font-size:16px; }
+      th, td { border:1px solid #000; padding:8px; text-align:center; }
+      thead { display: table-header-group; }
+      tfoot { display: table-footer-group; }
+      tr { page-break-inside: avoid; }
+      .footer-row td { font-weight:bold; background:#fafafa; }
+      .legend { text-align:center; margin-top:12px; font-size:16px; }
+    </style>
+  </head><body>`);
+
+  // Header
+  w.document.write(`<h1>${sName || ''}</h1>`);
+  w.document.write(`<h2>${gName || ''} – Attendance Register Week ${weekNum}</h2>`);
+  w.document.write(`<h3>${weekRange}</h3>`);
+
+  // Add table
+  w.document.body.appendChild(table);
+
+  // Legend
+  w.document.write(`<p class="legend">
+    <b>KEY:</b> x = Present (AM & PM), /0 = AM Present, PM Absent, 0/ = AM Absent, PM Present, 00 = Absent Both
+  </p>`);
+
+  w.document.write("</body></html>");
+  w.document.close();
+  w.onload = () => { w.print(); w.close(); };
+}
+
+
+
+
+
+async function printAllRegisters() {
+  if (!confirm("This will print all registers, each on its own page. Continue?")) return;
+
+  const schoolId = assigned.schoolId || getSelectedSchoolId();
+  if (!schoolId) return alert("No school selected.");
+
+  const gradesSnap = await db.ref(`schools/${schoolId}/grades`).get();
+  if (!gradesSnap.exists()) return alert("No grades found.");
+
+  // Get manual week number from input
+  const weekNum = document.getElementById('week')?.value || '1';
+  const weekRange = document.getElementById('weekHeader')?.textContent || '';
+
+  let printWindow = window.open("", "", "width=900,height=700");
+  printWindow.document.write(`<html><head><title>All Registers</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin:0; padding:0; }
+      table { border-collapse: collapse; width: 100%; margin-top:10px; }
+      table, th, td { border:1px solid #ccc; padding:5px; text-align:center; }
+      h2,h3 { text-align:center; }
+      .register-page { page-break-after: always; }
+    </style>
+  </head><body>`);
+
+  const grades = gradesSnap.val();
+  for (const [gid, gradeData] of Object.entries(grades)) {
+    // Load students
+    const studentsSnap = await db.ref(`schools/${schoolId}/grades/${gid}/students`).get();
+    const studentsList = studentsSnap.exists() ? Object.values(studentsSnap.val()) : [];
+
+    // Load attendance & behavior
+    const weekKey = getWeekKey();
+    const attSnap = await db.ref(`schools/${schoolId}/grades/${gid}/weeks/${weekKey}/attendance`).get();
+    const behSnap = await db.ref(`schools/${schoolId}/grades/${gid}/weeks/${weekKey}/behavior`).get();
+    const attendance = attSnap.exists() ? attSnap.val() : {};
+    const behavior   = behSnap.exists() ? behSnap.val() : {};
+
+    // Build table HTML (with manual week number)
+    let tableHtml = `<div class="register-page">
+      <h2>${assigned.schoolName || schoolId}</h2>
+      <h3>${gradeData.name || gid} – Attendance Register Week ${weekNum}</h3>
+      <h3>${weekRange}</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ADM/UPI</th><th>DOB</th><th>Age(Y)</th><th>Age(M)</th>
+            <th>Class</th><th>Student</th>
+            <th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th>
+            <th>Total</th><th>Behavior</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    let footerAM = 0, footerPM = 0, footerTotal = 0;
+
+    for (const st of studentsList) {
+      const sId = st.id;
+      const weekly = attendance[sId] || {};
+      const behVal = behavior[sId] || "";
+
+      let stuAM=0, stuPM=0;
+      let rowHtml = `<tr>
+        <td>${st.adm||''}</td>
+        <td>${st.dob||''}</td>
+        <td>${st.ageY||''}</td>
+        <td>${st.ageM||''}</td>
+        <td>${st.classLabel||''}</td>
+        <td>${st.name||''}</td>`;
+
+      ['Mon','Tue','Wed','Thu','Fri'].forEach((day, i)=>{
+        const val = weekly[getWeekDates(weekKey)[i]] || '';
+        rowHtml += `<td>${val||'-'}</td>`;
+        if(val==='x'){stuAM++; stuPM++;} else if(val==='/0'){stuAM++;} else if(val==='0/'){stuPM++;}
+      });
+
+      const stuTotal = stuAM + stuPM;
+      footerAM += stuAM; footerPM += stuPM; footerTotal += stuTotal;
+
+      rowHtml += `<td>${stuTotal}</td><td>${behVal||'-'}</td></tr>`;
+      tableHtml += rowHtml;
+    }
+
+    tableHtml += `</tbody>
+      <tfoot>
+        <tr><td colspan="6">Present AM</td><td colspan="6">${footerAM}</td><td></td></tr>
+        <tr><td colspan="6">Present PM</td><td colspan="6">${footerPM}</td><td></td></tr>
+        <tr><td colspan="6">Total</td><td colspan="6">${footerTotal}</td><td></td></tr>
+      </tfoot>
+    </table></div>`; // .register-page ensures page-break
+
+    printWindow.document.write(tableHtml);
+  }
+
+  printWindow.document.write("</body></html>");
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+}
+
+
+
+
+
+
+
+async function downloadRegister() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF("p", "mm", "a4");
+
+  const { sName, gName } = currentSchoolGradeLabels();
+  const weekNum = document.getElementById('week')?.value || '1'; // manual week number
+  const weekRange = document.getElementById('weekHeader')?.textContent || '';
+
+  // Clone the table and replace inputs/selects with displayed values
+  const clone = document.getElementById('weekTable').cloneNode(true);
+  clone.querySelectorAll('select, input').forEach(el => {
+    const span = document.createElement('span');
+    span.textContent = el.value || '-';
+    el.parentNode.replaceChild(span, el);
+  });
+  clone.querySelectorAll('tr').forEach(row => {
+    if (row.cells.length > 1) row.deleteCell(row.cells.length - 1);
+  });
+
+  // Create a hidden div like print style
+  const temp = document.createElement('div');
+  temp.style.position = 'fixed';
+  temp.style.left = '-9999px';
+  temp.style.fontFamily = 'Arial, sans-serif';
+  temp.style.fontSize = '16px';
+  temp.innerHTML = `
+    <h1 style="text-align:center;">${sName || ''}</h1>
+    <h2 style="text-align:center;">${gName || ''} – Attendance Register Week ${weekNum}</h2>
+    <h3 style="text-align:center;">${weekRange}</h3>
+  `;
+  temp.appendChild(clone);
+
+  // Add legend
+  const legend = document.createElement('p');
+  legend.style.textAlign = 'center';
+  legend.style.marginTop = '12px';
+  legend.style.fontSize = '16px';
+  legend.innerHTML = `<b>KEY:</b> x = Present (AM & PM), /0 = AM Present, PM Absent, 0/ = AM Absent, PM Present, 00 = Absent Both`;
+  temp.appendChild(legend);
+
+  document.body.appendChild(temp);
+
+  // Use html2canvas to capture
+  const canvas = await html2canvas(temp, { scale: 2 });
+  document.body.removeChild(temp);
+
+  const imgData = canvas.toDataURL('image/png');
+  const imgWidth = 190; // page width minus margins
+  const pageHeight = 297; // A4 height in mm
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+  let heightLeft = imgHeight;
+  let position = 10;
+
+  doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight + 10;
+    doc.addPage();
+    doc.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+  }
+
+  doc.save('Weekly_Register.pdf');
+}
+
+/********************
+ * Init             *
+ ********************/
+document.getElementById('weekStart').addEventListener('change', renderTable);
+document.getElementById('gradeSelect').addEventListener('change', loadStudents);
+
+document.getElementById('week').addEventListener('input', function(){
+  const n = this.value.trim();
+  document.getElementById('weekDisplay').innerText = n? `Week ${n}` : 'Week 1';
+});
+
+// Default week to current Monday on first load (before auth might set it)
+(function init(){
+  const wk = getWeekKey();
+  document.getElementById('weekStart').value = wk;
+})();
+</script>
+</body>
+</html>

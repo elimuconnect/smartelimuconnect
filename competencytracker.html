@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CBC Competency Tracker</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background: #f4f8ff; }
+  .card { background: #fff; padding: 15px; margin-bottom: 20px; border-radius: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.1);}
+  h2 { color: #2c3e50; }
+  label { font-weight: bold; display: block; margin-top: 10px; }
+  input, select { width: 100%; padding: 8px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc;}
+  button { padding: 10px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px;}
+  button:hover { background: #2980b9;}
+  table { width: 100%; border-collapse: collapse; margin-top: 20px;}
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: center;}
+  th { background: #3498db; color: white; }
+  .guide { background: #ecf7ff; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; }
+  .small { font-size: 12px; color: #666; margin-top:6px;}
+  #roleSelect { text-align: center; margin-top: 40px; }
+  #teacherSection, #parentSection { display: none; }
+</style>
+</head>
+<body>
+<h2>📊 CBC Competency Tracker</h2>
+
+<!-- Role Selection -->
+<div id="roleSelect" class="card">
+  <h3>Select Role</h3>
+  <button onclick="chooseRole('teacher')">👨‍🏫 Teacher</button>
+  <button onclick="chooseRole('parent')">👨‍👩‍👦 Parent</button>
+</div>
+<!-- Teacher Section -->
+<div id="teacherSection" class="card">
+  <h3>Teacher Phase</h3>
+
+  <label>School Name:</label>
+  <input id="schoolName" placeholder="Enter school name">
+
+  <label>Grade:</label>
+  <input id="gradeName" placeholder="Enter grade (e.g., Grade 6)">
+
+  <label>Student Name:</label>
+  <input id="studentName" placeholder="Enter student name">
+
+  <button onclick="registerStudent()">Register Student</button>
+  <button onclick="clearSchoolGrade()">Change School/Grade</button>
+  <div class="small">School and grade are saved locally until you press "Change School/Grade".</div>
+  <hr>
+
+  <h3>Select Student</h3>
+  <select id="studentSelect" onchange="teacherViewScores()">
+    <option value="">-- Choose Student --</option>
+  </select>
+  <div class="small">Dropdown updates immediately when students are added.</div>
+
+  <label>Competency:</label>
+  <select id="competencySelect" onchange="showGuide()">
+    <option>Communication and Collaboration</option>
+    <option>Critical Thinking and Problem Solving</option>
+    <option>Imagination and Creativity</option>
+    <option>Citizenship</option>
+    <option>Digital Literacy</option>
+    <option>Learning to Learn</option>
+    <option>Self-Efficacy</option>
+  </select>
+  <div id="competencyGuide" class="guide"></div>
+
+  <label>Term:</label>
+  <select id="termSelect">
+    <option value="Term 1">Term 1</option>
+    <option value="Term 2">Term 2</option>
+    <option value="Term 3">Term 3</option>
+  </select>
+
+  <label>Score (0-100):</label>
+  <input type="number" id="score" min="0" max="100">
+  <button onclick="addRecord()">Save Progress</button>
+
+  <div id="studentList"></div>
+  <hr>
+
+  <h3>📖 Student Scores (Teacher View)</h3>
+  <h4 id="teacherStudentName"></h4>
+  <table id="teacherProgressTable">
+    <thead>
+      <tr>
+        <th>Competency</th>
+        <th>Term 1</th>
+        <th>Term 2</th>
+        <th>Term 3</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <canvas id="teacherChart" width="400" height="200"></canvas>
+  <div id="teacherGuide" class="guide"></div>
+</div>
+
+<!-- Parent Section -->
+<div id="parentSection" class="card">
+  <h3>Parent Phase</h3>
+
+  <label>Select School:</label>
+  <select id="parentSchool" onchange="saveParentSchool(); loadParentGrades()">
+    <option value="">-- Choose School --</option>
+  </select>
+  <button onclick="resetParentSchool()">Change School</button>
+
+  <label>Select Grade:</label>
+  <select id="parentGrade" onchange="loadParentStudents()">
+    <option value="">-- Choose Grade --</option>
+  </select>
+
+  <label>Select Student:</label>
+  <select id="parentStudent">
+    <option value="">-- Choose Student --</option>
+  </select>
+
+  <button onclick="viewProgress()">View Progress</button>
+
+  <table id="progressTable">
+    <thead>
+      <tr>
+        <th>Competency</th>
+        <th>Term 1</th>
+        <th>Term 2</th>
+        <th>Term 3</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <canvas id="parentChart" width="400" height="200"></canvas>
+  <div id="parentGuide" class="guide"></div>
+</div>
+
+
+<script>
+
+
+
+  
+// ---------- Firebase Setup ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyCAiOSHmURDyAAYm5EmoomLkZ_Aud7iXIQ",
+  authDomain: "cbc-general.firebaseapp.com",
+  databaseURL: "https://cbc-general-default-rtdb.firebaseio.com",
+  projectId: "cbc-general",
+  storageBucket: "cbc-general.appspot.com",
+  messagingSenderId: "764732839741",
+  appId: "1:764732839741:web:ab829af54839de91359754"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ---------- Helpers ----------
+function sanitizeKey(s) {
+  if (!s) return "";
+  return s.toString().trim().replace(/[.#$\[\]\/]/g, "_");
+}
+function schoolPath() {
+  const schoolRaw = document.getElementById("schoolName").value || localStorage.getItem("schoolName");
+  const gradeRaw  = document.getElementById("gradeName").value  || localStorage.getItem("gradeName");
+  const sk = sanitizeKey(schoolRaw);
+  const gk = sanitizeKey(gradeRaw);
+  return { schoolRaw, gradeRaw, schoolKey: sk, gradeKey: gk };
+}
+
+// ---------- Competency Guides ----------
+const competencyInfo = {
+  "Communication and Collaboration": `- Expressing ideas clearly<br>- Active listening and teamwork<br>- Building respectful relationships`,
+  "Critical Thinking and Problem Solving": `- Analyzing logically<br>- Making informed decisions<br>- Applying creativity`,
+  "Imagination and Creativity": `- Generating original ideas<br>- Innovating<br>- Expressing creativity`,
+  "Citizenship": `- Understanding rights<br>- Practicing integrity<br>- Community service`,
+  "Digital Literacy": `- Using technology responsibly<br>- Applying digital tools<br>- Online safety`,
+  "Learning to Learn": `- Managing personal learning<br>- Setting goals<br>- Reflecting and self-assessing`,
+  "Self-Efficacy": `- Believing in abilities<br>- Taking initiative<br>- Confidence and positivity`
+};
+function showGuide() {
+  const competency = document.getElementById("competencySelect").value;
+  document.getElementById("competencyGuide").innerHTML = competencyInfo[competency] || "";
+}
+
+// ---------- Live references ----------
+let teacherStudentsRef = null;
+let parentStudentsRef = null;
+let teacherCompetenciesRef = null;
+let parentCompetenciesRef = null;
+let teacherChart = null;
+let parentChart = null;
+
+// ---------- Page Load ----------
+window.onload = () => {
+  const role = localStorage.getItem("role");
+  if (role) chooseRole(role);
+  showGuide();
+
+  const savedSchool = localStorage.getItem("schoolName");
+  const savedGrade = localStorage.getItem("gradeName");
+  if (savedSchool) document.getElementById("schoolName").value = savedSchool;
+  if (savedGrade) document.getElementById("gradeName").value = savedGrade;
+
+  const { schoolKey, gradeKey } = schoolPath();
+  if (schoolKey && gradeKey) startStudentListeners();
+
+  if (role === "parent") loadParentSchools();
+};
+
+// ---------- Student Functions ----------
+function registerStudent() {
+  const schoolRaw = document.getElementById("schoolName").value.trim();
+  const gradeRaw = document.getElementById("gradeName").value.trim();
+  const studentName = document.getElementById("studentName").value.trim();
+  if (!schoolRaw || !gradeRaw || !studentName) return alert("Please fill school, grade and student name.");
+
+  localStorage.setItem("schoolName", schoolRaw);
+  localStorage.setItem("gradeName", gradeRaw);
+
+  const { schoolKey, gradeKey } = schoolPath();
+  if (!schoolKey || !gradeKey) return;
+
+  const newRef = db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students`).push();
+  newRef.set({ name: studentName, competencies: {} })
+    .then(() => { document.getElementById("studentName").value = ""; startStudentListeners(); })
+    .catch(err => console.error(err));
+}
+
+function deleteStudent(studentKey) {
+  const { schoolKey, gradeKey } = schoolPath();
+  if (!schoolKey || !gradeKey) return;
+  if (!confirm("Are you sure you want to delete this student?")) return;
+
+  db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students/${studentKey}`).remove()
+    .then(() => { alert("Student deleted."); startStudentListeners(); })
+    .catch(err => console.error(err));
+}
+
+function startStudentListeners() {
+  loadStudentsRealtime();
+  loadParentStudentsRealtime();
+}
+
+function loadStudentsRealtime() {
+  const { schoolKey, gradeKey } = schoolPath();
+  const studentSelect = document.getElementById("studentSelect");
+  const studentListDiv = document.getElementById("studentList");
+  if (teacherStudentsRef) teacherStudentsRef.off();
+  if (!schoolKey || !gradeKey) return;
+
+  teacherStudentsRef = db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students`);
+  teacherStudentsRef.on("value", snapshot => {
+    studentSelect.innerHTML = "<option value=''>-- Select Student --</option>";
+    studentListDiv.innerHTML = "<h3>Registered Students</h3>";
+    const ul = document.createElement("ul");
+    snapshot.forEach(child => {
+      const data = child.val() || {};
+      const name = data.name || child.key;
+      const opt = document.createElement("option");
+      opt.value = child.key; opt.textContent = name; studentSelect.appendChild(opt);
+      const li = document.createElement("li"); li.textContent = name + " ";
+      const btn = document.createElement("button"); btn.textContent = "❌ Delete";
+      btn.onclick = () => deleteStudent(child.key); li.appendChild(btn); ul.appendChild(li);
+    });
+    studentListDiv.appendChild(ul);
+  });
+}
+
+function loadParentStudentsRealtime() {
+  const { schoolKey, gradeKey } = schoolPath();
+  const parentSelect = document.getElementById("parentStudent");
+  if (parentStudentsRef) parentStudentsRef.off();
+  if (!schoolKey || !gradeKey) return;
+
+  parentStudentsRef = db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students`);
+  parentStudentsRef.on("value", snapshot => {
+    parentSelect.innerHTML = "<option value=''>-- Select Student --</option>";
+    snapshot.forEach(child => {
+      const data = child.val() || {};
+      const opt = document.createElement("option");
+      opt.value = child.key; opt.textContent = data.name || child.key;
+      parentSelect.appendChild(opt);
+    });
+  });
+}
+
+function clearSchoolGrade() {
+  localStorage.removeItem("schoolName"); localStorage.removeItem("gradeName");
+  document.getElementById("schoolName").value = ""; document.getElementById("gradeName").value = "";
+  if (teacherStudentsRef) { teacherStudentsRef.off(); teacherStudentsRef=null; }
+  if (parentStudentsRef) { parentStudentsRef.off(); parentStudentsRef=null; }
+  alert("School and grade reset.");
+}
+
+function addRecord() {
+  const { schoolKey, gradeKey } = schoolPath();
+  const studentKey = document.getElementById("studentSelect").value;
+  const competency = document.getElementById("competencySelect").value;
+  const term = document.getElementById("termSelect").value;
+  const score = document.getElementById("score").value;
+
+  if (!studentKey) return alert("Select a student.");
+  if (score === "" || isNaN(score)) return alert("Enter a numeric score.");
+
+  db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students/${studentKey}/competencies/${competency}/${term}`)
+    .set(Number(score))
+    .then(() => alert(`${term} score saved!`));
+}
+
+// ---------- Teacher View Scores ----------
+function teacherViewScores() {
+  const { schoolKey, gradeKey } = schoolPath();
+  const studentKey = document.getElementById("studentSelect").value;
+  if (!schoolKey || !gradeKey || !studentKey) return;
+
+  db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students/${studentKey}/name`).once("value", snap => {
+    document.getElementById("teacherStudentName").textContent = snap.exists() ? snap.val() : "(Unnamed Student)";
+  });
+
+  db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students/${studentKey}/competencies`).once("value", snapshot => {
+    const tbody = document.querySelector("#teacherProgressTable tbody");
+    tbody.innerHTML = "";
+    const labels = [], datasets = [];
+
+    snapshot.forEach(child => {
+      const termData = child.val(); // object with Term1, Term2, Term3
+      labels.push(child.key);
+
+      const scores = ["Term 1","Term 2","Term 3"].map(t => termData[t] || 0);
+      tbody.innerHTML += `<tr>
+        <td>${child.key}</td>
+        <td>${scores[0]}</td>
+        <td>${scores[1]}</td>
+        <td>${scores[2]}</td>
+      </tr>`;
+
+      datasets.push({ label: child.key, data: scores, backgroundColor: ["#3498db","#2ecc71","#e67e22"] });
+    });
+
+    // Update Chart
+    if (teacherChart) teacherChart.destroy();
+    const ctx = document.getElementById("teacherChart").getContext("2d");
+    teacherChart = new Chart(ctx, {
+      type: "bar",
+      data: { labels: ["Term 1","Term 2","Term 3"], datasets: datasets },
+      options: { scales: { y: { beginAtZero:true, max:100 } } }
+    });
+  });
+}
+
+
+
+
+
+// ---------- Parent Functions ----------
+function loadParentSchools() {
+  const sel = document.getElementById("parentSchool"); sel.innerHTML = "<option value=''>-- Choose School --</option>";
+  db.ref("cbc_tracker/schools").once("value", snapshot => {
+    snapshot.forEach(child => { const opt = document.createElement("option"); opt.value = child.key; opt.textContent = child.key; sel.appendChild(opt); });
+    lockParentSchool();
+  });
+}
+function lockParentSchool() {
+  const saved = localStorage.getItem("parentSchool");
+  if (saved) { document.getElementById("parentSchool").value=saved; document.getElementById("parentSchool").disabled=true; loadParentGrades(); }
+}
+function resetParentSchool() { localStorage.removeItem("parentSchool"); const sel=document.getElementById("parentSchool"); sel.disabled=false; sel.value=""; loadParentSchools(); }
+function loadParentGrades() {
+  const schoolKey = document.getElementById("parentSchool").value;
+  const gradeSel = document.getElementById("parentGrade");
+  gradeSel.innerHTML="<option value=''>-- Choose Grade --</option>";
+  if (!schoolKey) return;
+  db.ref(`cbc_tracker/schools/${schoolKey}`).once("value", snapshot => {
+    snapshot.forEach(child => { if(child.key!=="meta"){ const opt=document.createElement("option"); opt.value=child.key; opt.textContent=child.key; gradeSel.appendChild(opt); }});
+  });
+}
+function loadParentStudents() {
+  const schoolKey = document.getElementById("parentSchool").value;
+  const gradeKey = document.getElementById("parentGrade").value;
+  const studentSel = document.getElementById("parentStudent");
+  studentSel.innerHTML="<option value=''>-- Choose Student --</option>";
+  if(!schoolKey||!gradeKey) return;
+  db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students`).once("value", snapshot=>{
+    snapshot.forEach(child=>{ const data=child.val()||{}; const opt=document.createElement("option"); opt.value=child.key; opt.textContent=data.name||child.key; studentSel.appendChild(opt); });
+  });
+}
+
+
+
+function viewProgress() {
+  const schoolKey = document.getElementById("parentSchool").value;
+  const gradeKey = document.getElementById("parentGrade").value;
+  const studentKey = document.getElementById("parentStudent").value;
+  if(!schoolKey||!gradeKey||!studentKey) return alert("Select school, grade, and student.");
+
+  db.ref(`cbc_tracker/schools/${schoolKey}/${gradeKey}/students/${studentKey}/competencies`).once("value", snapshot=>{
+    const tbody = document.querySelector("#progressTable tbody");
+    tbody.innerHTML="";
+    const labels = [], datasets = [];
+
+    snapshot.forEach(child=>{
+      const termData = child.val();
+      labels.push(child.key);
+      const scores = ["Term 1","Term 2","Term 3"].map(t => termData[t] || 0);
+
+      tbody.innerHTML += `<tr>
+        <td>${child.key}</td>
+        <td>${scores[0]}</td>
+        <td>${scores[1]}</td>
+        <td>${scores[2]}</td>
+      </tr>`;
+
+      datasets.push({ label: child.key, data: scores, backgroundColor:["#3498db","#2ecc71","#e67e22"] });
+    });
+
+    if(parentChart) parentChart.destroy();
+    const ctx=document.getElementById("parentChart").getContext("2d");
+    parentChart=new Chart(ctx,{
+      type:"bar",
+      data:{ labels:["Term 1","Term 2","Term 3"], datasets:datasets },
+      options:{ scales:{ y:{ beginAtZero:true, max:100 } } }
+    });
+  });
+}
+
+
+// ---------- Role Toggle ----------
+function chooseRole(role){
+  localStorage.setItem("role", role);
+  document.getElementById("roleSelect").style.display="none";
+  if(role==="teacher"){ document.getElementById("teacherSection").style.display="block"; }
+  if(role==="parent"){ document.getElementById("parentSection").style.display="block"; loadParentSchools(); }
+}
+function saveParentSchool() { const val=document.getElementById("parentSchool").value; if(val) localStorage.setItem("parentSchool",val); loadParentGrades(); }
+</script>
+</body>
+</html>

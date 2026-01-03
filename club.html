@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>STEMLa Smart Club – Elimu Connect </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #fce4ec);
+    }
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    #toolbar {
+      padding: 15px;
+      background: #1976d2;
+      color: white;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    #toolbar button {
+      background: white;
+      color: #1976d2;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    #toolbar button:hover {
+      background: #f0f0f0;
+    }
+    #editor {
+      flex: 1;
+      padding: 40px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+   .card {
+    max-width: 90vw;
+    width: 100%;
+    margin: 20px auto;
+    padding: 40px;
+    background: white;
+    border-radius: 25px;
+    border: 2px solid #ccc; /* 💥 Added border for prominence */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    font-size: 1.8em;
+    line-height: 2;
+    font-weight: bold;
+    animation: fadeIn 1s ease;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    color: #1a237e;
+    box-sizing: border-box;
+    transition: all 0.3s ease-in-out; /* 💫 Smooth hover or layout changes */
+  }
+
+  /* Headings inside cards */
+  .card h2 {
+    margin-top: 0;
+    font-size: 2em;
+    font-weight: bold;
+  }
+
+  /* Optional manual title colors */
+  .card h2.red    { color: #d81b60; }
+  .card h2.green  { color: #2e7d32; }
+  .card h2.blue   { color: #1565c0; }
+  .card h2.orange { color: #ef6c00; }
+  .card h2.purple { color: #6a1b9a; }
+
+  /* 💡 Automatic color cycling for h2s inside cards */
+  .card h2:nth-child(5n+1) { color: #d81b60; }
+  .card h2:nth-child(5n+2) { color: #2e7d32; }
+  .card h2:nth-child(5n+3) { color: #1565c0; }
+  .card h2:nth-child(5n+4) { color: #ef6c00; }
+  .card h2:nth-child(5n+5) { color: #6a1b9a; }
+
+  .card pre {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    font-size: 1.6em;
+    line-height: 2;
+    font-weight: bold;
+    color: #1a237e;
+  }
+
+  #status {
+    padding: 15px;
+    background: #388e3c;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    font-size: 16px;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 600px) {
+    #toolbar {
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    #toolbar button {
+      width: 100%;
+      font-size: 16px;
+      padding: 10px;
+    }
+
+    .card {
+      padding: 20px;
+      font-size: 1.2em;
+    }
+
+    .card h2 {
+      font-size: 1.4em;
+    }
+
+    .card pre {
+      font-size: 1.15em;
+    }
+
+    #status {
+      font-size: 15px;
+      padding: 10px;
+    }
+
+
+.lesson-title {
+  color: #d32f2f; /* Deep red */
+  font-size: 1.2em;
+  display: block;
+  margin: 10px 0;
+}
+
+.subtopic {
+  color: #1976d2; /* Blue */
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+.question {
+  color: #f57c00; /* Orange */
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+.answer {
+  color: #388e3c; /* Green */
+  font-weight: bold;
+  display: block;
+  margin-top: 15px;
+}
+
+.bullet {
+  color: #6a1b9a; /* Purple dot */
+  margin-right: 8px;
+}
+
+.point {
+  color: #1a237e;
+  display: block;
+  margin-left: 20px;
+}
+
+    
+  }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div id="toolbar">
+    <button onclick="startTutor()">▶️ Start Club</button>
+    <button onclick="prevLesson()">⬅️ Back</button>
+    <button onclick="nextLesson()">➡️ Forward</button>
+  </div>
+
+  <div id="editor">
+    <div class="card">
+      <h2>Welcome to STEMLa Smart Club </h2>
+     <p>Click "Start Club" to explore Elimu Connect: STEMLa Club weekly activities. Access coding, science, and innovation projects designed for schools – anywhere, anytime.</p>
+
+    </div>
+  </div>
+
+  <div id="status">⏳ Ready when you are!</div>
+</div>
+
+<script>
+
+  
+const lessonsArray = [
+
+`Lesson 1: Mathematics – Logarithms
+Simplify:
+log₁₀(1000) + log₁₀(0.01) − log₁₀(10)
+
+A) 1
+B) 2
+C) 0
+D) −1`,
+
+`Lesson 2: Biology – Transport in Plants
+Which statement explains how xylem vessels are adapted for transporting water?
+
+A) They have thick walls containing lignin to prevent collapse and allow continuous water flow.  
+B) They secrete enzymes to digest food materials.  
+C) They contain valves to control the direction of water.  
+D) They are made of living cells with nuclei for pumping water actively.`,
+
+`Lesson 3: Chemistry – Acids, Bases & Salts
+Which observation occurs when magnesium ribbon reacts with dilute hydrochloric acid?
+
+A) A white precipitate forms immediately.  
+B) Effervescence occurs, hydrogen gas is released, and the magnesium dissolves.  
+C) The solution turns purple and emits ammonia.  
+D) A pungent-smelling brown gas is released.`,
+
+`Lesson 4: English – Figures of Speech
+Identify the figure of speech in the sentence:
+"The classroom was a beehive of activity during the science project."
+
+A) Simile  
+B) Metaphor  
+C) Personification  
+D) Hyperbole`,
+
+`Lesson 5: Kiswahili – Fasihi
+Ni kazi ipi ya methali katika jamii?
+
+A) Kufundisha maadili na hekima.  
+B) Kufanya watu wacheke.  
+C) Kufundisha lugha ya kigeni.  
+D) Kusababisha ugomvi katika jamii.`,
+
+`Lesson 6: HTML – Headings & Paragraphs
+
+Lesson Content:
+HTML pages use heading tags (&lt;h1&gt; to &lt;h6&gt;) to define titles and subtitles, and the &lt;p&gt; tag to define paragraphs. &lt;h1&gt; is the largest heading while &lt;h6&gt; is the smallest. Headings help organize content and improve readability.
+
+Example:
+<pre>
+&lt;h1&gt;Main Title&lt;/h1&gt;
+&lt;h2&gt;Subheading&lt;/h2&gt;
+&lt;p&gt;This is a paragraph under the subheading.&lt;/p&gt;
+</pre>
+
+Q. Create a simple webpage that displays:
+- A main heading: "My School Website"
+- A subheading: "About Us"
+- A paragraph: "We provide blended learning and ICT tools for students."`,
+
+`Lesson 7: Final Answers & Explanations
+
+✅ Math Answer:
+log₁₀(1000) + log₁₀(0.01) − log₁₀(10)  
+= 3 + (−2) − 1  
+= 0  
+Correct option: C
+
+✅ Biology Answer:
+Xylem vessels are strengthened with lignin, remain hollow (no nuclei/cytoplasm), and form continuous tubes for water transport.  
+Correct option: A
+
+✅ Chemistry Answer:
+Magnesium + dilute HCl → effervescence (bubbles), hydrogen gas produced, magnesium dissolves.  
+Correct option: B
+
+✅ English Answer:
+"The classroom was a beehive of activity" compares the classroom directly to a beehive without "like" or "as" → metaphor.  
+Correct option: B
+
+✅ Kiswahili Answer:
+Methali hufundisha maadili, hekima na tajriba ya maisha kwa jamii.  
+Correct option: A
+
+✅ HTML Answer:
+<pre>
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;My School Website&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;My School Website&lt;/h1&gt;
+    &lt;h2&gt;About Us&lt;/h2&gt;
+    &lt;p&gt;We provide blended learning and ICT tools for students.&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</pre>`
+];
+
+
+let currentLesson = 0;
+let tutorStarted = false;
+let selectedVoice = null;
+
+const editor = document.getElementById("editor");
+const status = document.getElementById("status");
+
+function getVoice() {
+  const voices = speechSynthesis.getVoices();
+  return voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ke") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ke")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ng") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-ng")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en-us") && v.name.toLowerCase().includes("female")
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("en")
+  ) || voices[0];
+}
+
+function speak(text, onEnd) {
+  speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.voice = selectedVoice;
+  utter.rate = 0.88;
+  utter.onend = () => onEnd && onEnd();
+  speechSynthesis.speak(utter);
+}
+
+function showLesson(index) {
+  if (index >= lessonsArray.length) {
+    editor.innerHTML = `<div class="card"><h2>✅ All Activities Complete</h2><p>You’re done! Visit STEMLa Club again next week for new activities. You can also download more CBC resources on Elimu Connect App.</p></div>`;
+    status.textContent = "✅ Done.";
+    return;
+  }
+
+  const lesson = lessonsArray[index];
+  editor.innerHTML = `
+    <div class="card">
+      <pre>${lesson}</pre>
+    </div>
+  `;
+  status.textContent = `📖 Reading Lesson ${index + 1}`;
+  speak(lesson, () => {
+    currentLesson++;
+    setTimeout(() => showLesson(currentLesson), 300000); // ⏳ 5 minutes wait
+  });
+}
+
+function startTutor() {
+  if (tutorStarted) return;
+  tutorStarted = true;
+
+  speechSynthesis.onvoiceschanged = () => {
+    selectedVoice = getVoice();
+  };
+
+  const voiceCheck = setInterval(() => {
+    const voices = speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      clearInterval(voiceCheck);
+      selectedVoice = getVoice();
+      showLesson(currentLesson);
+    }
+  }, 200);
+
+  status.textContent = "🟢 Loading voice & starting...";
+}
+
+function nextLesson() {
+  if (currentLesson < lessonsArray.length - 1) {
+    currentLesson++;
+    showLesson(currentLesson);
+  }
+}
+
+function prevLesson() {
+  if (currentLesson > 0) {
+    currentLesson--;
+    showLesson(currentLesson);
+  }
+}
+</script>
+
+</body>
+</html>

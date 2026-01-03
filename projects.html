@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CBC Activities & Projects Generator</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f4f6f9;
+      padding: 20px;
+      color: #2c3e50;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    select, button {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    #output {
+      background: #fff;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .section {
+      margin-bottom: 12px;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      text-align: center;
+      color: #888;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .actions button {
+      flex: 1;
+    }
+	
+	
+	@media print {
+  body * {
+    visibility: hidden;
+  }
+  #output, #output * {
+    visibility: visible;
+  }
+  #output {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  /* Hide action buttons inside output */
+  #output .actions {
+    display: none !important;
+  }
+
+  /* Hide top form and generate buttons */
+  select, button, label, h1, footer {
+    display: none !important;
+  }
+}
+
+	
+  </style>
+</head>
+<body>
+
+  <h1>📘 CBC Activity & Project Generator</h1>
+
+  <label>Grade:</label>
+  <select id="grade" onchange="updateTopics()">
+    <option value="Grade 7">Grade 7</option>
+    <option value="Grade 8">Grade 8</option>
+    <option value="Grade 9">Grade 9</option>
+  </select>
+
+  <label>Subject:</label>
+  <select id="subject" onchange="updateTopics()">
+    <option>Mathematics</option>
+    <option>English</option>
+    <option>Integrated Science</option>
+  </select>
+
+  <label>Topic:</label>
+  <select id="topic"></select>
+  
+  <label>Task:</label>
+<select id="task"></select>
+
+
+  <label>Type:</label>
+  <select id="type">
+    <option value="activity">Activity</option>
+    <option value="project">Project</option>
+  </select>
+
+  <button onclick="generateItem()">Generate</button>
+
+  <div id="output"></div>
+
+  <footer>
+    &copy; <span id="year"></span> ELIMU CONNECT. All rights reserved.
+  </footer>
+
+  <!-- ✅ Add jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+
+	  
+    const activities = [
+   {
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to demonstrate integer operations in real-life contexts.",
+  
+  learning_experiences: "Learners will actively role-play integer operations through movement and real-world scenarios such as elevator rides, temperature changes, and money gains/losses. They will work in pairs and small groups to encourage collaboration and peer learning.",
+  
+  task: "Act out integer operations using a human number line.",
+  
+  resources: [
+    "Masking tape or chalk to draw the number line",
+    "Paper number labels",
+    "Floor space",
+    "Scenario cards with integer problems"
+  ],
+  
+  instructions: [
+    "Use masking tape or chalk to create a long number line on the floor, marking integers from at least -10 to +10. Mark zero clearly at the center.",
+    "Divide the class into small groups. Each group will take turns acting out different problems.",
+    "One learner stands on the starting integer (e.g., -4).",
+    "Another learner reads a scenario card aloud (e.g., 'Move forward +6').",
+    "The learner on the number line walks step by step to the new position, counting aloud as they move.",
+    "After reaching the final number, the learner announces the answer (e.g., 'I am now at +2').",
+    "Repeat the process with different scenarios including subtraction (moving backwards) and real-life contexts (temperature rising/dropping, elevator moving up/down, money spent/earned).",
+    "Rotate roles so every learner gets a chance to read, act, and calculate."
+  ],
+  
+  assessment: "Learners should correctly demonstrate movement along the number line, give accurate answers to integer operations, and explain in their own words how the physical movement matches the mathematical operation.",
+  
+  reflection: "How did physically walking through the integer operations help you understand addition and subtraction better? Which real-life example made the most sense to you, and why?"
+},
+
+
+      {
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to demonstrate integer operations using real-life temperature changes.",
+
+  learning_experiences: "Learners will explore integer addition and subtraction through analyzing daily temperature changes. They will practice interpreting increases and decreases in temperature and relate them to real-life weather patterns.",
+
+  task: "Use a temperature timeline to understand adding and subtracting integers.",
+
+  resources: [
+    "Printed temperature charts",
+    "Markers or colored pens",
+    "Learner worksheets",
+    "Blackboard or flip chart"
+  ],
+
+  instructions: [
+    "Provide each group with a printed temperature chart showing daily changes across a week (with positive and negative Celsius values).",
+    "Explain that positive numbers represent increases in temperature and negative numbers represent decreases.",
+    "Assign each group a set of days to analyze. For example, Monday: -3°C to +2°C.",
+    "Learners calculate the total change (e.g., from -3 to +2 = +5).",
+    "Each group records whether the temperature rose or dropped, and by how many degrees.",
+    "Groups share their findings with the class and compare which days had the largest shifts.",
+    "Facilitate a discussion on how this connects to adding and subtracting integers in daily life."
+  ],
+
+  assessment: "Learners should correctly calculate temperature changes, explain whether the temperature increased or decreased, and connect these to integer operations.",
+
+  reflection: "Which temperature change felt most realistic to you and why? How does this activity help you understand positive and negative numbers in daily life?"
+},
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to model integer operations using elevator movements as real-life contexts.",
+
+  learning_experiences: "Learners will simulate elevator rides to understand integer movement. They will work with diagrams and charts to visualize negative and positive floors, fostering both conceptual understanding and collaborative problem-solving.",
+
+  task: "Simulate elevator rides to model integer movement.",
+
+  resources: [
+    "Elevator diagram or chart",
+    "Floor numbers labeled as integers (negative for basements, zero for ground, positive for upper floors)"
+  ],
+
+  instructions: [
+    "Label floors as integers: basement levels as negative numbers, ground as 0, and upper floors as positive numbers.",
+    "Present learners with a scenario card (e.g., 'You are on floor -2 and go up 5 floors').",
+    "Have students trace the movement step by step on the diagram.",
+    "Learners state their final floor number after each move.",
+    "Introduce both upward (positive) and downward (negative) scenarios.",
+    "Rotate roles so each learner practices reading, tracing, and explaining."
+  ],
+
+  assessment: "Learners should demonstrate correct modeling of integer addition and subtraction using the elevator context, and accurately state final positions.",
+
+  reflection: "How do elevator movements relate to positive and negative numbers? Which example helped you visualize integers best?"
+},
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to apply integer operations in financial contexts such as spending, discounts, and balances.",
+
+  learning_experiences: "Learners will role-play shopping with fake money to model gains and losses in real-life financial transactions. They will collaborate in groups, track expenses, and reflect on how integer operations affect their balance.",
+
+  task: "Role-play a shopping spree to model gains and losses.",
+
+  resources: [
+    "Fake money (play notes/coins)",
+    "Price tags with integer values (positive for discounts/earnings, negative for purchases/expenses)",
+    "Receipts or record sheets"
+  ],
+
+  instructions: [
+    "Give each student a starting budget (e.g., Ksh 1000).",
+    "Provide a list of items with attached gains and losses (e.g., 'Buy shoes −300', 'Get discount +200').",
+    "Students record each transaction step by step using integers.",
+    "At each step, learners update their balance by adding or subtracting the transaction value.",
+    "After completing their purchases, students calculate their final balance.",
+    "Select one or two learners to present their 'wallet journey' to the class."
+  ],
+
+  assessment: "Learners should accurately use integer operations to track financial transactions and explain how each gain or loss affected their final balance.",
+
+  reflection: "What surprised you about how discounts and purchases changed your balance? How does this relate to real-life money management?"
+},
+
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to model integer operations through temperature changes in real-life contexts.",
+
+  learning_experiences: "Learners will role-play temperature changes as part of a storytelling activity. They will act out climate change scenarios using a number line, collaborate in groups, and create their own integer-based stories.",
+
+  task: "Act out a ‘climate change story’ with integer steps.",
+
+  resources: [
+    "Story cards with temperature scenarios",
+    "Floor markers or masking tape labeled with integers",
+    "Open floor space for acting out stories"
+  ],
+
+  instructions: [
+    "Distribute story cards to learners with scenarios such as: 'It was -5°C. The sun came out, warming by 7 degrees.'",
+    "A learner stands at the starting integer (e.g., -5) on the number line.",
+    "The learner acts out the story by moving along the number line according to the change (e.g., moving forward 7 steps to land at +2).",
+    "Repeat the activity with different learners and different story cards.",
+    "Divide learners into small groups to create their own temperature-based stories.",
+    "Each group presents and acts out their story to the class."
+  ],
+
+  assessment: "Learners should correctly interpret temperature changes as integer operations and physically demonstrate them on the number line. They should also create logical story scenarios that reflect integer addition and subtraction.",
+
+  reflection: "What made a story easier or harder to act out using integers? How did acting out the story help you understand integer changes in real life?"
+},
+
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to apply integer operations (addition, subtraction, multiplication) in a competitive game setting.",
+
+  learning_experiences: "Learners will play a card game that involves comparing, adding, subtracting, and multiplying integers. They will practice mental computation, quick decision-making, and peer collaboration through game-based learning.",
+
+  task: "Integer Card Game – Compare and add integers in pairs.",
+
+  resources: [
+    "Decks of integer cards (with both positive and negative values)",
+    "Score sheets or counters",
+    "Pens or pencils"
+  ],
+
+  instructions: [
+    "Organize learners into pairs or small groups.",
+    "Give each group a deck of integer cards.",
+    "In each round, every pair draws two cards and adds them together.",
+    "The pair with the highest total scores a point for that round.",
+    "After a few rounds, introduce subtraction and multiplication as new rules.",
+    "Continue playing for 10 rounds while tallying points on the score sheet.",
+    "At the end, compare scores and announce the winners."
+  ],
+
+  assessment: "Learners should be able to compute integer operations quickly and accurately while following the game rules. They should also demonstrate teamwork and fairness in gameplay.",
+
+  reflection: "Which operations were easiest or hardest for you and why? How did the game help you improve your understanding of integer operations?"
+},
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to model and explain integer addition and subtraction using manipulatives.",
+
+  learning_experiences: "Learners will use integer tiles and number lines to physically represent integer addition and subtraction. They will pair positive and negative tiles, simplify, and then confirm results using a number line.",
+
+  task: "Use number tiles to visualize integer addition and subtraction.",
+
+  resources: [
+    "Integer tiles (e.g., red for negatives, blue for positives)",
+    "Number lines (paper or drawn on the board/floor)"
+  ],
+
+  instructions: [
+    "Distribute integer tiles and number lines to each learner or group.",
+    "Pose a problem, e.g., -3 + 5.",
+    "Learners place 3 negative tiles and 5 positive tiles.",
+    "Pair each positive with a negative until no more pairs remain.",
+    "Count the remaining tiles to determine the answer.",
+    "Learners then demonstrate the same calculation on the number line.",
+    "Repeat with new examples, including subtraction cases such as 6 - 9."
+  ],
+
+  assessment: "Learners correctly model integer problems using tiles and number lines, and explain in their own words how the process demonstrates integer rules.",
+
+  reflection: "How did using tiles help you understand the rules for adding and subtracting integers?"
+},
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  // CBC aligned fields
+  outcome: "By the end of the activity, the learner should be able to model integer addition using dice and explain how positive and negative values interact.",
+
+  learning_experiences: "Learners will engage in a competitive dice game where they roll and combine integers represented by colored dice. They will practice quick mental addition and compare results across rounds, reinforcing their understanding of integer operations.",
+
+  task: "Play ‘Integer War’ using dice.",
+
+  resources: [
+    "Two dice (red = negative values, blue = positive values)",
+    "Scoreboards or recording sheets"
+  ],
+
+  instructions: [
+    "Assign the red die as negative numbers and the blue die as positive numbers.",
+    "Each player rolls both dice simultaneously.",
+    "Convert the red die roll into a negative integer (e.g., red 3 = -3).",
+    "Convert the blue die roll into a positive integer (e.g., blue 5 = +5).",
+    "Add the two numbers together and record the total on the scoreboard.",
+    "Repeat for 10 rounds.",
+    "At the end, the player with the highest cumulative score is declared the winner."
+  ],
+
+  assessment: "Learners should correctly combine positive and negative values, record totals accurately, and explain how the dice values demonstrate integer addition.",
+
+  reflection: "What strategies helped you win the game, and how did understanding integer rules influence your decisions?"
+},
+
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to interpret deposits and withdrawals as positive and negative integers, calculate running balances, and explain the effect of transactions on account totals.",
+
+  learning_experiences: "Learners practice applying integer operations to a real-life context of money management by analyzing a fictional bank statement, identifying when the balance increases, decreases, or becomes negative.",
+
+  task: "Integer Timeline – Trace daily changes in a bank account.",
+
+  resources: [
+    "Printed account logs showing deposits (+) and withdrawals (−)",
+    "Pens or pencils",
+    "Calculator (optional)"
+  ],
+
+  instructions: [
+    "Distribute a fictional bank statement with daily deposits and withdrawals.",
+    "Guide learners to represent deposits as positive integers and withdrawals as negative integers.",
+    "Ask students to calculate the running balance after each transaction, writing the balance beside each entry.",
+    "Have learners mark the points when the account balance becomes negative and when it recovers.",
+    "Discuss as a class how integer addition and subtraction represent the changes in money."
+  ],
+
+  assessment: "Learners should be able to calculate balances correctly, identify negative balances, and explain how integers are applied in real-world financial transactions.",
+
+  reflection: "What real-life habits affect how bank balances change?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to create, represent, and solve integer problems in real-life situations, and explain how different contexts use positive and negative numbers.",
+
+  learning_experiences: "Learners work collaboratively in pairs to design word problems using real-life contexts (such as temperature, altitude, and money), then exchange problems with peers to solve and discuss.",
+
+  task: "Create Integer Word Problems in Pairs.",
+
+  resources: [
+    "Exercise books",
+    "Pens",
+    "Prompts such as weather data, bank transactions, sports scores"
+  ],
+
+  instructions: [
+    "Organize learners into pairs and give each pair a set of real-life prompts.",
+    "Ask each pair to design three realistic word problems involving integers.",
+    "Ensure problems use different contexts (e.g., a rise or drop in temperature, climbing or descending altitude, earning or spending money).",
+    "Pairs then exchange their problems with another group and solve them.",
+    "Bring the class together to discuss and compare the different problem types."
+  ],
+
+  assessment: "Learners should apply integer rules correctly in creating and solving problems, showing understanding of how integers appear in real-life scenarios.",
+
+  reflection: "How did creating your own problems help your understanding?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to solve integer operations quickly and accurately, and work collaboratively under timed conditions.",
+
+  learning_experiences: "Learners take part in a fast-paced relay competition where they solve integer problems in sequence, requiring both accuracy and teamwork.",
+
+  task: "Integer Relay – A fast-paced team challenge.",
+
+  resources: [
+    "Prepared slips of paper with integer problems",
+    "Scoreboard or chart",
+    "Timer"
+  ],
+
+  instructions: [
+    "Divide the class into equal teams.",
+    "Give each team a stack of slips, each with one integer problem.",
+    "Explain the relay rules: each team member must solve one problem correctly before passing the slip like a baton to the next player.",
+    "Monitor accuracy: only correct answers count toward progress.",
+    "The first team to correctly complete 10 problems wins.",
+    "Facilitate a short debrief about accuracy versus speed and the importance of teamwork."
+  ],
+
+  assessment: "Learners should demonstrate fluency with integer operations, accuracy under pressure, and collaborative problem-solving skills.",
+
+  reflection: "How did teamwork help or hinder your performance?"
+},
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to recall and compute integer operations quickly and accurately under time pressure.",
+
+  learning_experiences: "Learners participate in a competitive quiz circle where they solve integer problems using flashcards. This promotes active engagement, quick thinking, and peer learning through group participation.",
+
+  task: "Use integer flashcards in a quiz circle.",
+
+  resources: [
+    "Flashcards with integer operations (addition, subtraction, multiplication, division)",
+    "Buzzer or bell",
+    "Scoreboard or chalkboard to record points"
+  ],
+
+  instructions: [
+    "Arrange students in a circle standing or sitting.",
+    "Show an integer operation flashcard (e.g., -5 + 3).",
+    "The first student to ring the buzzer or bell answers aloud.",
+    "Award a point for correct answers. If incorrect, allow another student to try.",
+    "Rotate through flashcards so that all learners participate.",
+    "Continue until all flashcards are used or time is up."
+  ],
+
+  assessment: "Learners should demonstrate quick recall and accuracy in solving integer problems and confidence in responding aloud.",
+
+  reflection: "Which types of problems slowed you down, and why?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to represent integer changes creatively and explain them in story form.",
+
+  learning_experiences: "Learners use art and storytelling to represent integer changes, allowing them to visualize abstract concepts through creative expression.",
+
+  task: "Create a comic strip involving integer changes.",
+
+  resources: [
+    "Plain paper or drawing sheets",
+    "Colored pencils, crayons, or markers",
+    "Examples of simple comic strips"
+  ],
+
+  instructions: [
+    "Introduce the idea of representing real-life events using integers (e.g., temperature rising/falling, football goals scored/lost, money earned/spent).",
+    "Ask students to design a 4–6 frame comic strip showing a situation involving integer changes.",
+    "Require learners to label each step with an integer operation and show the total at each stage.",
+    "Allow time for coloring and creativity to make the strips engaging.",
+    "Have learners present their comics in pairs or groups, explaining the integer operations involved."
+  ],
+
+  assessment: "Learners apply integer operations in a creative context and explain how their drawings connect to mathematical rules.",
+
+  reflection: "How did creating a story help reinforce your learning?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to correctly match integer expressions to their solutions and identify patterns in operations.",
+
+  learning_experiences: "Learners engage in a fast-paced matching game that reinforces accuracy and pattern recognition in integer operations.",
+
+  task: "Integer Match – Match expressions to solutions.",
+
+  resources: [
+    "Prepared cards with integer expressions (e.g., -6 + 3) and corresponding answers (e.g., -3)",
+    "Flat surface or desks for spreading out the cards",
+    "Timer (optional)"
+  ],
+
+  instructions: [
+    "Shuffle and spread all cards face up on a desk.",
+    "Explain that one set of cards has integer expressions, while another set has answers.",
+    "Individually or in small groups, learners race to match each expression with its correct solution.",
+    "Add a challenge by timing the game or turning it into a competition between teams.",
+    "Review matches as a class and discuss common errors."
+  ],
+
+  assessment: "Learners match operations to solutions correctly and improve fluency in solving integer expressions.",
+
+  reflection: "Did seeing multiple problems help you recognize patterns?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to explain integer solutions step by step and justify their reasoning aloud.",
+
+  learning_experiences: "Learners practice not only solving integer problems but also verbalizing their thought process. This builds communication, confidence, and clarity in mathematical reasoning.",
+
+  task: "Integer Hot Seat – Explain integer problems aloud.",
+
+  resources: [
+    "Chairs arranged at the front for the 'hot seat'",
+    "Problem cards with integer operations (addition, subtraction, multiplication, division)",
+    "Timer or stopwatch"
+  ],
+
+  instructions: [
+    "Select one student to sit in the ‘hot seat’ facing the class.",
+    "Provide the student with an integer problem card.",
+    "The student must solve the problem and explain their reasoning aloud within 60 seconds.",
+    "The rest of the class listens, evaluates clarity, and can ask one follow-up question.",
+    "Rotate through several students so that multiple learners get a chance."
+  ],
+
+  assessment: "Learners demonstrate clear mathematical reasoning and logical explanation of integer operations.",
+
+  reflection: "Was it harder to do the math or explain it aloud?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to solve integer problems accurately and recognize results quickly in a game setting.",
+
+  learning_experiences: "Learners engage in a fun and competitive BINGO game that reinforces practice of integer operations through repetition and pattern recognition.",
+
+  task: "Integer BINGO – Solve to mark your board.",
+
+  resources: [
+    "Custom BINGO cards with integer answers (different arrangement for each student)",
+    "Caller’s sheet with integer expressions",
+    "Counters or markers to cover answers on cards"
+  ],
+
+  instructions: [
+    "Distribute a unique BINGO card to each student.",
+    "Explain that each card contains integer answers (e.g., -5, +3, 0, 12).",
+    "The teacher (caller) reads aloud integer operations (e.g., -8 + 3).",
+    "Students solve mentally and check if the answer is on their card.",
+    "If it appears, they cover or mark it.",
+    "The first student to complete a row, column, or diagonal shouts 'BINGO!' and wins.",
+    "Continue playing additional rounds if time allows."
+  ],
+
+  assessment: "Learners accurately solve integer operations and demonstrate quick recognition of answers.",
+
+  reflection: "Which operations kept you from getting BINGO?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to represent and solve integer operations using concrete models (chips).",
+
+  learning_experiences: "Learners physically manipulate chips to represent positive and negative integers, building a strong conceptual understanding of zero pairs and operations.",
+
+  task: "Model Integer Situations Using Integer Chips.",
+
+  resources: [
+    "Red chips (representing negative values)",
+    "Blue chips (representing positive values)",
+    "Prepared scenarios or problem slips"
+  ],
+
+  instructions: [
+    "Introduce the meaning of each chip: red = negative, blue = positive.",
+    "Present a scenario such as 'You gain 3 points' or 'You lose 4 points'.",
+    "Students model the situation by placing the correct number of chips.",
+    "For operations like -3 + 5, students show 3 red chips and 5 blue chips, then pair them to form zero pairs and identify the result.",
+    "Have students solve several different scenarios using chips.",
+    "Discuss how chips show the balancing effect of positives and negatives."
+  ],
+
+  assessment: "Learners accurately represent integer operations with chips and explain how zero pairs cancel each other out.",
+
+  reflection: "How does using chips help you understand zero pairs?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to interpret and represent real-life temperature changes using integers.",
+
+  learning_experiences: "Learners connect integer operations to real-world weather changes by analyzing data, graphing, and presenting reports, strengthening both math and communication skills.",
+
+  task: "Integer Weather Report – Report temperatures with integer changes.",
+
+  resources: [
+    "Blank maps of regions or cities",
+    "Markers or colored pencils",
+    "Temperature data sheets (showing daily highs/lows for 5 days)"
+  ],
+
+  instructions: [
+    "Divide learners into small groups and assign each group a city or region.",
+    "Give each group temperature data across 5 consecutive days.",
+    "Students plot the changes on a graph or number line using integers to show increases and decreases.",
+    "Groups prepare a short weather report, explaining the temperature trends (e.g., 'The temperature dropped 4 degrees on Day 2, then rose 6 degrees on Day 3').",
+    "Each group presents their report to the class."
+  ],
+
+  assessment: "Learners analyze integer changes in context and communicate their findings clearly through graphs and presentations.",
+
+  reflection: "Which part of the report helped you remember how integers work?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to apply integer operations to track position changes on a number line.",
+
+  learning_experiences: "Learners experience the movement of integers in real time by racing tokens along a number line, strengthening their visualization of positive and negative changes.",
+
+  task: "Integer Timeline Race – Track position changes on a path.",
+
+  resources: [
+    "Long paper strips marked as number lines (-10 to +10 or more)",
+    "Tokens or counters",
+    "Operation cards (e.g., +4, -2, +5, -3)"
+  ],
+
+  instructions: [
+    "Give each learner a token and place it at 0 on the number line.",
+    "Students draw an operation card and move their token forward/backward accordingly.",
+    "Each move must be recorded as a math operation (e.g., 0 + 4 = 4, 4 - 2 = 2).",
+    "The race continues until one student reaches +10.",
+    "After the game, students compare their moves and discuss mistakes or strategies."
+  ],
+
+  assessment: "Learners accurately apply and record integer operations while tracking their movement along the number line.",
+
+  reflection: "What would help you make fewer mistakes in tracking changes?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Integers",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to apply integers in real-life scenarios and explain reasoning behind solutions.",
+
+  learning_experiences: "Learners practice solving integer-based fortunes or situations and build skills in prediction, reasoning, and explanation.",
+
+  task: "Integer Fortune Game – Predict outcomes of integer scenarios.",
+
+  resources: [
+    "Scenario cards (e.g., 'You gained 5 points but lost 8', 'You borrowed 3 shillings and then repaid 5')",
+    "Tokens or points system",
+    "Optional: Spinner to choose operations"
+  ],
+
+  instructions: [
+    "Shuffle the fortune cards and place them face down.",
+    "Each student draws a card and reads their scenario.",
+    "They calculate their score and explain aloud how they got it.",
+    "Play continues for 3 rounds, with tokens or points awarded for correct solutions.",
+    "Optionally, use a spinner to introduce random operations for variety."
+  ],
+
+  assessment: "Learners apply integer operations in real-life style scenarios and explain their reasoning clearly.",
+
+  reflection: "Which types of ‘fortunes’ were easiest or hardest to interpret?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to compute cube numbers using multiplication and cube tables.",
+
+  learning_experiences: "Learners practice finding cubes using two different strategies (multiplication and cube tables), compare results, and develop accuracy and speed.",
+
+  task: "Cube Building Challenge – Find cubes by multiplication and math tables.",
+
+  resources: [
+    "Number cards (1–20)",
+    "Multiplication chart",
+    "Cube table (printed)",
+    "Worksheets for recording answers"
+  ],
+
+  instructions: [
+    "Give each student a number card between 1 and 20.",
+    "Learners find its cube using multiplication (e.g., 5 × 5 × 5).",
+    "They cross-check using the cube table.",
+    "Students verify both answers match.",
+    "Challenge round: learners compute cubes of all numbers from 1 to 10 using both methods as quickly as possible."
+  ],
+
+  assessment: "Learners accurately compute and confirm cube values using multiplication and cube tables.",
+
+  reflection: "Which method helped you understand cubes better—multiplication or the table? Why?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to determine cube roots using factorization and cube root tables.",
+
+  learning_experiences: "Learners use prime factorization to find cube roots, then cross-check with cube root tables, deepening understanding of both methods.",
+
+  task: "Factor Hunt & Table Quest – Find cube roots using factor method and math tables.",
+
+  resources: [
+    "Cube root table",
+    "Factor tree worksheets",
+    "Calculators (optional, for verification)"
+  ],
+
+  instructions: [
+    "Provide learners with numbers such as 8, 27, 64, 125, 216, 343, and 729.",
+    "Students use factor trees to find cube roots (grouping factors in 3s).",
+    "They confirm answers using a cube root table.",
+    "The class discusses any mismatches and why they occurred."
+  ],
+
+  assessment: "Learners show understanding of cube roots by applying prime factorization and verifying with cube root tables.",
+
+  reflection: "Which method felt more reliable or easier for you—factorization or using tables? Why?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to match numbers with their cube values quickly and accurately.",
+
+  learning_experiences: "Learners engage in a fast-paced game where they recall cube values and reinforce mental math skills.",
+
+  task: "Cube Match Race – Match numbers to their cubes.",
+
+  resources: [
+    "Cube flashcards (number on one side, cube on the other)",
+    "Timer or stopwatch"
+  ],
+
+  instructions: [
+    "Shuffle cube flashcards and place them face down.",
+    "Students pick cards and match base numbers to their cubes.",
+    "They may confirm answers using multiplication or cube tables.",
+    "Time challenge: learners try to complete as many matches as possible within 3 minutes."
+  ],
+
+  assessment: "Learners recall cube values fluently and improve speed in recognizing number-cube pairs.",
+
+  reflection: "Which cubes were easy or hard to remember? How can you improve speed and accuracy?"
+},
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to solve cube root problems using both factorization and cube root tables.",
+
+  learning_experiences: "Learners tackle varied cube root problems, including puzzles and real-world applications, reinforcing their ability to reason mathematically and apply cube root strategies.",
+
+  task: "Mystery Cube Root – Solve cube root puzzles.",
+
+  resources: [
+    "Worksheets with cube root questions",
+    "Cube root tables",
+    "Factor tree guides"
+  ],
+
+  instructions: [
+    "Provide learners with worksheets containing cube root problems such as ∛216.",
+    "Students solve each using factor trees or cube root tables.",
+    "Include bonus challenges with cubes of decimal numbers or real-world volume problems.",
+    "Review answers and discuss problem-solving strategies."
+  ],
+
+  assessment: "Learners correctly identify cube roots in puzzles and real-world contexts using appropriate methods.",
+
+  reflection: "How confident are you with both methods now? Which areas require more practice?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to visualize cubes and understand volume growth through diagrams.",
+
+  learning_experiences: "Learners represent cube numbers visually by drawing staircases of stacked cubes, reinforcing the relationship between base numbers and their cubes.",
+
+  task: "Cube Staircase Drawing – Visualizing cubes.",
+
+  resources: [
+    "Graph paper",
+    "Pencils",
+    "Rulers",
+    "Colored pencils"
+  ],
+
+  instructions: [
+    "Students draw stacked cube blocks representing numbers 1³ to 5³ on graph paper.",
+    "Label each stage with the multiplication expression and its result.",
+    "Use colored pencils to distinguish different layers and make visualization clearer."
+  ],
+
+  assessment: "Learners correctly draw cube staircases and label each stage, demonstrating understanding of volume growth.",
+
+  reflection: "What did you notice about how cube sizes increase as numbers grow? How does visualizing cubes help your understanding?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to solve sequential cube root problems accurately.",
+
+  learning_experiences: "Learners practice cube root calculations step-by-step using ladder-style worksheets, reinforcing accuracy and confidence with both factorization and cube tables.",
+
+  task: "Cube Root Ladder – Climb through problems.",
+
+  resources: [
+    "Ladder-style worksheets",
+    "Cube root tables"
+  ],
+
+  instructions: [
+    "Provide each student with a ladder-style worksheet containing cube root problems (e.g., ∛512).",
+    "Students solve each question sequentially to 'climb' to the top.",
+    "Use either factorization or cube root tables as appropriate for each problem.",
+    "Check answers before moving to the next rung to ensure accuracy."
+  ],
+
+  assessment: "Learners successfully solve each rung, demonstrating understanding of cube roots and method selection.",
+
+  reflection: "How did you decide which method to use for each question? Did one method feel faster or easier?"
+},
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to use cube tables to find cube values and solve numerical riddles.",
+
+  learning_experiences: "Learners engage in a treasure hunt, applying cube tables to decode clues, reinforcing their ability to interpret numbers and practice cube calculations.",
+
+  task: "Cube Table Treasure Hunt – Use tables to solve clues.",
+
+  resources: [
+    "Clue cards with cube-based riddles",
+    "Cube tables"
+  ],
+
+  instructions: [
+    "Distribute clue cards to students, each containing a cube-related riddle (e.g., 'I am the cube of a number greater than 5 and less than 7').",
+    "Students refer to cube tables to find the correct cube value.",
+    "Check answers and provide hints if necessary.",
+    "Continue until all clues are solved or within a set time limit."
+  ],
+
+  assessment: "Learners correctly identify cubes from the tables and solve all or most clues accurately.",
+
+  reflection: "What strategies helped you decode the clues quickly? Did using the cube table make it easier?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should demonstrate speed and accuracy in extracting cube roots using factor trees.",
+
+  learning_experiences: "Learners work in pairs to practice prime factorization and identify cube roots, encouraging collaboration and fluency in problem-solving.",
+
+  task: "Factor Tree Race – Fast cube root breakdowns.",
+
+  resources: [
+    "List of perfect cubes",
+    "Factor tree worksheets",
+    "Pencils"
+  ],
+
+  instructions: [
+    "Pair students and give each pair a list of perfect cubes (e.g., 512, 729).",
+    "Students use factor tree worksheets to break each number into prime factors and determine the cube root.",
+    "Time the activity or have a competitive race to see which pair finishes first with correct answers.",
+    "Review answers and discuss any errors or alternative strategies."
+  ],
+
+  assessment: "Learners correctly factor numbers and identify cube roots in a timely manner.",
+
+  reflection: "Did working in pairs help you complete the task faster? How would you explain cube roots to a friend?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should recall cube values quickly and accurately using mental math or flashcards.",
+
+  learning_experiences: "Learners engage in a fast-paced flashcard game, enhancing speed, recall, and confidence with cubes of numbers.",
+
+  task: "Cube Flash Battle – Solve and shout the answer!",
+
+  resources: [
+    "Flashcards showing numbers or cube expressions (e.g., 3³)",
+    "Scoreboard or points tracking sheet"
+  ],
+
+  instructions: [
+    "Divide the class into small groups or pairs.",
+    "Flip a flashcard showing a number or cube expression (e.g., 3³).",
+    "The first student to shout the correct cube value wins a point.",
+    "Incorrect answers get passed to the next student for a chance to respond.",
+    "Continue for a set number of rounds, keeping score for motivation."
+  ],
+
+  assessment: "Learners quickly and correctly recall cube values and demonstrate improved mental calculation skills.",
+
+  reflection: "Which strategies helped you recall cubes faster? How can you improve your speed with mental cubes?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should be able to apply cube roots to solve real-world volume problems.",
+
+  learning_experiences: "Learners solve practical problems involving volume, interpret cube roots in context, and cross-check answers using cube root tables and calculators.",
+
+  task: "Real Life Cubes – Explore real cube root uses.",
+
+  resources: [
+    "Volume-based real-world problems",
+    "Cube root table",
+    "Calculator"
+  ],
+
+  instructions: [
+    "Provide students with real-world volume problems, e.g., 'Find the side length of a cube with volume 343 cm³'.",
+    "Students calculate cube roots using factorization or tables.",
+    "Verify answers using the cube root table or a calculator.",
+    "Discuss the practicality of cube roots in construction, packaging, or other real-life scenarios."
+  ],
+
+  assessment: "Learners correctly calculate cube roots and explain their reasoning in real-world contexts.",
+
+  reflection: "Why are cube roots important for solving practical problems? How can this knowledge be applied outside the classroom?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should reinforce cube multiplication knowledge in an engaging, problem-solving environment.",
+
+  learning_experiences: "Learners navigate a maze of cube multiplication problems, applying cube knowledge to reach the exit while practicing accuracy and speed.",
+
+  task: "Multiplication Cube Maze – Solve to escape!",
+
+  resources: [
+    "Maze worksheets with cube multiplication puzzles",
+    "Pencils"
+  ],
+
+  instructions: [
+    "Distribute the cube maze worksheet to each student.",
+    "At each junction, students solve the cube multiplication problem to proceed.",
+    "Incorrect answers lead to dead ends or traps within the maze.",
+    "Complete the maze as quickly and accurately as possible."
+  ],
+
+  assessment: "Learners correctly solve cube multiplication problems and complete the maze within a reasonable time.",
+
+  reflection: "What strategies helped you solve problems quickly while avoiding traps? How did this game-like approach aid learning?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should understand cube roots conceptually through hands-on factor grouping.",
+
+  learning_experiences: "Students use physical number blocks or cards to group factors into sets of three, helping them visualize cube roots and cross-check with cube tables.",
+
+  task: "Group and Root – Hands-on factor grouping.",
+
+  resources: [
+    "Number blocks or cards for factorization",
+    "Cube root table"
+  ],
+
+  instructions: [
+    "Give students number blocks or cards representing prime factors of cubes (e.g., 216 = 2×2×2 × 3×3×3).",
+    "Students group the factors into triplets to determine the cube root physically.",
+    "Confirm results using the cube root table.",
+    "Discuss the advantages of visualizing cube roots in groups of three."
+  ],
+
+  assessment: "Learners correctly group factors and identify cube roots, demonstrating conceptual understanding.",
+
+  reflection: "Did the physical grouping help your understanding of cube roots? Why or why not? How can this approach help in solving larger cubes?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should visualize cube growth using a graph and understand how values increase rapidly.",
+
+  learning_experiences: "Learners plot cube values on graph paper, observe patterns, and optionally color-code even and odd cubes to enhance visual understanding.",
+
+  task: "Cube Art Grid – Plot cube values visually.",
+
+  resources: [
+    "Graph paper",
+    "Cube values chart"
+  ],
+
+  instructions: [
+    "Provide each student with graph paper and a cube values chart.",
+    "Plot points (x, x³) for x = 1 to 10.",
+    "Connect points to observe the curve of cube growth.",
+    "Optional: color-code even and odd cubes to highlight patterns."
+  ],
+
+  assessment: "Learners correctly plot cubes and explain the observed growth pattern.",
+
+  reflection: "What does the curve show about how cubes grow as x increases? How does visualizing help your understanding?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners estimate and verify cube roots of non-perfect cubes accurately.",
+
+  learning_experiences: "Students practice approximating cube roots, cross-checking with tables and calculators, and discussing strategies to improve estimation.",
+
+  task: "Estimate and Verify – Cube roots with approximations.",
+
+  resources: [
+    "List of non-perfect cubes (e.g., ∛50)",
+    "Cube root table",
+    "Calculators"
+  ],
+
+  instructions: [
+    "Provide students with a list of non-perfect cubes.",
+    "Ask them to estimate cube roots mentally.",
+    "Verify estimates using cube root tables and calculators.",
+    "Discuss strategies for making closer approximations."
+  ],
+
+  assessment: "Learners produce reasonably accurate estimates and justify their reasoning.",
+
+  reflection: "How accurate were your estimates? What did you learn about approaching cube roots of non-perfect cubes?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should apply cubes in solving real-life problems.",
+
+  learning_experiences: "Learners solve word problems using cubes, demonstrating understanding of volume, stacking, and other contextual applications.",
+
+  task: "Cube Word Problems – Apply cubes in context.",
+
+  resources: [
+    "Worksheet with real-life cube problems (e.g., volume, stacking)"
+  ],
+
+  instructions: [
+    "Distribute worksheets with real-life cube problems.",
+    "Students solve each problem using multiplication or cube tables.",
+    "Encourage showing both methods and discussing results.",
+    "Relate solutions to real-world situations like packaging, boxes, or sugar cubes."
+  ],
+
+  assessment: "Learners solve problems accurately and explain their methods.",
+
+  reflection: "How does real-life application help in understanding math concepts like cubes?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should recognize and apply cube roots quickly in a game format.",
+
+  learning_experiences: "Learners play Bingo using cube roots, marking the correct roots for called numbers to reinforce memorization.",
+
+  task: "Cube Root Bingo – Solve and match.",
+
+  resources: [
+    "Bingo cards with cube roots",
+    "Number callouts"
+  ],
+
+  instructions: [
+    "Give each student a Bingo card with cube roots.",
+    "Teacher calls out cube numbers (e.g., 512).",
+    "Students mark the corresponding cube root on their cards.",
+    "First student with a full row wins.",
+    "Rotate multiple rounds to increase practice."
+  ],
+
+  assessment: "Learners correctly match cubes to roots and demonstrate improved recall.",
+
+  reflection: "Did playing Bingo help you memorize cube roots better? Which cube roots were easiest or hardest?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes",
+  type: "activity",
+
+  outcome: "By the end of the activity, learners should reinforce cube knowledge creatively through decoding exercises.",
+
+  learning_experiences: "Learners use cubes to decode messages, reinforcing cube values while engaging in a fun, logical challenge.",
+
+  task: "Cube Code Crack – Use cubes to decode words.",
+
+  resources: [
+    "Code sheets where letters = cubes of numbers (e.g., A = 1³, B = 2³, etc.)",
+    "Pencils or markers"
+  ],
+
+  instructions: [
+    "Distribute coded messages where letters correspond to cubes of numbers.",
+    "Students decode the secret messages by matching cube values to letters.",
+    "Optionally, have students create their own coded messages for peers to solve."
+  ],
+
+  assessment: "Learners correctly decode messages and demonstrate understanding of cube values.",
+
+  reflection: "How did this game challenge your memory and logic? What strategies helped you decode faster?"
+},
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cube Roots",
+  type: "activity",
+
+  outcome: "Learners will locate cube roots quickly and accurately using tables.",
+
+  learning_experiences: "Students enhance speed and familiarity with cube root tables through competitive and timed searches.",
+
+  task: "Interactive Table Search – Locate cube roots fast.",
+
+  resources: [
+    "Printed cube root tables",
+    "Stopwatch",
+    "Challenge sheet with numbers to find"
+  ],
+
+  instructions: [
+    "Distribute printed cube root tables and a challenge sheet to each student or pair.",
+    "Explain the rules: Students will find the cube roots of numbers listed on the challenge sheet as quickly as possible.",
+    "Start the stopwatch and allow students to search for the cube roots.",
+    "Each correct cube root earns a point; incorrect answers get corrected and discussed.",
+    "Optionally, organize multiple rounds and track time improvements.",
+    "At the end, review commonly missed numbers and strategies for quicker location."
+  ],
+
+  assessment: "Learners correctly identify cube roots and demonstrate improved speed with repeated practice.",
+
+  reflection: "Did repeated searching help you remember more cube root values? Which numbers were hardest to find and why?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Cubes and Cube Roots",
+  type: "activity",
+
+  outcome: "Learners demonstrate cumulative understanding of cubes and cube roots through problem-solving.",
+
+  learning_experiences: "Students apply all cube-related skills in a mixed assessment format, reinforcing computation, factorization, and table lookups.",
+
+  task: "Mixed Mastery Test – Combine all skills.",
+
+  resources: [
+    "Quiz sheet with cube and cube root problems",
+    "Cube and cube root tables for reference"
+  ],
+
+  instructions: [
+    "Distribute quiz sheets to students.",
+    "Explain that the test includes multiplication of cubes, factorization for cube roots, and table lookups.",
+    "Students solve problems independently within the given time.",
+    "After completion, pair students for peer review to discuss answers and reasoning.",
+    "Discuss strategies used and common errors as a class."
+  ],
+
+  assessment: "Learners correctly solve problems across all cube and cube root formats, demonstrating integrated understanding.",
+
+  reflection: "Which type of question challenged you most? What strategy helped you solve problems most efficiently?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners will apply indices to solve real-world problems and understand exponential growth.",
+
+  learning_experiences: "Students use indices in practical contexts, such as compound interest, population growth, and energy calculations, to see their relevance.",
+
+  task: "Exponent Application – Apply indices to solve everyday problems.",
+
+  resources: [
+    "Scenario sheets with real-life problems",
+    "Calculators"
+  ],
+
+  instructions: [
+    "Distribute scenario sheets to students.",
+    "Explain that they will use indices to solve problems involving repeated multiplication or growth.",
+    "Students work individually or in pairs to solve each scenario.",
+    "Encourage showing step-by-step calculations and interpreting the results in the context of the problem.",
+    "Review solutions as a class and discuss any misconceptions or errors."
+  ],
+
+  assessment: "Learners correctly use indices to solve contextual problems and explain the results.",
+
+  reflection: "How did applying indices in real-world scenarios enhance your understanding of exponents?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners will strengthen understanding of logarithms as the inverse of exponentiation.",
+
+  learning_experiences: "Students practice converting between exponential and logarithmic forms to solve equations accurately.",
+
+  task: "Inverse Operations – Understanding inverse operations between logarithms and exponents.",
+
+  resources: [
+    "Logarithmic equation worksheets",
+    "Whiteboard for class discussion"
+  ],
+
+  instructions: [
+    "Provide students with worksheets containing exponential and logarithmic equations.",
+    "Explain that they will solve problems by converting between forms (e.g., \(10^x = 1000 \Rightarrow \log 1000 = x\)).",
+    "Work through a few examples together to demonstrate the method.",
+    "Students solve remaining problems individually or in pairs.",
+    "Review answers collectively and highlight common mistakes."
+  ],
+
+  assessment: "Learners accurately convert and solve logarithmic and exponential equations.",
+
+  reflection: "How did converting between logarithmic and exponential forms help you solve the problems more efficiently?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners will solve for unknown exponents using index expressions.",
+
+  learning_experiences: "Students develop fluency in manipulating powers and solving for unknowns in equations.",
+
+  task: "Power Flip – Flip index expressions to find equivalent forms.",
+
+  resources: [
+    "Index flashcards"
+  ],
+
+  instructions: [
+    "Distribute flashcards showing index expressions with unknown exponents (e.g., \(2^x = 32\)).",
+    "Explain that students should solve for the unknown exponent using their knowledge of powers.",
+    "Students work individually or in pairs, flipping cards and solving each problem.",
+    "Encourage students to check their answers using powers of 2, 3, etc., or calculators if allowed.",
+    "Rotate students to cover all flashcards and discuss tricky cases afterward."
+  ],
+
+  assessment: "Learners correctly solve for unknown exponents and explain their reasoning.",
+
+  reflection: "Which types of exponent problems were most challenging? How did you determine the value of unknown powers?"
+},
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners apply logarithms to solve real-world exponential problems.",
+
+  learning_experiences: "Students practice solving word problems involving exponential growth and decay, such as investment doubling time, population growth, or radioactive decay.",
+
+  task: "Logarithmic Word Problems – Solve real-world problems involving logarithms.",
+
+  resources: [
+    "Word problem worksheets",
+    "Logarithmic tables or calculators"
+  ],
+
+  instructions: [
+    "Distribute word problem worksheets to students.",
+    "Explain the goal: Solve for the unknown (e.g., time or rate) by applying logarithms.",
+    "Work through one example together: e.g., For an investment doubling at 5% per year, set up \(2 = (1.05)^t\) and take logarithms to solve for t.",
+    "Students then solve remaining problems individually or in pairs.",
+    "After completion, discuss solutions and alternative methods, emphasizing correct logarithmic conversions."
+  ],
+
+  assessment: "Learners solve real-life exponential problems correctly using logarithms.",
+
+  reflection: "How did using logarithms help you find solutions to real-world problems? Which types of problems were easiest or hardest?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners simplify complex expressions involving multiple indices.",
+
+  learning_experiences: "Students consolidate their understanding of index laws (product, quotient, power rules) and apply them to simplify nested and complex expressions.",
+
+  task: "Index Simplification Challenge – Simplify complex index expressions.",
+
+  resources: [
+    "Worksheets with expressions like (x²·y³)⁴, (a³·b²)²"
+  ],
+
+  instructions: [
+    "Distribute worksheets to students.",
+    "Explain the index laws needed: multiplying powers, power of a power, and power of a product.",
+    "Demonstrate a sample problem on the board: e.g., (x²·y³)⁴ = x⁸·y¹².",
+    "Students work individually or in pairs to simplify remaining problems.",
+    "Review answers together, emphasizing step-by-step application of index rules."
+  ],
+
+  assessment: "Learners accurately simplify complex index expressions.",
+
+  reflection: "How did you approach simplifying complex index expressions? Which step was most challenging?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners identify and interpret patterns in logarithmic functions.",
+
+  learning_experiences: "Students graph logarithmic functions to observe behavior, such as increasing slowly, passing through (1,0), and relate patterns to logarithmic tables.",
+
+  task: "Logarithmic Pattern Recognition – Identify logarithmic patterns.",
+
+  resources: [
+    "Graphing paper",
+    "Logarithmic tables"
+  ],
+
+  instructions: [
+    "Provide graphing paper and access to logarithmic tables.",
+    "Explain the properties of logarithmic functions (e.g., y = log x, domain x>0, y=0 at x=1).",
+    "Students calculate key points from tables and plot the graph.",
+    "Identify patterns such as slow growth and asymptotic behavior.",
+    "Discuss how the table relates to the graph and why these patterns appear."
+  ],
+
+  assessment: "Learners correctly plot and interpret logarithmic graphs, identifying key behaviors.",
+
+  reflection: "What pattern did you notice in the logarithmic graphs? How does this relate to the logarithmic table values?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners consolidate their understanding of index rules through constructing power towers.",
+
+  learning_experiences: "Students practice multiplying powers, raising powers to powers, and combining exponents to build multi-level power towers.",
+
+  task: "Power Tower Challenge – Build power towers using index rules.",
+
+  resources: [
+    "Power tower worksheets",
+    "Index rule reference sheets"
+  ],
+
+  instructions: [
+    "Distribute power tower worksheets.",
+    "Demonstrate one example: combining 2³ and 2² as a tower: 2^(3+2) = 2⁵.",
+    "Students construct towers for given base numbers and powers, simplifying as they go.",
+    "Encourage peer discussion on strategies and checking work with calculators.",
+    "After completion, review correct structures and simplification steps."
+  ],
+
+  assessment: "Learners accurately build and simplify power towers using index rules.",
+
+  reflection: "What did you learn about the relationship between powers when building your tower? Which combinations were trickiest?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners match logarithmic expressions with their equivalent exponential forms to strengthen conceptual understanding.",
+
+  learning_experiences: "Students actively explore the inverse relationship between logarithms and exponents, improving fluency in conversion.",
+
+  task: "Logarithmic Matching – Match logarithms to their exponential forms.",
+
+  resources: [
+    "Logarithmic equation cards (logarithm and exponential forms)"
+  ],
+
+  instructions: [
+    "Distribute cards showing logarithmic expressions (e.g., log₂8=3) and cards showing exponential forms (e.g., 2³=8).",
+    "Explain the inverse relationship between log and exponent.",
+    "Students work individually or in pairs to match each logarithmic expression to its corresponding exponential form.",
+    "After matching, discuss each pair as a class and explain the reasoning."
+  ],
+
+  assessment: "Learners accurately pair logarithms with equivalent exponential expressions.",
+
+  reflection: "What did you learn about the connection between logarithms and exponents? How can this help in solving problems efficiently?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners expand powers involving multiple bases and simplify expressions.",
+
+  learning_experiences: "Students practice the power of a product rule and develop fluency in expanding complex expressions with multiple bases.",
+
+  task: "Exponent Expansion – Expand powers with multiple bases.",
+
+  resources: [
+    "Worksheets with expressions like (2 × 3)³, (4x)²",
+    "Whiteboard and markers"
+  ],
+
+  instructions: [
+    "Distribute worksheets with expressions to expand.",
+    "Review the law of indices for a product: (a × b)^n = a^n × b^n.",
+    "Demonstrate one example: (2 × 3)^3 = 2³ × 3³ = 8 × 27 = 216.",
+    "Students work individually or in pairs to expand remaining expressions.",
+    "Encourage students to check their answers by calculating the final values."
+  ],
+
+  assessment: "Learners accurately expand and simplify expressions with multiple bases.",
+
+  reflection: "What strategy helped you simplify expressions with multiple bases? Were there any tricky parts?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners solve logarithmic equations using the inverse relationship with exponents.",
+
+  learning_experiences: "Students convert logarithmic equations to exponential form and solve for unknowns, reinforcing conceptual understanding of log–exponent relationships.",
+
+  task: "Logarithmic Equation Solving – Solve simple logarithmic equations.",
+
+  resources: [
+    "Worksheets with logarithmic equations",
+    "Calculators (optional)"
+  ],
+
+  instructions: [
+    "Distribute worksheets to students.",
+    "Explain the inverse relationship: log_b(x) = y ⇔ b^y = x.",
+    "Demonstrate solving an example: log₂x = 3 → 2³ = x → x = 8.",
+    "Students solve remaining problems individually or in pairs.",
+    "Discuss solutions as a class and address any misconceptions."
+  ],
+
+  assessment: "Learners correctly solve logarithmic equations by converting to exponential form.",
+
+  reflection: "What difficulties did you encounter when solving logarithmic equations? How did you overcome them?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners consolidate and apply the laws of indices in problem-solving.",
+
+  learning_experiences: "Students explore the product, quotient, and power rules of indices through guided exercises and peer explanation.",
+
+  task: "Power Exploration – Investigate the laws of indices.",
+
+  resources: [
+    "Index rule handouts",
+    "Whiteboard and markers"
+  ],
+
+  instructions: [
+    "Distribute index rule handouts and problems.",
+    "Review key index laws: a^m × a^n = a^(m+n), (a^m)^n = a^(m×n), a^0 = 1, a^m ÷ a^n = a^(m−n).",
+    "Students work through a series of problems applying these rules.",
+    "After each problem, have students explain the reasoning to a partner or the class.",
+    "Discuss patterns and clarify common misconceptions."
+  ],
+
+  assessment: "Learners apply index rules correctly to simplify expressions.",
+
+  reflection: "What patterns did you observe when applying index laws? Which laws were easiest or hardest to apply?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners understand and model exponential growth using indices.",
+
+  learning_experiences: "Students apply indices to model real-life situations such as population growth, bank interest, or bacterial growth, and interpret the results.",
+
+  task: "Exponential Growth – Explore exponential growth in real life.",
+
+  resources: [
+    "Growth model sheets",
+    "Calculators"
+  ],
+
+  instructions: [
+    "Provide students with growth scenario worksheets.",
+    "Demonstrate one example: starting with 100 bacteria doubling every hour → 100 × 2^n.",
+    "Students calculate growth for given time periods using indices.",
+    "Encourage students to interpret the results in real-life context (e.g., how quickly the population grows).",
+    "Discuss implications and patterns observed."
+  ],
+
+  assessment: "Learners accurately model and interpret exponential growth scenarios.",
+
+  reflection: "How does exponential growth affect the rate of change in real-life situations? Did you notice any surprising results?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners graph and interpret logarithmic functions.",
+
+  learning_experiences: "Students plot logarithmic functions with different bases and analyze key features such as asymptotes, intercepts, and growth rates.",
+
+  task: "Graphing Logarithmic Functions – Graph different logarithmic functions.",
+
+  resources: [
+    "Graph paper",
+    "Calculators",
+    "Reference tables for logarithms"
+  ],
+
+  instructions: [
+    "Provide students with graph paper and calculators.",
+    "Demonstrate plotting key points of y = log x, y = log₂ x, and y = log₃ x.",
+    "Students calculate values from logarithmic tables or calculators and plot the points.",
+    "Draw graphs connecting points and identify key features (x-intercept, vertical asymptote).",
+    "Compare graphs for different bases and discuss the differences in growth rates."
+  ],
+
+  assessment: "Learners correctly graph logarithmic functions and identify their key features.",
+
+  reflection: "What trends did you observe in the graphs of different logarithmic functions? How does changing the base affect the curve?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners compare exponential and linear growth in practical contexts.",
+
+  learning_experiences: "Students analyze how exponential and linear growth differ over time using simple real-life scenarios.",
+
+  task: "Comparing Growth Rates – Compare exponential and linear growth.",
+
+  resources: [
+    "Growth comparison charts",
+    "Calculators",
+    "Worksheet for recording observations"
+  ],
+
+  instructions: [
+    "Provide students with a scenario such as saving money weekly (linear) versus interest compounded annually (exponential) or bacteria population growth.",
+    "Demonstrate calculating a few periods for both linear and exponential cases.",
+    "Students fill in a comparison chart for multiple time periods, showing both linear and exponential growth values.",
+    "Plot the results on a graph to visually compare growth trends.",
+    "Discuss as a class how the differences become more pronounced over longer periods."
+  ],
+
+  assessment: "Learners correctly compute and compare values for linear and exponential growth, and explain differences.",
+
+  reflection: "How do exponential and linear growth differ in terms of long-term outcomes? What real-life situations could use this knowledge?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners understand how parameters affect logarithmic function graphs.",
+
+  learning_experiences: "Students explore transformations of logarithmic functions by changing shifts, stretches, and reflections.",
+
+  task: "Logarithmic Function Transformation – Transform logarithmic functions.",
+
+  resources: [
+    "Graph paper",
+    "Calculator",
+    "Worksheet with sample functions"
+  ],
+
+  instructions: [
+    "Provide a few base logarithmic functions (e.g., y = log x) for reference.",
+    "Demonstrate transformations such as horizontal shift (y = log(x − 2)), vertical stretch (y = 2 log x), and reflections (y = −log x).",
+    "Students graph several transformed functions on graph paper.",
+    "Label key points, asymptotes, and axes intersections for each transformation.",
+    "Compare graphs and discuss how each parameter changes the function’s shape and position."
+  ],
+
+  assessment: "Learners accurately graph transformed logarithmic functions and describe the effects of parameter changes.",
+
+  reflection: "What effect did changing the parameters have on the graph of the logarithmic function?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners reinforce multiplication and division rules for powers with the same base.",
+
+  learning_experiences: "Students apply index laws to simplify expressions involving powers with the same base.",
+
+  task: "Multiplication and Division of Powers – Practice multiplying and dividing powers with the same base.",
+
+  resources: [
+    "Index practice worksheets",
+    "Whiteboard and markers"
+  ],
+
+  instructions: [
+    "Review the rules: a^m × a^n = a^(m+n), a^m ÷ a^n = a^(m−n).",
+    "Demonstrate a few examples (e.g., 2^3 × 2^4 = 2^7, 3^5 ÷ 3^2 = 3^3).",
+    "Students solve a set of problems individually or in pairs.",
+    "Encourage students to check their answers by calculating the final numeric values.",
+    "Discuss any mistakes and clarify misunderstandings."
+  ],
+
+  assessment: "Learners correctly apply multiplication and division rules to simplify powers with the same base.",
+
+  reflection: "What strategies helped you simplify expressions with the same base? Did any problems trick you?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners apply logarithmic laws to simplify and solve equations.",
+
+  learning_experiences: "Students practice using the product, quotient, and power rules of logarithms to manipulate and solve equations.",
+
+  task: "Logarithmic Laws Application – Apply logarithmic laws to solve equations.",
+
+  resources: [
+    "Logarithmic equation worksheets",
+    "Calculator (optional)"
+  ],
+
+  instructions: [
+    "Review logarithmic laws: log_b(M × N) = log_b M + log_b N, log_b(M ÷ N) = log_b M − log_b N, log_b(M^p) = p log_b M.",
+    "Demonstrate one or two examples solving logarithmic equations using these laws.",
+    "Students solve a set of equations individually or in pairs, applying appropriate laws.",
+    "Check answers and discuss any difficulties.",
+    "Encourage students to explain the steps and reasoning behind each solution."
+  ],
+
+  assessment: "Learners simplify and solve logarithmic equations correctly using logarithmic laws.",
+
+  reflection: "How did using the logarithmic laws make solving equations easier?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners understand and solve problems with fractional powers.",
+
+  learning_experiences: "Students relate fractional powers to roots and practice simplifying these expressions.",
+
+  task: "Fractional Powers – Solve problems with fractional exponents.",
+
+  resources: [
+    "Fractional exponent worksheets",
+    "Calculator"
+  ],
+
+  instructions: [
+    "Review the meaning of fractional exponents: a^(1/n) = nth root of a, a^(m/n) = (nth root of a)^m.",
+    "Demonstrate examples: 16^(1/2) = 4, 81^(2/3) = 9.",
+    "Students solve a worksheet of problems individually or in pairs.",
+    "Check and discuss answers, emphasizing the connection between fractional powers and roots.",
+    "Encourage students to explain their reasoning for each problem."
+  ],
+
+  assessment: "Learners simplify expressions with fractional exponents accurately and relate them to roots.",
+
+  reflection: "How did you simplify fractional powers and connect them to square and cube roots? Were some problems trickier than others?"
+},
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners apply logarithmic knowledge to solve practical, real-world problems.",
+
+  learning_experiences: "Students explore how logarithms are used in chemistry, physics, and biology to solve everyday problems.",
+
+  task: "Real-world Logarithmic Applications – Apply logarithms to solve real-world problems.",
+
+  resources: [
+    "Problem sheets with scenarios like pH calculations, sound intensity, and population doubling",
+    "Calculators",
+    "Logarithmic tables (optional)"
+  ],
+
+  instructions: [
+    "Provide students with a set of real-world problems requiring logarithms.",
+    "Explain the context briefly (e.g., pH = −log[H+], sound intensity in decibels).",
+    "Guide students to identify which logarithmic rules apply in each scenario.",
+    "Students work individually or in pairs to solve the problems.",
+    "After solving, discuss solutions as a class and highlight the practical applications."
+  ],
+
+  assessment: "Learners solve logarithmic problems accurately and justify the steps used.",
+
+  reflection: "How did applying logarithms to real-world problems enhance your understanding of their practical uses?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Indices",
+  type: "activity",
+
+  outcome: "Learners understand and simplify expressions with negative exponents.",
+
+  learning_experiences: "Students explore the meaning of negative exponents as reciprocals and apply them to simplify expressions.",
+
+  task: "Negative Exponents – Explore and simplify expressions with negative exponents.",
+
+  resources: [
+    "Worksheets with negative exponent problems",
+    "Calculator (optional)"
+  ],
+
+  instructions: [
+    "Review the rule: a^(−n) = 1 / a^n.",
+    "Demonstrate a few examples on the board (e.g., x^−2 = 1 / x^2, 3^−3 = 1 / 27).",
+    "Students solve a worksheet of expressions individually or in pairs.",
+    "Encourage students to simplify fully and verify their answers numerically.",
+    "Discuss any misconceptions and clarify the use of negative exponents in different contexts."
+  ],
+
+  assessment: "Learners accurately simplify expressions with negative exponents and explain the reasoning.",
+
+  reflection: "What did you learn about simplifying expressions with negative exponents?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Logarithms",
+  type: "activity",
+
+  outcome: "Learners estimate logarithmic values using tables.",
+
+  learning_experiences: "Students develop number sense and approximation skills for logarithms not easily calculated mentally.",
+
+  task: "Logarithmic Estimation – Estimate values using logarithms.",
+
+  resources: [
+    "Logarithmic tables",
+    "Calculators",
+    "Worksheet with estimation exercises"
+  ],
+
+  instructions: [
+    "Demonstrate how to use a logarithmic table to find approximate log values (e.g., log 45, log 12.7).",
+    "Explain how to interpolate between values when the exact number is not on the table.",
+    "Students work through a set of problems using the tables and calculators to check accuracy.",
+    "Discuss strategies for faster estimation and verifying results.",
+    "Compare estimated values with exact values to evaluate accuracy."
+  ],
+
+  assessment: "Learners estimate logarithmic values accurately and explain the interpolation method used.",
+
+  reflection: "How did using logarithmic tables help in estimating values? Did repeated practice improve your accuracy?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners solve compound proportion problems efficiently.",
+
+  learning_experiences: "Students practice solving equations involving multiple ratios and understand relationships between quantities.",
+
+  task: "Solving Compound Proportions – Practice solving compound proportion problems.",
+
+  resources: [
+    "Compound proportion worksheets",
+    "Calculator",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Introduce compound proportion problems with simple examples.",
+    "Demonstrate step-by-step how to set up and solve equations like a/b = c/x.",
+    "Students solve a variety of problems individually or in pairs.",
+    "Check answers and discuss strategies for solving multiple-step proportion problems.",
+    "Encourage students to explain their reasoning to peers."
+  ],
+
+  assessment: "Learners solve compound proportion problems correctly and justify their steps.",
+
+  reflection: "How did you approach solving compound proportions involving multiple variables? What strategies worked best?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners apply compound proportions to solve practical, real-life problems.",
+
+  learning_experiences: "Students explore how compound proportions are used in cooking, chemical solutions, and scaled production.",
+
+  task: "Real-life Compound Proportions – Apply compound proportions to real-life scenarios.",
+
+  resources: [
+    "Scenario worksheets (recipes, solution mixtures, scaled production)",
+    "Calculator",
+    "Whiteboard for discussion"
+  ],
+
+  instructions: [
+    "Present real-life scenarios requiring compound proportion calculations.",
+    "Guide students to set up correct ratios and equations for each scenario.",
+    "Students solve individually or in small groups and verify their answers.",
+    "Discuss the practical implications of correct calculations in real life (e.g., accurate mixtures or scaled recipes).",
+    "Reflect as a class on how understanding compound proportions helps in everyday decisions."
+  ],
+
+  assessment: "Learners solve real-world compound proportion problems accurately and explain their solutions.",
+
+  reflection: "How did understanding compound proportions help you solve real-life problems? Which scenario was most challenging and why?"
+},
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners develop the ability to formulate and solve compound proportion equations from word problems.",
+
+  learning_experiences: "Students practice converting real-life word problems into mathematical equations using ratios and proportions.",
+
+  task: "Setting up Compound Proportions – Write equations for compound proportion problems.",
+
+  resources: [
+    "Whiteboard and markers",
+    "Calculators",
+    "Word problem worksheets"
+  ],
+
+  instructions: [
+    "Introduce a set of word problems that require compound proportion solutions.",
+    "Demonstrate how to identify the ratios involved and how to set up the compound proportion equation.",
+    "Students practice writing equations from 3–5 different problems.",
+    "Solve the equations step by step, showing clear reasoning for each step.",
+    "Peer-review solutions and discuss common mistakes."
+  ],
+
+  assessment: "Learners correctly write and solve compound proportion equations and explain their reasoning.",
+
+  reflection: "What steps helped you write and solve compound proportion equations?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners apply compound proportion skills to financial problems, enhancing practical understanding.",
+
+  learning_experiences: "Students explore how ratios and proportions appear in finance, including interest and investment scenarios.",
+
+  task: "Compound Proportions in Financial Problems – Solve compound proportions in finance-related questions.",
+
+  resources: [
+    "Financial problem worksheets",
+    "Calculators",
+    "Whiteboard for demonstrations"
+  ],
+
+  instructions: [
+    "Present financial scenarios requiring compound proportion calculations (e.g., investments over time, interest rate distribution).",
+    "Guide students to identify the quantities and ratios involved.",
+    "Students formulate the compound proportion equations and solve step by step.",
+    "Check answers in pairs and discuss different approaches.",
+    "Highlight the importance of accuracy in financial calculations."
+  ],
+
+  assessment: "Learners correctly solve financial problems using compound proportions and interpret results.",
+
+  reflection: "How did compound proportions help you analyze financial scenarios?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners apply compound proportions to chemical or material mixtures.",
+
+  learning_experiences: "Students explore practical uses of compound proportions in chemistry and material preparation.",
+
+  task: "Compound Proportions in Chemical Mixtures – Solve proportion problems in chemical mixing.",
+
+  resources: [
+    "Mixture problem worksheets",
+    "Calculators",
+    "Whiteboard for step-by-step solutions"
+  ],
+
+  instructions: [
+    "Introduce problems involving combining substances in fixed ratios (e.g., 3 parts A to 2 parts B).",
+    "Guide students to determine unknown quantities when scaling the mixture.",
+    "Students solve several problems, using stepwise compound proportion equations.",
+    "Compare solutions with peers and discuss potential real-life applications.",
+    "Emphasize accuracy and units consistency in chemical mixtures."
+  ],
+
+  assessment: "Learners solve chemical mixture problems accurately using compound proportions.",
+
+  reflection: "What challenges did you encounter while solving compound proportions in chemical mixtures?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners understand relationships in work problems and apply compound proportions to determine time or output.",
+
+  learning_experiences: "Students practice work-rate problems involving multiple workers or tasks using compound proportions.",
+
+  task: "Compound Proportions in Work Problems – Solve work-related problems involving compound proportions.",
+
+  resources: [
+    "Work problem worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Introduce scenarios such as 'If 3 workers can complete a task in 6 hours, how long will 5 workers take?'",
+    "Guide students to set up ratios for workers and time or output.",
+    "Solve the problem using compound proportion equations step by step.",
+    "Discuss different strategies and verify answers.",
+    "Highlight real-life applications in productivity and project management."
+  ],
+
+  assessment: "Learners solve work-rate problems correctly using compound proportions.",
+
+  reflection: "How did compound proportions help you solve work-related problems?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners gain fluency in handling complex compound proportion problems with multiple ratios.",
+
+  learning_experiences: "Students tackle challenging scenarios involving three or more linked ratios, reinforcing problem-solving skills.",
+
+  task: "Solving Proportions with Mixed Ratios – Work with compound proportions involving multiple ratios.",
+
+  resources: [
+    "Worksheets with mixed ratio problems",
+    "Calculators",
+    "Whiteboard for demonstration and discussion"
+  ],
+
+  instructions: [
+    "Introduce compound proportion problems with three or more linked ratios (e.g., a/b = c/d = e/x).",
+    "Demonstrate step-by-step how to isolate the unknown and solve the equation.",
+    "Students practice solving multiple mixed-ratio problems individually or in pairs.",
+    "Check answers collaboratively and discuss strategies used to manage complexity.",
+    "Encourage students to write each step clearly to avoid errors."
+  ],
+
+  assessment: "Learners accurately solve complex compound proportion problems and explain their steps.",
+
+  reflection: "How did you handle compound proportions with multiple ratios? Which strategies worked best?"
+},
+
+
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners apply compound proportions to practical scaling problems, such as resizing recipes or models.",
+
+  learning_experiences: "Students explore scaling real-life objects using compound proportions, understanding how multiple ratios interact.",
+
+  task: "Applying Compound Proportions in Scaling – Solve scaling problems using compound proportions.",
+
+  resources: [
+    "Scaling worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Introduce scaling scenarios (e.g., resizing a recipe for more servings, scaling a model car).",
+    "Guide students to identify all relevant ratios and establish the compound proportion equation.",
+    "Students solve the scaling problems step by step, showing all calculations.",
+    "Discuss alternative strategies and verify solutions.",
+    "Emphasize accuracy when applying ratios to real-world contexts."
+  ],
+
+  assessment: "Learners correctly solve scaling problems using compound proportions and explain their reasoning.",
+
+  reflection: "How did compound proportions help you solve scaling problems?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners strengthen problem-solving skills by tackling word problems with compound proportions.",
+
+  learning_experiences: "Students practice applying compound proportion concepts in varied word problems, improving critical thinking and reasoning.",
+
+  task: "Proportion Word Problems – Solve word problems using compound proportions.",
+
+  resources: [
+    "Word problem worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Provide students with a variety of word problems involving multiple linked ratios.",
+    "Guide students to identify the unknowns and relevant ratios in each problem.",
+    "Students write compound proportion equations and solve step by step.",
+    "Encourage peer discussion to compare strategies and check answers.",
+    "Highlight real-world applications of these word problems."
+  ],
+
+  assessment: "Learners solve word problems accurately and explain the steps used.",
+
+  reflection: "What strategy did you use to solve word problems involving compound proportions?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Compound Proportions",
+  type: "activity",
+
+  outcome: "Learners consolidate their understanding of compound proportions through varied practice.",
+
+  learning_experiences: "Students review a mix of compound proportion problems to reinforce knowledge and increase confidence.",
+
+  task: "Reviewing Compound Proportions – Review and practice solving a variety of compound proportion problems.",
+
+  resources: [
+    "Mixed worksheets",
+    "Calculators",
+    "Whiteboard for discussion"
+  ],
+
+  instructions: [
+    "Provide a set of problems covering different scenarios involving compound proportions.",
+    "Students solve the problems individually or in pairs.",
+    "Review solutions as a class, discussing common mistakes and strategies.",
+    "Encourage students to explain their reasoning for each step."
+  ],
+
+  assessment: "Learners demonstrate improved accuracy and confidence in solving compound proportion problems.",
+
+  reflection: "How did reviewing compound proportions improve your understanding of the topic?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners apply the relationship between work, rate, and time to solve practical problems.",
+
+  learning_experiences: "Students calculate time required for individuals or machines to complete tasks based on their work rate.",
+
+  task: "Work and Time – Solve problems involving time, rate, and work done.",
+
+  resources: [
+    "Work problem worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Introduce the formula: Work = Rate × Time.",
+    "Provide problems involving single workers or machines and the time needed to complete tasks.",
+    "Guide students to calculate the unknown variable using the work-rate-time relationship.",
+    "Check answers in pairs and discuss reasoning.",
+    "Encourage students to show all steps for clarity and accuracy."
+  ],
+
+  assessment: "Learners correctly solve work and time problems and explain their methodology.",
+
+  reflection: "How did understanding rates of work help you solve time-based problems?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners understand how multiple workers’ rates combine and apply this to collaborative tasks.",
+
+  learning_experiences: "Students solve problems where multiple workers, machines, or teams complete tasks together using combined work rates.",
+
+  task: "Combined Work Problems – Solve problems where multiple workers collaborate on a task.",
+
+  resources: [
+    "Work problem worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Present scenarios involving multiple workers with different work rates.",
+    "Guide students to calculate the combined rate and total time to complete the task.",
+    "Students solve several problems in pairs or groups.",
+    "Discuss strategies for combining rates and checking results.",
+    "Highlight real-life applications in teamwork and productivity planning."
+  ],
+
+  assessment: "Learners accurately determine total work done and time required using combined work rates.",
+
+  reflection: "What methods helped you combine the work rates of different people or machines?"
+},
+
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners understand how different rates affect time and work completion using inverse relationships.",
+
+  learning_experiences: "Students solve problems involving workers or machines completing tasks at different speeds and explore the inverse relationship between time and work rate.",
+
+  task: "Inverse Rates of Work – Solve problems involving workers completing tasks at different speeds.",
+
+  resources: [
+    "Rate of work worksheets",
+    "Calculators",
+    "Whiteboard for examples"
+  ],
+
+  instructions: [
+    "Introduce the inverse relationship formula: Time = Work ÷ Rate.",
+    "Provide scenarios where multiple workers complete a task at different rates.",
+    "Students calculate the time required for each worker individually and combined.",
+    "Encourage students to explain their reasoning for using inverse relationships.",
+    "Discuss real-life applications such as project planning or machine scheduling."
+  ],
+
+  assessment: "Learners correctly calculate time using inverse work-rate relationships and explain their solutions.",
+
+  reflection: "How did you apply the inverse relationship between time and rate in the problems?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners calculate efficiency and understand its effect on work output.",
+
+  learning_experiences: "Students explore efficiency as a measure of work done relative to a standard and apply it in calculations.",
+
+  task: "Work and Efficiency – Calculate the efficiency of workers or machines.",
+
+  resources: [
+    "Efficiency worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Introduce the concept: Efficiency = (Standard Work ÷ Actual Work Time) × 100%.",
+    "Provide problems where students calculate efficiency for workers or machines.",
+    "Students compare efficiency rates and interpret the results.",
+    "Discuss how efficiency affects time and productivity in real-world situations."
+  ],
+
+  assessment: "Learners accurately calculate efficiency and explain how it impacts work output.",
+
+  reflection: "How did calculating efficiency help you understand work completion rates?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners practice applying fractions to work-time problems.",
+
+  learning_experiences: "Students calculate fractions of tasks completed in given times and understand partial work done at a certain rate.",
+
+  task: "Work in Fractions of Time – Solve problems involving fractions of time taken for tasks.",
+
+  resources: [
+    "Fractional time worksheets",
+    "Calculators",
+    "Whiteboard for examples"
+  ],
+
+  instructions: [
+    "Provide problems where workers complete portions of a task over fractional time periods.",
+    "Students calculate the fraction of the total work completed and the remaining work.",
+    "Discuss methods to convert between fractional and full-time work rates.",
+    "Encourage students to check their results for reasonableness."
+  ],
+
+  assessment: "Learners correctly determine partial work done and remaining work using fractions.",
+
+  reflection: "How did using fractions help in solving work and time problems?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners solve complex problems involving multiple workers or machines at varied rates.",
+
+  learning_experiences: "Students tackle multi-step problems, calculating total work and time by combining individual rates and conditions.",
+
+  task: "Rate of Work Problem Solving – Solve complex rate of work problems with varied conditions.",
+
+  resources: [
+    "Mixed work-rate worksheets",
+    "Calculators",
+    "Whiteboard for problem-solving"
+  ],
+
+  instructions: [
+    "Provide problems involving multiple workers or machines with different work rates.",
+    "Guide students to calculate combined rates and total work done.",
+    "Students solve problems step by step, showing all calculations.",
+    "Discuss strategies for breaking down complex problems into simpler steps.",
+    "Review solutions as a class to highlight common pitfalls."
+  ],
+
+  assessment: "Learners accurately solve complex work-rate problems and explain their methodology.",
+
+  reflection: "What strategies helped you solve more complex work rate problems?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners understand how increasing work rates affects total time and task completion.",
+
+  learning_experiences: "Students calculate time savings and explore efficiency improvements by adjusting rates of work.",
+
+  task: "Time-Saving Strategies – Calculate the time savings when work is sped up.",
+
+  resources: [
+    "Time-saving worksheets",
+    "Calculators",
+    "Whiteboard for demonstration"
+  ],
+
+  instructions: [
+    "Introduce scenarios where increasing the rate of work reduces total time required.",
+    "Students calculate new completion times and time saved.",
+    "Discuss real-life examples, such as speeding up production or teamwork efficiency.",
+    "Encourage students to compare different strategies to maximize time savings.",
+    "Check answers and discuss methods for reasoning and verification."
+  ],
+
+  assessment: "Learners accurately calculate time savings and understand the effect of work rate on task duration.",
+
+  reflection: "How did calculating time savings help you understand the relationship between time and work rate?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners calculate total work and time when multiple tasks are handled by different workers at different rates.",
+
+  learning_experiences: "Students explore how varying rates for different tasks affect total work completion time and task distribution.",
+
+  task: "Work and Time for Multiple Tasks – Solve problems involving multiple tasks and different workers.",
+
+  resources: [
+    "Multiple task worksheets",
+    "Calculators",
+    "Whiteboard for step-by-step demonstration"
+  ],
+
+  instructions: [
+    "Introduce the formula: Time = Work ÷ Rate and how it applies to multiple tasks.",
+    "Provide examples where different workers handle different tasks with different rates.",
+    "Students calculate individual task completion times first.",
+    "Then determine total time or total work done when tasks are combined.",
+    "Encourage students to show all steps and check their results for consistency.",
+    "Discuss real-life applications such as project management and team coordination."
+  ],
+
+  assessment: "Learners correctly calculate total work or total time and explain the reasoning for combining tasks.",
+
+  reflection: "What methods helped you calculate total work and time for multiple tasks?"
+},
+{
+  grade: "Grade 9",
+  subject: "Mathematics",
+  topic: "Rates of Work",
+  type: "activity",
+
+  outcome: "Learners adjust work-time calculations when there are delays or interruptions in work.",
+
+  learning_experiences: "Students explore scenarios where work is interrupted and learn to calculate adjusted completion times.",
+
+  task: "Work Completion with Delays – Solve problems where there are delays in work completion.",
+
+  resources: [
+    "Delay problem worksheets",
+    "Calculators",
+    "Whiteboard for demonstration and examples"
+  ],
+
+  instructions: [
+    "Introduce scenarios where work is paused or slowed down due to delays.",
+    "Provide worksheets with problems requiring calculation of adjusted completion times.",
+    "Students calculate total effective work done and determine remaining time after delays.",
+    "Discuss strategies for accounting for interruptions, such as splitting work into segments.",
+    "Encourage students to verify answers by comparing delayed vs uninterrupted work times.",
+    "Connect concepts to real-life situations like machine breakdowns or staff shortages."
+  ],
+
+  assessment: "Learners accurately calculate adjusted work times and demonstrate understanding of delays' effects on work completion.",
+
+  reflection: "How did considering delays impact your calculation of work completion time?"
+},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      {
+        grade: "Grade 8",
+        subject: "Integrated Science",
+        topic: "Plants",
+        type: "activity",
+        task: "Investigate parts of a leaf.",
+        materials: "Leaves, magnifying glass, worksheet",
+        instructions: "Observe different leaves and identify veins, stalk, lamina. Record findings.",
+        performance: "Learners correctly label leaf parts.",
+        reflection: "Why are veins important in a leaf?"
+      }
+    ];
+
+    
+	
+	function updateTopics() {
+  const grade = document.getElementById("grade").value;
+  const subject = document.getElementById("subject").value;
+  const topicSelect = document.getElementById("topic");
+  const taskSelect = document.getElementById("task");
+
+  const filtered = activities.filter(a => a.grade === grade && a.subject === subject);
+  const topics = [...new Set(filtered.map(a => a.topic))];
+  topicSelect.innerHTML = topics.map(t => `<option>${t}</option>`).join("");
+
+  // ✅ Populate tasks for first topic
+  const firstTopic = topics[0];
+  const tasks = filtered.filter(a => a.topic === firstTopic).map(a => a.task);
+  taskSelect.innerHTML = tasks.map(task => `<option>${task}</option>`).join("");
+}
+
+// ✅ Update tasks when topic changes
+document.getElementById("topic").addEventListener("change", function() {
+  const grade = document.getElementById("grade").value;
+  const subject = document.getElementById("subject").value;
+  const topic = this.value;
+  const taskSelect = document.getElementById("task");
+
+  const filtered = activities.filter(a => a.grade === grade && a.subject === subject && a.topic === topic);
+  taskSelect.innerHTML = filtered.map(a => `<option>${a.task}</option>`).join("");
+});
+
+	
+	
+
+    function generateItem() {
+  const grade = document.getElementById('grade').value;
+  const subject = document.getElementById('subject').value;
+  const topic = document.getElementById('topic').value;
+  const type = document.getElementById('type').value;
+  const task = document.getElementById('task').value;
+  const outputDiv = document.getElementById('output');
+
+  const source = activities.find(
+    item => item.grade === grade && 
+            item.subject === subject && 
+            item.topic === topic && 
+            item.type === type && 
+            item.task === task
+  );
+
+  if (!source) {
+    outputDiv.innerHTML = `<p style="color:red">No ${type} found for ${subject}, ${topic}, ${grade}, ${task}.</p>`;
+    return;
+  }
+
+  const selected = source;  // ✅ Now it's from dropdown, not random
+
+// Helper to render list or text
+function renderListOrText(item, ordered = false) {
+  if (Array.isArray(item)) {
+    if (ordered) {
+      return `<ol>${item.map(step => `<li>${step}</li>`).join('')}</ol>`;
+    } else {
+      return `<ul>${item.map(resource => `<li>${resource}</li>`).join('')}</ul>`;
+    }
+  }
+  return item; // If it's just a string
+}
+
+outputDiv.innerHTML = `
+  <h3>📌 ${type.charAt(0).toUpperCase() + type.slice(1)} Task</h3>
+
+  <div class="section"><strong>Learning Outcome:</strong> ${selected.outcome}</div>
+  <div class="section"><strong>Learning Experiences:</strong> ${selected.learning_experiences}</div>
+  <div class="section"><strong>Task:</strong> ${selected.task}</div>
+  
+  <div class="section"><strong>Resources:</strong> ${renderListOrText(selected.resources, false)}</div>
+  
+  <div class="section"><strong>Instructions:</strong> ${renderListOrText(selected.instructions, true)}</div>
+  
+  <div class="section"><strong>Assessment:</strong> ${selected.assessment}</div>
+  <div class="section"><strong>Reflection:</strong> ${selected.reflection}</div>
+
+	  	   
+  <div class="actions">
+    <button onclick="window.print()">🖨️ Print</button>
+    <button onclick="copyToClipboard()">📋 Copy</button>
+    <button onclick="saveAsPDF()">💾 Save PDF</button>
+    <button onclick="document.getElementById('output').innerHTML=''">❌ Clear</button>
+  </div>
+`;
+ }
+function copyToClipboard() {
+  let clone = document.getElementById("output").cloneNode(true);
+
+  // Remove action buttons if any
+  const actions = clone.querySelector(".actions");
+  if (actions) actions.remove();
+
+  // Extract the title
+  const title = clone.querySelector("h3") ? clone.querySelector("h3").innerText : "CBC ACTIVITY";
+
+  // Extract sections
+  const sections = clone.querySelectorAll(".section");
+
+  // Build clean formatted text
+  let formatted = "📘 " + title.toUpperCase() + "\n" + "=".repeat(title.length + 4) + "\n\n";
+
+  sections.forEach(sec => {
+    let labelElem = sec.querySelector("strong");
+    let label = labelElem ? labelElem.innerText.replace(":", "").trim() : "";
+
+    // Clone section and remove <strong>
+    let content = sec.cloneNode(true);
+    if (labelElem) {
+      let removeLabel = content.querySelector("strong");
+      if (removeLabel) removeLabel.remove();
+    }
+
+    let text = content.innerHTML;
+
+    // Format resources
+    if (label.toLowerCase() === "resources") {
+      text = text
+        .replace(/<li>/g, "  • ")
+        .replace(/<\/li>/g, "\n")
+        .replace(/<\/?ul>/g, "")
+        .replace(/<br\s*\/?>/g, "\n");
+    } 
+    // Format instructions
+    else if (label.toLowerCase() === "instructions") {
+      let step = 1;
+      text = text
+        .replace(/<li>/g, () => "  " + (step++) + ". ")
+        .replace(/<\/li>/g, "\n")
+        .replace(/<\/?ol>/g, "")
+        .replace(/<br\s*\/?>/g, "\n");
+    }
+
+    // Remove any HTML tags
+    text = text.replace(/<\/?[^>]+(>|$)/g, "").trim();
+
+    // Add formatted section
+    formatted += label.toUpperCase() + ":\n" + text + "\n\n";
+  });
+
+  // Clean unwanted chars
+  formatted = formatted.replace(/[^\x00-\x7F]/g, "");
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(formatted).then(() => {
+    alert("Copied to clipboard!");
+  });
+}
+
+function saveAsPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Clone and clean the output
+  let clone = document.getElementById("output").cloneNode(true);
+  const actions = clone.querySelector(".actions");
+  if (actions) actions.remove();
+
+  // Extract the title
+  let title = clone.querySelector("h3") ? clone.querySelector("h3").innerText : "CBC Activity";
+  // Remove emojis / strange chars
+  title = title.replace(/[^\x00-\x7F]/g, "");
+
+  // Extract sections
+  const sections = clone.querySelectorAll(".section");
+
+  // Start position
+  let y = 20;
+
+  // Add title (big + bold, clean)
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text(title.toUpperCase(), 15, y);
+  y += 10;
+
+  // Add underline
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.5);
+  doc.line(15, y, 195, y);
+  y += 10;
+
+  // Loop through each section
+  sections.forEach(sec => {
+    let labelElem = sec.querySelector("strong");
+    let label = labelElem ? labelElem.innerText.replace(":", "").trim() : "";
+
+    // Clone section and remove <strong>
+    let content = sec.cloneNode(true);
+    if (labelElem) {
+      let removeLabel = content.querySelector("strong");
+      if (removeLabel) removeLabel.remove();
+    }
+    let text = content.innerHTML;
+
+    // Format resources
+    if (label.toLowerCase() === "resources") {
+      text = text
+        .replace(/<li>/g, "• ")
+        .replace(/<\/li>/g, "\n")
+        .replace(/<\/?ul>/g, "")
+        .replace(/<br\s*\/?>/g, "\n");
+    } 
+    // Format instructions
+    else if (label.toLowerCase() === "instructions") {
+      let step = 1;
+      text = text
+        .replace(/<li>/g, () => (step++) + ". ")
+        .replace(/<\/li>/g, "\n")
+        .replace(/<\/?ol>/g, "")
+        .replace(/<br\s*\/?>/g, "\n");
+    }
+
+    // Remove leftover HTML tags and emojis
+    text = text.replace(/<\/?[^>]+(>|$)/g, "").replace(/[^\x00-\x7F]/g, "").trim();
+
+    // Section heading
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text(label.toUpperCase() + ":", 15, y);
+    y += 8;
+
+    // Section text
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    let wrapped = doc.splitTextToSize(text, 170);
+    doc.text(wrapped, 20, y);
+    y += wrapped.length * 6 + 6;
+  });
+
+  // Footer
+  y += 10;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "italic");
+  doc.text("Generated by ELIMU CONNECT CBC Tool", 15, y);
+
+  doc.save("CBC_Activity.pdf");
+}
+
+
+
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+    updateTopics();
+  </script>
+
+</body>
+</html>
