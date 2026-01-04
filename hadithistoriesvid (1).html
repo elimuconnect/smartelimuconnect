@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hadithi & Story Library</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to bottom right, #e1f5fe, #fce4ec);
+  }
+
+  header {
+    background-color: #1976d2;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-size: 1.8em;
+    font-weight: bold;
+  }
+
+  .category-selector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 20px;
+  }
+
+  select {
+    padding: 12px;
+    font-size: 1em;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    width: 90%;
+    max-width: 300px;
+  }
+
+ #videos {
+    display: flex;
+    flex-direction: column; /* stack videos vertically */
+    align-items: center;    /* center on large screens */
+    padding: 10px;
+    gap: 20px;
+}
+
+
+  .video-card {
+    width: 100%;       /* full width */
+    max-width: 1200px; /* optional, for very large screens */
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+
+  .video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+  }
+
+  .video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  .video-title {
+    padding: 12px;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #1565c0;
+    text-align: center;
+  }
+
+  #noResult {
+    text-align: center;
+    color: red;
+    margin-top: 20px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header>📚 Hadithi & Story Library</header>
+
+<div class="category-selector">
+  <select id="categorySelect" onchange="populateSubcategories()">
+    <option value="">Select Category</option>
+    <option value="hadithi">Hadithi (Kiswahili)</option>
+    <option value="stories">Stories (English)</option>
+  </select>
+
+  <select id="subcategorySelect" onchange="renderVideos()" disabled>
+    <option value="">Select Story</option>
+  </select>
+</div>
+
+<div id="noResult">No video found. Please select another story.</div>
+
+<div id="videos"></div>
+
+<script>
+  const videoData = {
+    hadithi: {
+      usiku: { title: "Usiku wa Kunong'ona ", id: "I5i_VOoRoqg" },
+      hadithi2: { title: "Hadithi 2", id: "VIDEO_ID_HADITHI2" },
+      hadithi3: { title: "Hadithi 3", id: "VIDEO_ID_HADITHI3" }
+    },
+    stories: {
+      whisperingNight: { title: "The Whispering Night", id: "VWJmSzIlMFA" },
+      story2: { title: "Story 2", id: "VIDEO_ID_EN2" },
+      story3: { title: "Story 3", id: "VIDEO_ID_EN3" }
+    }
+  };
+
+  function capitalize(text) {
+    return text.charAt(0).toUpperCase() + text.slice(1).replace(/-/g, " ");
+  }
+
+  function populateSubcategories() {
+    const category = document.getElementById("categorySelect").value;
+    const subcategorySelect = document.getElementById("subcategorySelect");
+    subcategorySelect.innerHTML = `<option value="">Select Story</option>`;
+    subcategorySelect.disabled = true;
+
+    if(videoData[category]) {
+      for(const key in videoData[category]) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = videoData[category][key].title;
+        subcategorySelect.appendChild(option);
+      }
+      subcategorySelect.disabled = false;
+    }
+
+    document.getElementById("videos").innerHTML = "";
+    document.getElementById("noResult").style.display = "none";
+  }
+
+  function renderVideos() {
+    const category = document.getElementById("categorySelect").value;
+    const subcategory = document.getElementById("subcategorySelect").value;
+    const container = document.getElementById("videos");
+
+    container.innerHTML = "";
+    document.getElementById("noResult").style.display = "none";
+
+    if(videoData[category] && videoData[category][subcategory]) {
+      const video = videoData[category][subcategory];
+      const card = document.createElement("div");
+      card.className = "video-card";
+      card.innerHTML = `
+        <div class="video-wrapper">
+          <iframe loading="lazy" src="https://www.youtube.com/embed/${video.id}?autoplay=1&mute=1&rel=0" allowfullscreen></iframe>
+        </div>
+        <div class="video-title">${video.title}</div>
+      `;
+      container.appendChild(card);
+      setTimeout(() => card.scrollIntoView({ behavior: "smooth" }), 100);
+    } else {
+      document.getElementById("noResult").style.display = "block";
+    }
+  }
+</script>
+
+</body>
+</html>
+
+
